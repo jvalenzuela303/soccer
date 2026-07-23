@@ -1,3 +1,0 @@
-[      83ms] TypeError: Cannot read properties of null (reading 'addEventListener')
-    at http://localhost:8088/panel/ot/224/:504:11
-    at http://localhost:8088/panel/ot/224/:711:2

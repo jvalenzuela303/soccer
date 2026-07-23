@@ -1,6 +1,0 @@
-- generic [ref=f3e2]:
-  - text: El enlace que seguiste ya expiró.
-  - paragraph
-  - paragraph [ref=f3e3]:
-    - link "Por favor inténtalo nuevamente." [ref=f3e4] [cursor=pointer]:
-      - /url: /wp-admin/admin.php?page=calibratrack-settings

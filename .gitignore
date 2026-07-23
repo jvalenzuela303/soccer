@@ -2,9 +2,6 @@
 node_modules/
 npm-debug.log*
 
-# Zips de release (opcionales — comentar si quieres versionarlos)
-# calibratrack-*.zip
-
 # OS
 .DS_Store
 Thumbs.db
@@ -16,3 +13,21 @@ Thumbs.db
 
 # WordPress uploads (no versionar contenido generado)
 calibratrack/uploads/
+
+# Herramientas de desarrollo / agentes
+.playwright-mcp/
+.claude/agents/
+.superpowers/
+tests/
+plugins/
+
+# Releases y binarios
+*.zip
+
+# Imágenes sueltas en raíz
+*.png
+
+# Documentos sueltos en raíz (excepto los esenciales del repo)
+*.md
+!CLAUDE.md
+!README.md
