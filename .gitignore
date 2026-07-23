@@ -1,0 +1,18 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# Zips de release (opcionales — comentar si quieres versionarlos)
+# calibratrack-*.zip
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.swp
+*.swo
+
+# WordPress uploads (no versionar contenido generado)
+calibratrack/uploads/
