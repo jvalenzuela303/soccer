@@ -1,0 +1,76 @@
+services:
+
+  db:
+    image: mariadb:10.6
+    container_name: calibratrack_db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpass
+      MARIADB_DATABASE: calibratrack_wp
+      MARIADB_USER: wpuser
+      MARIADB_PASSWORD: wppass
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - calibratrack_net
+
+  wordpress:
+    image: wordpress:php7.4-apache
+    container_name: calibratrack_wp
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8088:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: calibratrack_wp
+      WORDPRESS_DB_USER: wpuser
+      WORDPRESS_DB_PASSWORD: wppass
+      WORDPRESS_DEBUG: "1"
+      WORDPRESS_DEBUG_LOG: "1"
+      WORDPRESS_DEBUG_DISPLAY: "0"
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_DEBUG_DISPLAY', false);
+        define('WP_DEBUG_LOG', true);
+        @ini_set('display_errors', 0);
+    volumes:
+      # Plugin montado directamente — los cambios en el código se reflejan al instante
+      # :z requerido en Fedora/RHEL con SELinux activo
+      - ./calibratrack:/var/www/html/wp-content/plugins/calibratrack:z
+      - ./php/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini:z
+      # header.php para evitar deprecated notice en block themes sin archivo clásico
+      - ./themes/twentytwentythree/header.php:/var/www/html/wp-content/themes/twentytwentythree/header.php:z
+      - ./themes/twentytwentythree/footer.php:/var/www/html/wp-content/themes/twentytwentythree/footer.php:z
+      # Uploads persistentes
+      - wp_uploads:/var/www/html/wp-content/uploads
+    # Corregir permisos de uploads al iniciar: el volumen Docker se crea como root,
+    # pero Apache corre como www-data y necesita poder escribir en uploads/.
+    command: >
+      bash -c "chown -R www-data:www-data /var/www/html/wp-content/uploads
+               && apache2-foreground"
+    networks:
+      - calibratrack_net
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: calibratrack_pma
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8089:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: rootpass
+    networks:
+      - calibratrack_net
+
+volumes:
+  db_data:
+  wp_uploads:
+
+networks:
+  calibratrack_net:
+    driver: bridge

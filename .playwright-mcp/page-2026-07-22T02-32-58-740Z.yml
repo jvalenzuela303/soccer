@@ -1,0 +1,184 @@
+- generic [ref=f132e1]:
+  - generic [ref=f132e4]:
+    - banner "Panel de navegación superior" [ref=f132e6]:
+      - status
+      - generic [ref=f132e7]:
+        - button [expanded] [ref=f132e8] [cursor=pointer]:
+          - img [ref=f132e11]: menu
+        - heading [level=1] [ref=f132e13]:
+          - button "Google Ads – Ir a la página de inicio" [ref=f132e14]
+      - generic [ref=f132e159]:
+        - button "Buscar" [ref=f132e162] [cursor=pointer]:
+          - generic [ref=f132e164]:
+            - img [ref=f132e165]: search
+            - text: Buscar
+        - generic [ref=f132e167]:
+          - button "Diseño" [ref=f132e170] [cursor=pointer]:
+            - generic [ref=f132e172]:
+              - img [ref=f132e173]: responsive_layout
+              - text: Diseño
+          - button "Actualizar" [ref=f132e177] [cursor=pointer]:
+            - generic [ref=f132e179]:
+              - img [ref=f132e180]: refresh
+              - text: Actualizar
+          - button "Abrir el panel de ayuda rápida" [ref=f132e183] [cursor=pointer]:
+            - generic [ref=f132e184]:
+              - text: Ayuda
+              - generic [ref=f132e185]:
+                - img [ref=f132e186]: help_outline
+                - text: Ayuda
+          - button "Notificaciones" [ref=f132e193] [cursor=pointer]:
+            - generic [ref=f132e195]:
+              - img [ref=f132e198]: notifications
+              - generic [ref=f132e200]: Notificaciones
+      - button "Cuenta de Google" [ref=f132e205] [cursor=pointer]:
+        - img "Cuenta de Google (jvalenzuela303@gmail.com)" [ref=f132e206]
+    - generic [ref=f132e34]:
+      - generic [ref=f132e211]:
+        - img [ref=f132e213]: report_problem
+        - generic [ref=f132e215]:
+          - status [ref=f132e216]:
+            - generic [ref=f132e217]: Revisa los objetivos de tu campaña - A partir del 17 de agosto del 2026, las campañas con objetivos de puja (por ejemplo, un objetivo de CPA o de ROAS) ofrecerán un rendimiento más uniforme cuando estén limitadas por el presupuesto, incluso después de ajustar el presupuesto. Revisa estas campañas para asegurarte de que los objetivos se ajusten a los tuyos. Los objetivos no se actualizarán automáticamente.
+          - generic [ref=f132e220]:
+            - button "Revisar campañas" [ref=f132e1624] [cursor=pointer]
+            - button "Ocultar" [ref=f132e1628] [cursor=pointer]
+      - generic [ref=f132e35]:
+        - generic [ref=f132e37]:
+          - generic [ref=f132e38]:
+            - generic [ref=f132e39]:
+              - button "Crear" [ref=f132e41] [cursor=pointer]
+              - generic [ref=f132e46]: Crear
+            - menu [ref=f132e47]:
+              - menu [ref=f132e48]:
+                - menuitem "Campañas" [ref=f132e51] [cursor=pointer]:
+                  - generic [ref=f132e52]:
+                    - img [ref=f132e54]: campaign
+                    - generic [ref=f132e55]: Campañas
+                - menuitem "Objetivos" [ref=f132e58] [cursor=pointer]:
+                  - generic [ref=f132e59]:
+                    - img [ref=f132e61]: rewarded_ads
+                    - generic [ref=f132e62]: Objetivos
+                - menuitem "Herramientas" [ref=f132e65] [cursor=pointer]:
+                  - generic [ref=f132e66]:
+                    - img [ref=f132e68]: construction
+                    - generic [ref=f132e69]: Herramientas
+                - menuitem "Facturación" [ref=f132e72] [cursor=pointer]:
+                  - generic [ref=f132e73]:
+                    - img [ref=f132e75]: credit_card
+                    - generic [ref=f132e76]: Facturación
+                - menuitem "Administrador" [ref=f132e79] [cursor=pointer]:
+                  - generic [ref=f132e80]:
+                    - img [ref=f132e82]: settings
+                    - generic [ref=f132e83]: Administrador
+          - navigation [ref=f132e84]:
+            - menu [ref=f132e85]:
+              - generic [ref=f132e86]:
+                - menuitem "Conversiones" [expanded] [ref=f132e89] [cursor=pointer]:
+                  - generic [ref=f132e90]:
+                    - generic [ref=f132e91]: Conversiones
+                    - img [ref=f132e94]: expand_more
+                - generic [ref=f132e95]:
+                  - menuitem "Resumen" [ref=f132e98] [cursor=pointer]
+                  - menuitem "Reglas de valor" [ref=f132e104] [cursor=pointer]
+                  - menuitem "Variables personalizadas" [ref=f132e110] [cursor=pointer]
+                  - menuitem "Configuración" [ref=f132e116] [cursor=pointer]
+                  - menuitem "Subidas" [ref=f132e122] [cursor=pointer]
+                - menuitem "Medición" [ref=f132e128] [cursor=pointer]:
+                  - generic [ref=f132e129]:
+                    - generic [ref=f132e130]: Medición
+                    - img [ref=f132e133]: expand_more
+        - generic [ref=f132e136]:
+          - generic [ref=f132e229]:
+            - generic [ref=f132e230]:
+              - generic [ref=f132e231]:
+                - generic [ref=f132e1288]:
+                  - link "Objetivos" [ref=f132e1429] [cursor=pointer]:
+                    - /url: /aw/conversions?ocid=352199970&authuser=0&__u=4291234064&__c=4148624530
+                  - img [ref=f132e1431]: chevron_right
+                - heading "Solicitar cotización (https://truetech.cl/quotelist/)" [level=2] [ref=f132e1292]
+              - generic [ref=f132e236]:
+                - generic [ref=f132e238] [cursor=pointer]:
+                  - generic [ref=f132e239]: Personalizado
+                  - generic [ref=f132e241]:
+                    - button "24 jun – 21 jul de 2026 No aplicable" [ref=f132e243]:
+                      - generic [ref=f132e244]: 24 jun – 21 jul de 2026
+                      - img [ref=f132e246]: arrow_drop_down
+                    - generic [ref=f132e247]:
+                      - button "Anterior" [ref=f132e248]:
+                        - img [ref=f132e251]: chevron_left
+                      - button "Siguiente" [disabled]:
+                        - generic:
+                          - generic:
+                            - img: chevron_right
+                - button "Mostrar últimos 30 días" [ref=f132e253] [cursor=pointer]
+            - tablist [ref=f132e259]:
+              - tab "Detalles" [ref=f132e1293] [cursor=pointer]
+              - tab "Configuración" [selected] [ref=f132e1296] [cursor=pointer]
+          - main [ref=f132e270]:
+            - generic [ref=f132e272]:
+              - generic [ref=f132e1439]:
+                - button [ref=f132e1449] [cursor=pointer]:
+                  - heading [level=2] [ref=f132e1451]: Evento
+                  - generic [ref=f132e1452]: "Carga de la página: truetech.cl/quotelist/"
+                  - img [ref=f132e1454]: expand_less
+                - button [ref=f132e1464] [cursor=pointer]:
+                  - paragraph [ref=f132e1466]: Nombre de la conversión
+                  - generic [ref=f132e1467]: Solicitar cotización (https://truetech.cl/quotelist/)
+                  - img [ref=f132e1469]: expand_less
+                - button [disabled] [ref=f132e1479]:
+                  - paragraph [ref=f132e1481]: Fecha de creación
+                  - generic [ref=f132e1482]: 16/12/2022
+                - button [ref=f132e1493] [cursor=pointer]:
+                  - paragraph [ref=f132e1495]: Optimización de acciones
+                  - generic [ref=f132e1496]: Solicitud de presupuestos, Acción principal
+                  - img [ref=f132e1498]: expand_less
+                - button "Valor" [active] [ref=f132e1508] [cursor=pointer]:
+                  - heading [level=2] [ref=f132e1510]:
+                    - generic [ref=f132e1511]: Valor
+                  - generic [ref=f132e1512]: 150000 CLP
+                  - img [ref=f132e1514]: expand_less
+                - button [disabled] [ref=f132e1524]:
+                  - paragraph [ref=f132e1526]: Fuente
+                  - generic [ref=f132e1527]: Sitio web
+                - button "Recuento" [ref=f132e1538] [cursor=pointer]:
+                  - heading [level=2] [ref=f132e1540]:
+                    - generic [ref=f132e1541]: Recuento
+                  - generic [ref=f132e1542]: Una conversión
+                  - img [ref=f132e1544]: expand_less
+                - button [ref=f132e1554] [cursor=pointer]:
+                  - paragraph [ref=f132e1556]: Ventana de conversión post-clic
+                  - generic [ref=f132e1557]: 90 días
+                  - img [ref=f132e1559]: expand_less
+                - button [ref=f132e1569] [cursor=pointer]:
+                  - paragraph [ref=f132e1571]: Ventana de conversión tras visualización interesada
+                  - generic [ref=f132e1572]: 3 días
+                  - img [ref=f132e1574]: expand_less
+                - button [ref=f132e1584] [cursor=pointer]:
+                  - paragraph [ref=f132e1586]: Ventana de conversión post-impresión
+                  - generic [ref=f132e1587]: 1 día
+                  - img [ref=f132e1589]: expand_less
+                - button [ref=f132e1599] [cursor=pointer]:
+                  - paragraph [ref=f132e1601]: Atribución
+                  - generic [ref=f132e1602]:
+                    - generic [ref=f132e1603]: Basada en datos Recomendada
+                    - generic [ref=f132e1606]: Canales de pago de Google
+                  - img [ref=f132e1607]: expand_less
+                - button [ref=f132e1617] [cursor=pointer]:
+                  - paragraph [ref=f132e1619]: Conversiones mejoradas
+                  - generic [ref=f132e1620]: Sin configurar
+                  - img [ref=f132e1622]: expand_less
+              - generic [ref=f132e682]: © Google, 2026.
+  - generic:
+    - dialog:
+      - generic:
+        - generic:
+          - heading [level=1]: Turn off ad blockers
+          - paragraph: Google Ads can't work when you're using an ad blocker. To use Google Ads, please turn off any ad blockers for now.
+  - generic:
+    - generic:
+      - generic:
+        - dialog "cuadro de diálogo"
+  - generic:
+    - generic:
+      - generic:
+        - dialog "cuadro de diálogo"

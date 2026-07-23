@@ -1,0 +1,464 @@
+- generic [ref=f8e2]:
+  - navigation "Menú principal":
+    - link "Saltar al contenido principal" [ref=f8e3] [cursor=pointer]:
+      - /url: "#wpbody-content"
+    - link "Saltar a la barra de herramientas" [ref=f8e4] [cursor=pointer]:
+      - /url: "#wp-toolbar"
+    - list [ref=f8e7]:
+      - listitem [ref=f8e8]:
+        - link "Escritorio" [ref=f8e9] [cursor=pointer]:
+          - /url: index.php
+          - generic [ref=f8e10]: 
+        - list [ref=f8e12]:
+          - listitem [ref=f8e13]:
+            - link "Inicio" [ref=f8e14] [cursor=pointer]:
+              - /url: index.php
+          - listitem [ref=f8e15]:
+            - link "Actualización 8" [ref=f8e16] [cursor=pointer]:
+              - /url: update-core.php
+              - text: Actualización
+              - generic [ref=f8e17]: "8"
+      - listitem [ref=f8e18]
+      - listitem [ref=f8e20]:
+        - link "Entradas" [ref=f8e21] [cursor=pointer]:
+          - /url: edit.php
+          - generic [ref=f8e22]: 
+        - list [ref=f8e24]:
+          - listitem [ref=f8e25]:
+            - link "Todas las entradas" [ref=f8e26] [cursor=pointer]:
+              - /url: edit.php
+          - listitem [ref=f8e27]:
+            - link "Add New" [ref=f8e28] [cursor=pointer]:
+              - /url: post-new.php
+          - listitem [ref=f8e29]:
+            - link "Categorías" [ref=f8e30] [cursor=pointer]:
+              - /url: edit-tags.php?taxonomy=category
+          - listitem [ref=f8e31]:
+            - link "Etiquetas" [ref=f8e32] [cursor=pointer]:
+              - /url: edit-tags.php?taxonomy=post_tag
+      - listitem [ref=f8e33]:
+        - link "Medios" [ref=f8e34] [cursor=pointer]:
+          - /url: upload.php
+          - generic [ref=f8e35]: 
+        - list [ref=f8e37]:
+          - listitem [ref=f8e38]:
+            - link "Biblioteca" [ref=f8e39] [cursor=pointer]:
+              - /url: upload.php
+          - listitem [ref=f8e40]:
+            - link "Add New" [ref=f8e41] [cursor=pointer]:
+              - /url: media-new.php
+      - listitem [ref=f8e42]:
+        - link "Páginas" [ref=f8e43] [cursor=pointer]:
+          - /url: edit.php?post_type=page
+          - generic [ref=f8e44]: 
+        - list [ref=f8e46]:
+          - listitem [ref=f8e47]:
+            - link "Todas las páginas" [ref=f8e48] [cursor=pointer]:
+              - /url: edit.php?post_type=page
+          - listitem [ref=f8e49]:
+            - link "Add New" [ref=f8e50] [cursor=pointer]:
+              - /url: post-new.php?post_type=page
+      - listitem [ref=f8e51]:
+        - link "Comentarios" [ref=f8e52] [cursor=pointer]:
+          - /url: edit-comments.php
+          - generic [ref=f8e53]: 
+      - listitem [ref=f8e55]:
+        - link "CalibraTrack" [ref=f8e56] [cursor=pointer]:
+          - /url: admin.php?page=calibratrack
+          - generic [ref=f8e57]: 
+        - list [ref=f8e59]:
+          - listitem [ref=f8e60]:
+            - link "Dashboard" [ref=f8e61] [cursor=pointer]:
+              - /url: admin.php?page=calibratrack
+          - listitem [ref=f8e62]:
+            - link "Equipos" [ref=f8e63] [cursor=pointer]:
+              - /url: edit.php?post_type=equipo
+          - listitem [ref=f8e64]:
+            - link "+ Nuevo Equipo" [ref=f8e65] [cursor=pointer]:
+              - /url: post-new.php?post_type=equipo
+          - listitem [ref=f8e66]:
+            - link "Clientes" [ref=f8e67] [cursor=pointer]:
+              - /url: edit.php?post_type=cliente
+          - listitem [ref=f8e68]:
+            - link "→ Panel de Administración" [ref=f8e69] [cursor=pointer]:
+              - /url: admin.php?page=calibratrack-admin-panel
+          - listitem [ref=f8e70]:
+            - link "Liquidación Técnicos" [ref=f8e71] [cursor=pointer]:
+              - /url: admin.php?page=calibratrack-liquidacion
+          - listitem [ref=f8e72]:
+            - link "Configuración" [ref=f8e73] [cursor=pointer]:
+              - /url: admin.php?page=calibratrack-settings
+      - listitem [ref=f8e74]:
+        - link "Equipos" [ref=f8e75] [cursor=pointer]:
+          - /url: edit.php?post_type=equipo
+          - generic [ref=f8e76]: 
+        - list [ref=f8e78]:
+          - listitem [ref=f8e79]:
+            - link "Todos los equipos" [ref=f8e80] [cursor=pointer]:
+              - /url: edit.php?post_type=equipo
+          - listitem [ref=f8e81]:
+            - link "Agregar nuevo" [ref=f8e82] [cursor=pointer]:
+              - /url: post-new.php?post_type=equipo
+      - listitem [ref=f8e83]:
+        - link "Clientes" [ref=f8e84] [cursor=pointer]:
+          - /url: edit.php?post_type=cliente
+          - generic [ref=f8e85]: 
+        - list [ref=f8e87]:
+          - listitem [ref=f8e88]:
+            - link "Todos los clientes" [ref=f8e89] [cursor=pointer]:
+              - /url: edit.php?post_type=cliente
+          - listitem [ref=f8e90]:
+            - link "Agregar nuevo" [ref=f8e91] [cursor=pointer]:
+              - /url: post-new.php?post_type=cliente
+      - listitem [ref=f8e92]
+      - listitem [ref=f8e94]:
+        - link "WooCommerce" [ref=f8e95] [cursor=pointer]:
+          - /url: admin.php?page=wc-admin
+        - list [ref=f8e98]:
+          - listitem [ref=f8e99]:
+            - link "Inicio 5" [ref=f8e100] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin
+              - text: Inicio
+              - generic [ref=f8e101]: "5"
+          - listitem [ref=f8e102]:
+            - link "Pedidos" [ref=f8e103] [cursor=pointer]:
+              - /url: edit.php?post_type=shop_order
+          - listitem [ref=f8e104]:
+            - link "Clientes" [ref=f8e105] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/customers
+          - listitem [ref=f8e106]:
+            - link "Cupones" [ref=f8e107] [cursor=pointer]:
+              - /url: admin.php?page=coupons-moved
+          - listitem [ref=f8e108]:
+            - link "Informes" [ref=f8e109] [cursor=pointer]:
+              - /url: admin.php?page=wc-reports
+          - listitem [ref=f8e110]:
+            - link "Ajustes" [ref=f8e111] [cursor=pointer]:
+              - /url: admin.php?page=wc-settings
+          - listitem [ref=f8e112]:
+            - link "Estado" [ref=f8e113] [cursor=pointer]:
+              - /url: admin.php?page=wc-status
+          - listitem [ref=f8e114]:
+            - link "Extensiones" [ref=f8e115] [cursor=pointer]:
+              - /url: admin.php?page=wc-addons
+      - listitem [ref=f8e116]:
+        - link "Productos" [ref=f8e117] [cursor=pointer]:
+          - /url: edit.php?post_type=product
+          - generic [ref=f8e118]: 
+        - list [ref=f8e120]:
+          - listitem [ref=f8e121]:
+            - link "Todos los productos" [ref=f8e122] [cursor=pointer]:
+              - /url: edit.php?post_type=product
+          - listitem [ref=f8e123]:
+            - link "Agregar nuevo" [ref=f8e124] [cursor=pointer]:
+              - /url: post-new.php?post_type=product
+          - listitem [ref=f8e125]:
+            - link "Categorías" [ref=f8e126] [cursor=pointer]:
+              - /url: edit-tags.php?taxonomy=product_cat&post_type=product
+          - listitem [ref=f8e127]:
+            - link "Etiquetas" [ref=f8e128] [cursor=pointer]:
+              - /url: edit-tags.php?taxonomy=product_tag&post_type=product
+          - listitem [ref=f8e129]:
+            - link "Atributos" [ref=f8e130] [cursor=pointer]:
+              - /url: edit.php?post_type=product&page=product_attributes
+          - listitem [ref=f8e131]:
+            - link "Valoraciones" [ref=f8e132] [cursor=pointer]:
+              - /url: edit.php?post_type=product&page=product-reviews
+      - listitem [ref=f8e133]:
+        - link "Pagos 1" [ref=f8e134] [cursor=pointer]:
+          - /url: admin.php?page=wc-admin&path=/wc-pay-welcome-page
+          - generic [ref=f8e136]:
+            - text: Pagos
+            - generic [ref=f8e137]: "1"
+      - listitem [ref=f8e138]:
+        - link "Análisis" [ref=f8e139] [cursor=pointer]:
+          - /url: admin.php?page=wc-admin&path=/analytics/overview
+          - generic [ref=f8e140]: 
+        - list [ref=f8e142]:
+          - listitem [ref=f8e143]:
+            - link "Resumen" [ref=f8e144] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/analytics/overview
+          - listitem [ref=f8e145]:
+            - link "Productos" [ref=f8e146] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/analytics/products
+          - listitem [ref=f8e147]:
+            - link "Ingresos" [ref=f8e148] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/analytics/revenue
+          - listitem [ref=f8e149]:
+            - link "Pedidos" [ref=f8e150] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/analytics/orders
+          - listitem [ref=f8e151]:
+            - link "Variaciones" [ref=f8e152] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/analytics/variations
+          - listitem [ref=f8e153]:
+            - link "Categorías" [ref=f8e154] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/analytics/categories
+          - listitem [ref=f8e155]:
+            - link "Cupones" [ref=f8e156] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/analytics/coupons
+          - listitem [ref=f8e157]:
+            - link "Impuestos" [ref=f8e158] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/analytics/taxes
+          - listitem [ref=f8e159]:
+            - link "Descargas" [ref=f8e160] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/analytics/downloads
+          - listitem [ref=f8e161]:
+            - link "Inventario" [ref=f8e162] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/analytics/stock
+          - listitem [ref=f8e163]:
+            - link "Ajustes" [ref=f8e164] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/analytics/settings
+      - listitem [ref=f8e165]:
+        - link "Marketing" [ref=f8e166] [cursor=pointer]:
+          - /url: admin.php?page=wc-admin&path=/marketing
+          - generic [ref=f8e167]: 
+        - list [ref=f8e169]:
+          - listitem [ref=f8e170]:
+            - link "Resumen" [ref=f8e171] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/marketing
+          - listitem [ref=f8e172]:
+            - link "Cupones" [ref=f8e173] [cursor=pointer]:
+              - /url: edit.php?post_type=shop_coupon
+      - listitem [ref=f8e174]
+      - listitem [ref=f8e176]:
+        - link "Aspecto" [ref=f8e177] [cursor=pointer]:
+          - /url: themes.php
+          - generic [ref=f8e178]: 
+        - list [ref=f8e180]:
+          - listitem [ref=f8e181]:
+            - link "Temas 5" [ref=f8e182] [cursor=pointer]:
+              - /url: themes.php
+              - text: Temas
+              - generic [ref=f8e183]: "5"
+          - listitem [ref=f8e184]:
+            - link "Editor beta" [ref=f8e185] [cursor=pointer]:
+              - /url: site-editor.php
+              - text: Editor
+              - generic [ref=f8e186]: beta
+      - listitem [ref=f8e187]:
+        - link "Plugins 1" [ref=f8e188] [cursor=pointer]:
+          - /url: plugins.php
+          - generic [ref=f8e189]: 
+          - generic [ref=f8e190]:
+            - text: Plugins
+            - generic [ref=f8e191]: "1"
+        - list [ref=f8e192]:
+          - listitem [ref=f8e193]:
+            - link "Plugins instalados" [ref=f8e194] [cursor=pointer]:
+              - /url: plugins.php
+          - listitem [ref=f8e195]:
+            - link "Add New" [ref=f8e196] [cursor=pointer]:
+              - /url: plugin-install.php
+      - listitem [ref=f8e197]:
+        - link "Usuarios" [ref=f8e198] [cursor=pointer]:
+          - /url: users.php
+          - generic [ref=f8e199]: 
+        - list [ref=f8e201]:
+          - listitem [ref=f8e202]:
+            - link "Todos los usuarios" [ref=f8e203] [cursor=pointer]:
+              - /url: users.php
+          - listitem [ref=f8e204]:
+            - link "Add New" [ref=f8e205] [cursor=pointer]:
+              - /url: user-new.php
+          - listitem [ref=f8e206]:
+            - link "Perfil" [ref=f8e207] [cursor=pointer]:
+              - /url: profile.php
+      - listitem [ref=f8e208]:
+        - link "Herramientas" [ref=f8e209] [cursor=pointer]:
+          - /url: tools.php
+          - generic [ref=f8e210]: 
+        - list [ref=f8e212]:
+          - listitem [ref=f8e213]:
+            - link "Herramientas disponibles" [ref=f8e214] [cursor=pointer]:
+              - /url: tools.php
+          - listitem [ref=f8e215]:
+            - link "Importar" [ref=f8e216] [cursor=pointer]:
+              - /url: import.php
+          - listitem [ref=f8e217]:
+            - link "Exportar" [ref=f8e218] [cursor=pointer]:
+              - /url: export.php
+          - listitem [ref=f8e219]:
+            - link "Salud del sitio" [ref=f8e220] [cursor=pointer]:
+              - /url: site-health.php
+          - listitem [ref=f8e221]:
+            - link "Exportar los datos personales" [ref=f8e222] [cursor=pointer]:
+              - /url: export-personal-data.php
+          - listitem [ref=f8e223]:
+            - link "Borrar los datos personales" [ref=f8e224] [cursor=pointer]:
+              - /url: erase-personal-data.php
+          - listitem [ref=f8e225]:
+            - link "Acciones programadas" [ref=f8e226] [cursor=pointer]:
+              - /url: tools.php?page=action-scheduler
+          - listitem [ref=f8e227]:
+            - link "Editor de archivos de temas" [ref=f8e228] [cursor=pointer]:
+              - /url: theme-editor.php
+          - listitem [ref=f8e229]:
+            - link "Editor de archivos de plugins" [ref=f8e230] [cursor=pointer]:
+              - /url: plugin-editor.php
+      - listitem [ref=f8e231]:
+        - link "Opciones" [ref=f8e232] [cursor=pointer]:
+          - /url: options-general.php
+          - generic [ref=f8e233]: 
+        - list [ref=f8e235]:
+          - listitem [ref=f8e236]:
+            - link "General" [ref=f8e237] [cursor=pointer]:
+              - /url: options-general.php
+          - listitem [ref=f8e238]:
+            - link "Escritura" [ref=f8e239] [cursor=pointer]:
+              - /url: options-writing.php
+          - listitem [ref=f8e240]:
+            - link "Lectura" [ref=f8e241] [cursor=pointer]:
+              - /url: options-reading.php
+          - listitem [ref=f8e242]:
+            - link "Discusión" [ref=f8e243] [cursor=pointer]:
+              - /url: options-discussion.php
+          - listitem [ref=f8e244]:
+            - link "Medios" [ref=f8e245] [cursor=pointer]:
+              - /url: options-media.php
+          - listitem [ref=f8e246]:
+            - link "Enlaces permanentes" [ref=f8e247] [cursor=pointer]:
+              - /url: options-permalink.php
+          - listitem [ref=f8e248]:
+            - link "Privacidad" [ref=f8e249] [cursor=pointer]:
+              - /url: options-privacy.php
+      - listitem [ref=f8e250]:
+        - button "Contraer Menú principal" [expanded] [ref=f8e251] [cursor=pointer]:
+          - generic [ref=f8e252]: 
+          - generic [ref=f8e253]: Collapse menu
+  - generic [ref=f8e254]:
+    - generic [ref=f8e255]:
+      - navigation "Barra de herramientas":
+        - list:
+          - listitem [ref=f8e256]:
+            - link "Acerca de WordPress" [ref=f8e257] [cursor=pointer]:
+              - /url: http://localhost:8088/wp-admin/about.php
+              - generic [ref=f8e258]: 
+          - listitem [ref=f8e260]:
+            - link " truetech" [ref=f8e261] [cursor=pointer]:
+              - /url: http://localhost:8088/
+          - listitem [ref=f8e262]:
+            - link "8 actualizaciones disponibles" [ref=f8e263] [cursor=pointer]:
+              - /url: http://localhost:8088/wp-admin/update-core.php
+              - generic [ref=f8e264]: 
+              - generic [ref=f8e265]: "8"
+          - listitem [ref=f8e267]:
+            - link "0 Comentarios en moderación" [ref=f8e268] [cursor=pointer]:
+              - /url: http://localhost:8088/wp-admin/edit-comments.php
+              - generic [ref=f8e269]: 
+              - generic [ref=f8e270]: "0"
+          - listitem [ref=f8e272]:
+            - link "Nuevo" [ref=f8e273] [cursor=pointer]:
+              - /url: http://localhost:8088/wp-admin/post-new.php
+              - generic [ref=f8e274]: 
+        - list [ref=f8e276]:
+          - listitem [ref=f8e277]:
+            - link "Hola, admin" [ref=f8e278] [cursor=pointer]:
+              - /url: http://localhost:8088/wp-admin/profile.php
+      - link "Cerrar sesión" [ref=f8e279] [cursor=pointer]:
+        - /url: http://localhost:8088/wp-login.php?action=logout&_wpnonce=38ea1239f8
+    - main [ref=f8e280]:
+      - generic [ref=f8e281]:
+        - generic [ref=f8e282]:
+          - text: ¡
+          - link "WordPress 7.0.2" [ref=f8e283] [cursor=pointer]:
+            - /url: https://wordpress.org/support/wordpress-version/version-7-0-2/
+          - text: está disponible!
+          - link "Por favor actualiza WordPress ahora" [ref=f8e284] [cursor=pointer]:
+            - /url: http://localhost:8088/wp-admin/update-core.php
+            - text: Por favor actualiza ahora
+          - text: .
+        - generic [ref=f8e285]:
+          - heading "CalibraTrack — Configuración" [level=1] [ref=f8e286]
+          - paragraph [ref=f8e288]:
+            - strong [ref=f8e289]: "Programador de acciones:"
+            - text: "11"
+            - link "past-due action" [ref=f8e290] [cursor=pointer]:
+              - /url: http://localhost:8088/wp-admin/tools.php?page=action-scheduler&status=past-due&order=asc
+            - text: encontrados; algo podría estar mal.
+            - link "Leer documentación »" [ref=f8e291] [cursor=pointer]:
+              - /url: https://actionscheduler.org/faq/#my-site-has-past-due-actions-what-can-i-do
+          - generic [ref=f8e292]:
+            - heading "Datos de la empresa" [level=2] [ref=f8e293]
+            - text: Nombre
+            - textbox "Nombre" [ref=f8e294]: TrueTech SpA
+            - text: RUT
+            - textbox "RUT" [ref=f8e295]: 76.920.865-8
+            - text: Dirección
+            - textbox "Dirección" [ref=f8e296]: Almirante Pastene 185 of 910 Providencia
+            - text: Teléfono
+            - textbox "Teléfono" [ref=f8e297]: +562 2725 2000
+            - text: Logo
+            - button "Choose File" [ref=f8e299] [cursor=pointer]
+            - paragraph [ref=f8e300]: PNG recomendado. Sube una nueva para reemplazar la actual.
+            - text: Color primario (PDF)
+            - textbox "Color primario (PDF)" [ref=f8e301]: "#00aeef"
+            - paragraph [ref=f8e302]: Color de encabezado y bandas del certificado PDF.
+            - heading "Correo electrónico" [level=2] [ref=f8e303]
+            - text: Envío automático
+            - generic [ref=f8e304] [cursor=pointer]:
+              - checkbox "Enviar correo al cliente cuando se crea un nuevo evento" [checked] [ref=f8e305]
+              - text: Enviar correo al cliente cuando se crea un nuevo evento
+            - text: Correo remitente
+            - textbox "Correo remitente" [ref=f8e306]: contacto@truetech.cl
+            - paragraph [ref=f8e307]: Correo desde el que se envían los mensajes. Debe ser válido para evitar que caigan en spam.
+            - text: Copia al técnico
+            - generic [ref=f8e308] [cursor=pointer]:
+              - checkbox "Enviar copia (CC) al técnico responsable del evento" [checked] [ref=f8e309]
+              - text: Enviar copia (CC) al técnico responsable del evento
+            - text: Recordatorio de vencimiento al cliente
+            - generic [ref=f8e310] [cursor=pointer]:
+              - checkbox "Recordatorio de vencimiento al cliente Enviar correo automático al cliente antes del vencimiento" [checked] [ref=f8e311]
+              - text: Enviar correo automático al cliente antes del vencimiento
+            - text: Días de anticipación del recordatorio
+            - spinbutton "Días de anticipación del recordatorio" [ref=f8e312]: "30"
+            - paragraph [ref=f8e313]: "Días antes del vencimiento para enviar el recordatorio al cliente. Por defecto: 30."
+            - paragraph [ref=f8e314]:
+              - button "Guardar configuración" [ref=f8e315] [cursor=pointer]
+          - separator [ref=f8e316]
+          - heading "SMTP (correo saliente)" [level=2] [ref=f8e317]
+          - paragraph [ref=f8e318]: Para enviar correos desde entornos de hosting o Docker sin sendmail. Para Gmail usa smtp.gmail.com, puerto 587, cifrado TLS y una Contraseña de Aplicación de Google.
+          - generic [ref=f8e319]:
+            - text: Habilitar SMTP
+            - generic [ref=f8e320] [cursor=pointer]:
+              - checkbox "Usar servidor SMTP personalizado" [checked] [ref=f8e321]
+              - text: Usar servidor SMTP personalizado
+            - text: Servidor SMTP
+            - textbox "Servidor SMTP" [ref=f8e322]:
+              - /placeholder: smtp.gmail.com
+              - text: smtp.gmail.com
+            - text: Puerto
+            - spinbutton "Puerto" [ref=f8e323]: "587"
+            - text: Cifrado
+            - combobox "Cifrado" [ref=f8e324] [cursor=pointer]:
+              - option "TLS (STARTTLS — puerto 587)" [selected]
+              - option "SSL (SMTPS — puerto 465)"
+              - option "Ninguno"
+            - text: Usuario (correo)
+            - textbox "Usuario (correo)" [ref=f8e325]:
+              - /placeholder: tucuenta@gmail.com
+              - text: contacto@truetech.cl
+            - text: Contraseña / App Password
+            - textbox "Contraseña / App Password" [ref=f8e326]: contactoTT2020#
+            - paragraph [ref=f8e327]: "Para Gmail: genera una Contraseña de Aplicación en myaccount.google.com → Seguridad → Verificación en dos pasos → Contraseñas de aplicaciones."
+            - paragraph [ref=f8e328]:
+              - button "Guardar SMTP" [ref=f8e329] [cursor=pointer]
+          - separator [ref=f8e330]
+          - heading "Enviar correo de prueba" [level=3] [ref=f8e331]
+          - paragraph [ref=f8e332]: Verifica que el envío funciona antes de crear un evento real.
+          - text: Destinatario
+          - textbox "Destinatario" [ref=f8e333]:
+            - /placeholder: destino@ejemplo.com
+            - text: jvalenzuela303@gmail.com
+          - button "Enviar correo de prueba" [ref=f8e334] [cursor=pointer]
+  - contentinfo [ref=f8e335]:
+    - paragraph [ref=f8e336]:
+      - generic [ref=f8e337]:
+        - text: Gracias por crear con
+        - link "WordPress" [ref=f8e338] [cursor=pointer]:
+          - /url: https://wordpress.org/
+        - text: .
+    - paragraph [ref=f8e339]:
+      - strong [ref=f8e340]:
+        - link "Obtener Versión 7.0.2" [ref=f8e341] [cursor=pointer]:
+          - /url: http://localhost:8088/wp-admin/update-core.php
+  - text: 

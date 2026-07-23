@@ -1,0 +1,850 @@
+- generic [ref=f5e2]:
+  - navigation "Menú principal":
+    - link "Saltar al contenido principal" [ref=f5e3] [cursor=pointer]:
+      - /url: "#wpbody-content"
+    - link "Ir a la barra de herramientas" [ref=f5e4] [cursor=pointer]:
+      - /url: "#wp-toolbar"
+    - list [ref=f5e7]:
+      - listitem [ref=f5e8]:
+        - link "Escritorio" [ref=f5e9] [cursor=pointer]:
+          - /url: index.php
+          - generic [ref=f5e10]: 
+        - list [ref=f5e12]:
+          - listitem [ref=f5e13]:
+            - link "Inicio" [ref=f5e14] [cursor=pointer]:
+              - /url: index.php
+          - listitem [ref=f5e15]:
+            - link "Actualizaciones 11" [ref=f5e16] [cursor=pointer]:
+              - /url: update-core.php
+              - text: Actualizaciones
+              - generic [ref=f5e17]: "11"
+      - listitem [ref=f5e18]:
+        - link "Site Kit" [ref=f5e19] [cursor=pointer]:
+          - /url: admin.php?page=googlesitekit-splash
+        - list [ref=f5e22]:
+          - listitem [ref=f5e23]:
+            - link "Escritorio" [ref=f5e24] [cursor=pointer]:
+              - /url: admin.php?page=googlesitekit-splash
+      - listitem [ref=f5e25]:
+        - link "Flatsome" [ref=f5e26] [cursor=pointer]:
+          - /url: admin.php?page=flatsome-panel
+        - list [ref=f5e29]:
+          - listitem [ref=f5e30]:
+            - link "Flatsome" [ref=f5e31] [cursor=pointer]:
+              - /url: admin.php?page=flatsome-panel
+          - listitem [ref=f5e32]:
+            - link "Theme Registration" [ref=f5e33] [cursor=pointer]:
+              - /url: admin.php?page=flatsome-panel
+          - listitem [ref=f5e34]:
+            - link "Help & Guides" [ref=f5e35] [cursor=pointer]:
+              - /url: admin.php?page=flatsome-panel-support
+          - listitem [ref=f5e36]:
+            - link "Status" [ref=f5e37] [cursor=pointer]:
+              - /url: admin.php?page=flatsome-panel-status
+          - listitem [ref=f5e38]:
+            - link "Change log" [ref=f5e39] [cursor=pointer]:
+              - /url: admin.php?page=flatsome-panel-changelog
+          - listitem [ref=f5e40]:
+            - link "Theme Options" [ref=f5e41] [cursor=pointer]:
+              - /url: customize.php
+          - listitem [ref=f5e42]:
+            - link "Advanced" [ref=f5e43] [cursor=pointer]:
+              - /url: admin.php?page=optionsframework
+          - listitem [ref=f5e44]:
+            - link "Setup Wizard" [ref=f5e45] [cursor=pointer]:
+              - /url: admin.php?page=flatsome-setup
+      - listitem [ref=f5e46]
+      - listitem [ref=f5e48]:
+        - link "Entradas" [ref=f5e49] [cursor=pointer]:
+          - /url: edit.php
+          - generic [ref=f5e50]: 
+        - list [ref=f5e52]:
+          - listitem [ref=f5e53]:
+            - link "Todas las entradas" [ref=f5e54] [cursor=pointer]:
+              - /url: edit.php
+          - listitem [ref=f5e55]:
+            - link "Añadir entrada" [ref=f5e56] [cursor=pointer]:
+              - /url: post-new.php
+          - listitem [ref=f5e57]:
+            - link "Categorías" [ref=f5e58] [cursor=pointer]:
+              - /url: edit-tags.php?taxonomy=category
+          - listitem [ref=f5e59]:
+            - link "Etiquetas" [ref=f5e60] [cursor=pointer]:
+              - /url: edit-tags.php?taxonomy=post_tag
+      - listitem [ref=f5e61]:
+        - link "Portfolio" [ref=f5e62] [cursor=pointer]:
+          - /url: edit.php?post_type=featured_item
+          - generic [ref=f5e63]: 
+        - list [ref=f5e65]:
+          - listitem [ref=f5e66]:
+            - link "Portfolio" [ref=f5e67] [cursor=pointer]:
+              - /url: edit.php?post_type=featured_item
+          - listitem [ref=f5e68]:
+            - link "Add New" [ref=f5e69] [cursor=pointer]:
+              - /url: post-new.php?post_type=featured_item
+          - listitem [ref=f5e70]:
+            - link "Categories" [ref=f5e71] [cursor=pointer]:
+              - /url: edit-tags.php?taxonomy=featured_item_category&post_type=featured_item
+          - listitem [ref=f5e72]:
+            - link "Tags" [ref=f5e73] [cursor=pointer]:
+              - /url: edit-tags.php?taxonomy=featured_item_tag&post_type=featured_item
+      - listitem [ref=f5e74]:
+        - link "Medios" [ref=f5e75] [cursor=pointer]:
+          - /url: upload.php
+          - generic [ref=f5e76]: 
+        - list [ref=f5e78]:
+          - listitem [ref=f5e79]:
+            - link "Biblioteca" [ref=f5e80] [cursor=pointer]:
+              - /url: upload.php
+          - listitem [ref=f5e81]:
+            - link "Añadir archivo de medios" [ref=f5e82] [cursor=pointer]:
+              - /url: media-new.php
+      - listitem [ref=f5e83]:
+        - link "Páginas" [ref=f5e84] [cursor=pointer]:
+          - /url: edit.php?post_type=page
+          - generic [ref=f5e85]: 
+        - list [ref=f5e87]:
+          - listitem [ref=f5e88]:
+            - link "Todas las páginas" [ref=f5e89] [cursor=pointer]:
+              - /url: edit.php?post_type=page
+          - listitem [ref=f5e90]:
+            - link "Añadir página" [ref=f5e91] [cursor=pointer]:
+              - /url: post-new.php?post_type=page
+      - listitem [ref=f5e92]:
+        - link "UX Blocks" [ref=f5e93] [cursor=pointer]:
+          - /url: edit.php?post_type=blocks
+          - generic [ref=f5e94]: 
+        - list [ref=f5e96]:
+          - listitem [ref=f5e97]:
+            - link "UX Blocks" [ref=f5e98] [cursor=pointer]:
+              - /url: edit.php?post_type=blocks
+          - listitem [ref=f5e99]:
+            - link "Add New Block" [ref=f5e100] [cursor=pointer]:
+              - /url: post-new.php?post_type=blocks
+          - listitem [ref=f5e101]:
+            - link "Categorías" [ref=f5e102] [cursor=pointer]:
+              - /url: edit-tags.php?taxonomy=block_categories&post_type=blocks
+      - listitem [ref=f5e103]:
+        - link "Contacto" [ref=f5e104] [cursor=pointer]:
+          - /url: admin.php?page=wpcf7
+          - generic [ref=f5e105]: 
+        - list [ref=f5e107]:
+          - listitem [ref=f5e108]:
+            - link "Formularios de contacto" [ref=f5e109] [cursor=pointer]:
+              - /url: admin.php?page=wpcf7
+          - listitem [ref=f5e110]:
+            - link "Añadir formulario de contacto" [ref=f5e111] [cursor=pointer]:
+              - /url: admin.php?page=wpcf7-new
+          - listitem [ref=f5e112]:
+            - link "Integración" [ref=f5e113] [cursor=pointer]:
+              - /url: admin.php?page=wpcf7-integration
+      - listitem [ref=f5e114]:
+        - link "LoginPress" [ref=f5e115] [cursor=pointer]:
+          - /url: admin.php?page=loginpress-settings
+        - list [ref=f5e118]:
+          - listitem [ref=f5e119]:
+            - link "Ajustes" [ref=f5e120] [cursor=pointer]:
+              - /url: admin.php?page=loginpress-settings
+          - listitem [ref=f5e121]:
+            - link "Personalizador" [ref=f5e122] [cursor=pointer]:
+              - /url: admin.php?page=loginpress
+          - listitem [ref=f5e123]:
+            - link "Ayuda" [ref=f5e124] [cursor=pointer]:
+              - /url: admin.php?page=loginpress-help
+          - listitem [ref=f5e125]:
+            - link "Importar / Exportar" [ref=f5e126] [cursor=pointer]:
+              - /url: admin.php?page=loginpress-import-export
+          - listitem [ref=f5e127]:
+            - link "Extensiones" [ref=f5e128] [cursor=pointer]:
+              - /url: admin.php?page=loginpress-addons
+          - listitem [ref=f5e129]:
+            - link "Upgrade to Pro" [ref=f5e130] [cursor=pointer]:
+              - /url: https://loginpress.pro/pricing/?utm_source=loginpress-lite&utm_medium=admin-menu&utm_campaign=pro-upgrade&utm_content=Upgrade%20to%20Pro%20-%20fragmentos-de-codigo_page_wpcode-snippet-manager
+      - listitem [ref=f5e131]
+      - listitem [ref=f5e133]:
+        - link "WooCommerce" [ref=f5e134] [cursor=pointer]:
+          - /url: admin.php?page=wc-admin
+        - list [ref=f5e137]:
+          - listitem [ref=f5e138]:
+            - link "Inicio 1" [ref=f5e139] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin
+              - text: Inicio
+              - generic [ref=f5e140]: "1"
+          - listitem [ref=f5e141]:
+            - link "Pedidos 1" [ref=f5e142] [cursor=pointer]:
+              - /url: edit.php?post_type=shop_order
+              - text: Pedidos
+              - generic [ref=f5e143]: "1"
+          - listitem [ref=f5e144]:
+            - link "Clientes" [ref=f5e145] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/customers
+          - listitem [ref=f5e146]:
+            - link "Formulario de pago" [ref=f5e147] [cursor=pointer]:
+              - /url: admin.php?page=checkout_form_designer
+          - listitem [ref=f5e148]:
+            - link "Informes" [ref=f5e149] [cursor=pointer]:
+              - /url: admin.php?page=wc-reports
+          - listitem [ref=f5e150]:
+            - link "Ajustes" [ref=f5e151] [cursor=pointer]:
+              - /url: admin.php?page=wc-settings
+          - listitem [ref=f5e152]:
+            - link "Estado" [ref=f5e153] [cursor=pointer]:
+              - /url: admin.php?page=wc-status
+          - listitem [ref=f5e154]:
+            - link "Extensiones" [ref=f5e155] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/extensions
+      - listitem [ref=f5e156]:
+        - link "Productos" [ref=f5e157] [cursor=pointer]:
+          - /url: edit.php?post_type=product
+          - generic [ref=f5e158]: 
+        - list [ref=f5e160]:
+          - listitem [ref=f5e161]:
+            - link "Todos los productos" [ref=f5e162] [cursor=pointer]:
+              - /url: edit.php?post_type=product
+          - listitem [ref=f5e163]:
+            - link "Añadir un nuevo producto" [ref=f5e164] [cursor=pointer]:
+              - /url: post-new.php?post_type=product
+          - listitem [ref=f5e165]:
+            - link "Marcas" [ref=f5e166] [cursor=pointer]:
+              - /url: edit-tags.php?taxonomy=product_brand&post_type=product
+          - listitem [ref=f5e167]:
+            - link "Categorías" [ref=f5e168] [cursor=pointer]:
+              - /url: edit-tags.php?taxonomy=product_cat&post_type=product
+          - listitem [ref=f5e169]:
+            - link "Etiquetas" [ref=f5e170] [cursor=pointer]:
+              - /url: edit-tags.php?taxonomy=product_tag&post_type=product
+          - listitem [ref=f5e171]:
+            - link "Atributos" [ref=f5e172] [cursor=pointer]:
+              - /url: edit.php?post_type=product&page=product_attributes
+          - listitem [ref=f5e173]:
+            - link "Valoraciones" [ref=f5e174] [cursor=pointer]:
+              - /url: edit.php?post_type=product&page=product-reviews
+      - listitem [ref=f5e175]:
+        - link "Pagos" [ref=f5e176] [cursor=pointer]:
+          - /url: admin.php?page=wc-settings&tab=checkout&from=PAYMENTS_MENU_ITEM
+      - listitem [ref=f5e179]:
+        - link "WC Bulk Manager" [ref=f5e180] [cursor=pointer]:
+          - /url: admin.php?page=woocommerce-bulk-manager
+          - generic [ref=f5e181]: 
+        - list [ref=f5e183]:
+          - listitem [ref=f5e184]:
+            - link "Dashboard" [ref=f5e185] [cursor=pointer]:
+              - /url: admin.php?page=woocommerce-bulk-manager
+          - listitem [ref=f5e186]:
+            - link "Gestión de Precios" [ref=f5e187] [cursor=pointer]:
+              - /url: admin.php?page=wbm-prices
+          - listitem [ref=f5e188]:
+            - link "Gestión de Stock" [ref=f5e189] [cursor=pointer]:
+              - /url: admin.php?page=wbm-stock
+          - listitem [ref=f5e190]:
+            - link "Reglas de Precios" [ref=f5e191] [cursor=pointer]:
+              - /url: admin.php?page=wbm-rules
+          - listitem [ref=f5e192]:
+            - link "Importaciones" [ref=f5e193] [cursor=pointer]:
+              - /url: admin.php?page=wbm-import
+          - listitem [ref=f5e194]:
+            - link "Historial y Auditoría" [ref=f5e195] [cursor=pointer]:
+              - /url: admin.php?page=wbm-audit
+          - listitem [ref=f5e196]:
+            - link "Configuración" [ref=f5e197] [cursor=pointer]:
+              - /url: admin.php?page=wbm-settings
+          - listitem [ref=f5e198]:
+            - link "API REST" [ref=f5e199] [cursor=pointer]:
+              - /url: admin.php?page=wbm-api
+      - listitem [ref=f5e200]:
+        - link "Análisis" [ref=f5e201] [cursor=pointer]:
+          - /url: admin.php?page=wc-admin&path=/analytics/overview
+          - generic [ref=f5e202]: 
+        - list [ref=f5e204]:
+          - listitem [ref=f5e205]:
+            - link "Resumen" [ref=f5e206] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/analytics/overview
+          - listitem [ref=f5e207]:
+            - link "Productos" [ref=f5e208] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/analytics/products
+          - listitem [ref=f5e209]:
+            - link "Ingresos" [ref=f5e210] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/analytics/revenue
+          - listitem [ref=f5e211]:
+            - link "Pedidos" [ref=f5e212] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/analytics/orders
+          - listitem [ref=f5e213]:
+            - link "Variaciones" [ref=f5e214] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/analytics/variations
+          - listitem [ref=f5e215]:
+            - link "Categorías" [ref=f5e216] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/analytics/categories
+          - listitem [ref=f5e217]:
+            - link "Cupones" [ref=f5e218] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/analytics/coupons
+          - listitem [ref=f5e219]:
+            - link "Impuestos" [ref=f5e220] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/analytics/taxes
+          - listitem [ref=f5e221]:
+            - link "Descargas" [ref=f5e222] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/analytics/downloads
+          - listitem [ref=f5e223]:
+            - link "Inventario" [ref=f5e224] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/analytics/stock
+          - listitem [ref=f5e225]:
+            - link "Ajustes" [ref=f5e226] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/analytics/settings
+      - listitem [ref=f5e227]:
+        - link "Marketing" [ref=f5e228] [cursor=pointer]:
+          - /url: admin.php?page=wc-admin&path=/marketing
+          - generic [ref=f5e229]: 
+        - list [ref=f5e231]:
+          - listitem [ref=f5e232]:
+            - link "Resumen" [ref=f5e233] [cursor=pointer]:
+              - /url: admin.php?page=wc-admin&path=/marketing
+          - listitem [ref=f5e234]:
+            - link "Cupones" [ref=f5e235] [cursor=pointer]:
+              - /url: edit.php?post_type=shop_coupon
+      - listitem [ref=f5e236]
+      - listitem [ref=f5e238]:
+        - link "Apariencia" [ref=f5e239] [cursor=pointer]:
+          - /url: themes.php
+          - generic [ref=f5e240]: 
+        - list [ref=f5e242]:
+          - listitem [ref=f5e243]:
+            - link "Temas 3" [ref=f5e244] [cursor=pointer]:
+              - /url: themes.php
+              - text: Temas
+              - generic [ref=f5e245]: "3"
+          - listitem [ref=f5e246]:
+            - link "Diseño" [ref=f5e247] [cursor=pointer]:
+              - /url: site-editor.php
+          - listitem [ref=f5e248]:
+            - link "Personalizar" [ref=f5e249] [cursor=pointer]:
+              - /url: customize.php?return=%2Fwp-admin%2Fadmin.php%3Fpage%3Dwpcode-snippet-manager%26snippet_type%3Dphp
+          - listitem [ref=f5e250]:
+            - link "Widgets" [ref=f5e251] [cursor=pointer]:
+              - /url: widgets.php
+          - listitem [ref=f5e252]:
+            - link "Menús" [ref=f5e253] [cursor=pointer]:
+              - /url: nav-menus.php
+          - listitem [ref=f5e254]:
+            - link "LoginPress" [ref=f5e255] [cursor=pointer]:
+              - /url: themes.php?page=abw
+          - listitem [ref=f5e256]:
+            - link "Install Plugins" [ref=f5e257] [cursor=pointer]:
+              - /url: themes.php?page=tgmpa-install-plugins
+          - listitem [ref=f5e258]:
+            - link "Editor de archivos de temas" [ref=f5e259] [cursor=pointer]:
+              - /url: theme-editor.php
+      - listitem [ref=f5e260]:
+        - link "Plugins 6" [ref=f5e261] [cursor=pointer]:
+          - /url: plugins.php
+          - generic [ref=f5e262]: 
+          - generic [ref=f5e263]:
+            - text: Plugins
+            - generic [ref=f5e264]: "6"
+        - list [ref=f5e265]:
+          - listitem [ref=f5e266]:
+            - link "Plugins instalados" [ref=f5e267] [cursor=pointer]:
+              - /url: plugins.php
+          - listitem [ref=f5e268]:
+            - link "Añadir plugin" [ref=f5e269] [cursor=pointer]:
+              - /url: plugin-install.php
+          - listitem [ref=f5e270]:
+            - link "Editor de archivos de plugins" [ref=f5e271] [cursor=pointer]:
+              - /url: plugin-editor.php
+      - listitem [ref=f5e272]:
+        - link "Usuarios" [ref=f5e273] [cursor=pointer]:
+          - /url: users.php
+          - generic [ref=f5e274]: 
+        - list [ref=f5e276]:
+          - listitem [ref=f5e277]:
+            - link "Todos los usuarios" [ref=f5e278] [cursor=pointer]:
+              - /url: users.php
+          - listitem [ref=f5e279]:
+            - link "Añadir usuario" [ref=f5e280] [cursor=pointer]:
+              - /url: user-new.php
+          - listitem [ref=f5e281]:
+            - link "Perfil" [ref=f5e282] [cursor=pointer]:
+              - /url: profile.php
+      - listitem [ref=f5e283]:
+        - link "Herramientas" [ref=f5e284] [cursor=pointer]:
+          - /url: tools.php
+          - generic [ref=f5e285]: 
+        - list [ref=f5e287]:
+          - listitem [ref=f5e288]:
+            - link "Herramientas disponibles" [ref=f5e289] [cursor=pointer]:
+              - /url: tools.php
+          - listitem [ref=f5e290]:
+            - link "Importar" [ref=f5e291] [cursor=pointer]:
+              - /url: import.php
+          - listitem [ref=f5e292]:
+            - link "Exportar" [ref=f5e293] [cursor=pointer]:
+              - /url: export.php
+          - listitem [ref=f5e294]:
+            - link "Salud del sitio" [ref=f5e295] [cursor=pointer]:
+              - /url: site-health.php
+          - listitem [ref=f5e296]:
+            - link "Exportar los datos personales" [ref=f5e297] [cursor=pointer]:
+              - /url: export-personal-data.php
+          - listitem [ref=f5e298]:
+            - link "Borrar los datos personales" [ref=f5e299] [cursor=pointer]:
+              - /url: erase-personal-data.php
+          - listitem [ref=f5e300]:
+            - link "Scheduled Actions" [ref=f5e301] [cursor=pointer]:
+              - /url: tools.php?page=action-scheduler
+          - listitem [ref=f5e302]:
+            - link "Borrar comentarios" [ref=f5e303] [cursor=pointer]:
+              - /url: tools.php?page=disable_comments_tools
+      - listitem [ref=f5e304]:
+        - link "Ajustes" [ref=f5e305] [cursor=pointer]:
+          - /url: options-general.php
+          - generic [ref=f5e306]: 
+        - list [ref=f5e308]:
+          - listitem [ref=f5e309]:
+            - link "Generales" [ref=f5e310] [cursor=pointer]:
+              - /url: options-general.php
+          - listitem [ref=f5e311]:
+            - link "Escritura" [ref=f5e312] [cursor=pointer]:
+              - /url: options-writing.php
+          - listitem [ref=f5e313]:
+            - link "Lectura" [ref=f5e314] [cursor=pointer]:
+              - /url: options-reading.php
+          - listitem [ref=f5e315]:
+            - link "Medios" [ref=f5e316] [cursor=pointer]:
+              - /url: options-media.php
+          - listitem [ref=f5e317]:
+            - link "Enlaces permanentes" [ref=f5e318] [cursor=pointer]:
+              - /url: options-permalink.php
+          - listitem [ref=f5e319]:
+            - link "Privacidad" [ref=f5e320] [cursor=pointer]:
+              - /url: options-privacy.php
+          - listitem [ref=f5e321]:
+            - link "Nextend Social Login" [ref=f5e322] [cursor=pointer]:
+              - /url: options-general.php?page=nextend-social-login
+          - listitem [ref=f5e323]:
+            - link "Akismet Anti-spam" [ref=f5e324] [cursor=pointer]:
+              - /url: options-general.php?page=akismet-key-config
+          - listitem [ref=f5e325]:
+            - link "Google Analytics" [ref=f5e326] [cursor=pointer]:
+              - /url: options-general.php?page=ga-google-analytics
+          - listitem [ref=f5e327]:
+            - link "WP Super Cache" [ref=f5e328] [cursor=pointer]:
+              - /url: options-general.php?page=wpsupercache
+          - listitem [ref=f5e329]:
+            - link "Desactivar los comentarios" [ref=f5e330] [cursor=pointer]:
+              - /url: options-general.php?page=disable_comments_settings
+      - listitem [ref=f5e331]:
+        - link "Fragmentos de código" [ref=f5e332] [cursor=pointer]:
+          - /url: admin.php?page=wpcode
+        - list [ref=f5e335]:
+          - listitem [ref=f5e336]:
+            - link "Fragmentos de código" [ref=f5e337] [cursor=pointer]:
+              - /url: admin.php?page=wpcode
+          - listitem [ref=f5e338]:
+            - link "+ Añadir fragmento" [ref=f5e339] [cursor=pointer]:
+              - /url: admin.php?page=wpcode-snippet-manager
+          - listitem [ref=f5e340]:
+            - link "Cabecera y pie" [ref=f5e341] [cursor=pointer]:
+              - /url: admin.php?page=wpcode-headers-footers
+          - listitem [ref=f5e342]:
+            - link "Píxeles de conversión" [ref=f5e343] [cursor=pointer]:
+              - /url: admin.php?page=wpcode-pixel
+          - listitem [ref=f5e344]:
+            - link "Biblioteca" [ref=f5e345] [cursor=pointer]:
+              - /url: admin.php?page=wpcode-library
+          - listitem [ref=f5e346]:
+            - link "Editor de archivos" [ref=f5e347] [cursor=pointer]:
+              - /url: admin.php?page=wpcode-file-editor
+          - listitem [ref=f5e348]:
+            - link "Search & Replace" [ref=f5e349] [cursor=pointer]:
+              - /url: admin.php?page=wpcode-search-replace
+          - listitem [ref=f5e350]:
+            - link "Secure Backups" [ref=f5e351] [cursor=pointer]:
+              - /url: admin.php?page=wpcode-duplicator
+          - listitem [ref=f5e352]:
+            - link "Herramientas" [ref=f5e353] [cursor=pointer]:
+              - /url: admin.php?page=wpcode-tools
+          - listitem [ref=f5e354]:
+            - link "Ajustes" [ref=f5e355] [cursor=pointer]:
+              - /url: admin.php?page=wpcode-settings
+          - listitem [ref=f5e356]:
+            - link "Actualizar a Pro" [ref=f5e357] [cursor=pointer]:
+              - /url: https://wpcode.com/lite/?utm_source=liteplugin&utm_medium=fragmentos-de-codigo_page_wpcode-snippet-manager&utm_campaign=admin-side-menu
+      - listitem [ref=f5e358]:
+        - link "WP Mail SMTP" [ref=f5e359] [cursor=pointer]:
+          - /url: admin.php?page=wp-mail-smtp
+        - list [ref=f5e362]:
+          - listitem [ref=f5e363]:
+            - link "Ajustes" [ref=f5e364] [cursor=pointer]:
+              - /url: admin.php?page=wp-mail-smtp
+          - listitem [ref=f5e365]:
+            - link "Registro de correo electrónico" [ref=f5e366] [cursor=pointer]:
+              - /url: admin.php?page=wp-mail-smtp-logs
+          - listitem [ref=f5e367]:
+            - link "Informes de correo electrónico" [ref=f5e368] [cursor=pointer]:
+              - /url: admin.php?page=wp-mail-smtp-reports
+          - listitem [ref=f5e369]:
+            - link "Herramientas" [ref=f5e370] [cursor=pointer]:
+              - /url: admin.php?page=wp-mail-smtp-tools
+          - listitem [ref=f5e371]:
+            - link "Privacy Compliance" [ref=f5e372] [cursor=pointer]:
+              - /url: admin.php?page=wp-mail-smtp-recommended-wpconsent
+          - listitem [ref=f5e373]:
+            - link "Acerca de nosotros" [ref=f5e374] [cursor=pointer]:
+              - /url: admin.php?page=wp-mail-smtp-about
+          - listitem [ref=f5e375]:
+            - link "Actualizar a Pro" [ref=f5e376] [cursor=pointer]:
+              - /url: https://wpmailsmtp.com/lite-upgrade/?utm_source=WordPress&utm_medium=admin-menu&utm_campaign=liteplugin&utm_locale=es_es&utm_content=Upgrade%20to%20Pro%20-%20fragmentos-de-codigo_page_wpcode-snippet-manager
+      - listitem [ref=f5e377]
+      - listitem [ref=f5e379]:
+        - link "PixelYourSite" [ref=f5e380] [cursor=pointer]:
+          - /url: admin.php?page=pixelyoursite
+        - list [ref=f5e383]:
+          - listitem [ref=f5e384]:
+            - link "Dashboard" [ref=f5e385] [cursor=pointer]:
+              - /url: admin.php?page=pixelyoursite
+          - listitem [ref=f5e386]:
+            - link "Global Settings" [ref=f5e387] [cursor=pointer]:
+              - /url: admin.php?page=pixelyoursite_settings
+          - listitem [ref=f5e388]:
+            - link "Queue Settings PRO" [ref=f5e389] [cursor=pointer]:
+              - /url: admin.php?page=pixelyoursite_queue_settings
+          - listitem [ref=f5e390]:
+            - link "WooCommerce Reports" [ref=f5e391] [cursor=pointer]:
+              - /url: admin.php?page=pixelyoursite_woo_reports
+          - listitem [ref=f5e392]:
+            - link "UTM Builder" [ref=f5e393] [cursor=pointer]:
+              - /url: admin.php?page=pixelyoursite_utm
+          - listitem [ref=f5e394]:
+            - link "System Report" [ref=f5e395] [cursor=pointer]:
+              - /url: admin.php?page=pixelyoursite_report
+      - listitem [ref=f5e396]:
+        - link "Click to Chat" [ref=f5e397] [cursor=pointer]:
+          - /url: admin.php?page=click-to-chat
+        - list [ref=f5e400]:
+          - listitem [ref=f5e401]:
+            - link "Click to Chat" [ref=f5e402] [cursor=pointer]:
+              - /url: admin.php?page=click-to-chat
+          - listitem [ref=f5e403]:
+            - link "Greetings" [ref=f5e404] [cursor=pointer]:
+              - /url: admin.php?page=click-to-chat-greetings
+          - listitem [ref=f5e405]:
+            - link "WooCommerce" [ref=f5e406] [cursor=pointer]:
+              - /url: admin.php?page=click-to-chat-woocommerce
+          - listitem [ref=f5e407]:
+            - link "Customize" [ref=f5e408] [cursor=pointer]:
+              - /url: admin.php?page=click-to-chat-customize-styles
+          - listitem [ref=f5e409]:
+            - link "Other Settings" [ref=f5e410] [cursor=pointer]:
+              - /url: admin.php?page=click-to-chat-other-settings
+          - listitem [ref=f5e411]:
+            - link " Hazte Premium" [ref=f5e412] [cursor=pointer]:
+              - /url: https://holithemes.com/plugins/click-to-chat/pricing
+              - generic [ref=f5e413]: 
+              - generic [ref=f5e414]: Hazte Premium
+      - listitem [ref=f5e415]:
+        - link "Instagram Feed 1" [ref=f5e416] [cursor=pointer]:
+          - /url: admin.php?page=sbi-feed-builder
+          - generic [ref=f5e417]: 
+          - generic [ref=f5e418]:
+            - text: Instagram Feed
+            - generic [ref=f5e419]: "1"
+        - list [ref=f5e420]:
+          - listitem [ref=f5e421]:
+            - link "Todos los feeds" [ref=f5e422] [cursor=pointer]:
+              - /url: admin.php?page=sbi-feed-builder
+          - listitem [ref=f5e423]:
+            - link "Ajustes" [ref=f5e424] [cursor=pointer]:
+              - /url: admin.php?page=sbi-settings
+          - listitem
+          - listitem [ref=f5e425]:
+            - link "oEmbeds" [ref=f5e426] [cursor=pointer]:
+              - /url: admin.php?page=sbi-oembeds-manager
+          - listitem [ref=f5e427]:
+            - link "Sobre nosotros" [ref=f5e428] [cursor=pointer]:
+              - /url: admin.php?page=sbi-about-us
+          - listitem
+          - listitem [ref=f5e429]:
+            - link "Actualizar a Pro" [ref=f5e430] [cursor=pointer]:
+              - /url: https://smashballoon.com/instagram-feed/instagram-lite-upgrade/?utm_campaign=instagram-free&utm_source=menu-link&utm_medium=upgrade-link&utm_content=UpgradeToPro
+          - listitem [ref=f5e431]:
+            - link "Feeds de TikTok New!" [ref=f5e432] [cursor=pointer]:
+              - /url: admin.php?page=sbtt
+              - text: Feeds de TikTok
+              - generic [ref=f5e433]: New!
+          - listitem [ref=f5e434]:
+            - link "Reviews Feed" [ref=f5e435] [cursor=pointer]:
+              - /url: admin.php?page=sbr
+          - listitem [ref=f5e436]:
+            - link "Feed de Facebook" [ref=f5e437] [cursor=pointer]:
+              - /url: admin.php?page=cff-builder
+          - listitem [ref=f5e438]:
+            - link "Feed de Twitter" [ref=f5e439] [cursor=pointer]:
+              - /url: admin.php?page=sb-instagram-feed&tab=more
+          - listitem [ref=f5e440]:
+            - link "Feed de YouTube" [ref=f5e441] [cursor=pointer]:
+              - /url: admin.php?page=sb-instagram-feed&tab=more
+      - listitem [ref=f5e442]:
+        - button "Contraer el menú principal" [expanded] [ref=f5e443] [cursor=pointer]:
+          - generic [ref=f5e444]: 
+          - generic [ref=f5e445]: Cerrar menú
+  - generic [ref=f5e446]:
+    - generic [ref=f5e447]:
+      - navigation "Barra de herramientas":
+        - menu:
+          - group [ref=f5e448]:
+            - menuitem "Acerca de WordPress" [ref=f5e449] [cursor=pointer]:
+              - generic [ref=f5e450]: 
+          - group [ref=f5e452]:
+            - menuitem " True HiFi" [ref=f5e453] [cursor=pointer]
+          - group [ref=f5e454]:
+            - menuitem "Visible" [ref=f5e455] [cursor=pointer]
+          - group [ref=f5e456]:
+            - menuitem "Flatsome" [ref=f5e457] [cursor=pointer]
+            - text:                       
+          - group [ref=f5e461]:
+            - menuitem "11 actualizaciones disponibles" [ref=f5e462] [cursor=pointer]:
+              - generic [ref=f5e463]: 
+              - generic [ref=f5e464]: "11"
+          - group [ref=f5e466]:
+            - menuitem "Añadir" [ref=f5e467] [cursor=pointer]:
+              - generic [ref=f5e468]: 
+          - group [ref=f5e470]:
+            - menuitem "Vaciar la caché" [ref=f5e471] [cursor=pointer]
+          - group [ref=f5e472]:
+            - menuitem "WPCode" [ref=f5e473] [cursor=pointer]
+            - text: 
+        - menu [ref=f5e474]:
+          - group [ref=f5e475]:
+            - menuitem "Hola, admin" [ref=f5e476] [cursor=pointer]
+    - main [ref=f5e477]:
+      - generic [ref=f5e478]:
+        - generic [ref=f5e480]:
+          - paragraph [ref=f5e481]:
+            - strong [ref=f5e482]: Estás utilizando WPCode Lite
+            - text: . Para desbloquear más características, considera
+            - link "actualizar a Pro" [ref=f5e483] [cursor=pointer]:
+              - /url: https://wpcode.com/lite/?utm_source=liteplugin&utm_medium=top-notice&utm_campaign=snippets-list
+            - text: .
+          - button " Descartar este aviso." [ref=f5e484] [cursor=pointer]:
+            - text: 
+            - generic [ref=f5e485]: Descartar este aviso.
+        - generic [ref=f5e486]:
+          - generic [ref=f5e498]:
+            - button [ref=f5e500] [cursor=pointer]
+            - generic [ref=f5e503]:
+              - checkbox "Modo de pruebas" [ref=f5e505] [cursor=pointer]
+              - text: Modo de pruebas
+            - button [ref=f5e507] [cursor=pointer]
+            - button "Ayuda" [ref=f5e510] [cursor=pointer]
+          - heading "Añadir fragmento" [level=1] [ref=f5e515]
+        - generic [ref=f5e517]:
+          - paragraph [ref=f5e518]:
+            - text: NEW!
+            - link "¡Conéctate a la Biblioteca de WPCode" [ref=f5e519] [cursor=pointer]:
+              - /url: https://truehifi.cl/wp-admin/admin.php?page=wpcode-settings
+            - text: para acceder a
+            - strong [ref=f5e520]: 177 fragmentos GRATIS
+            - text: "!"
+          - button " Descartar este aviso." [ref=f5e521] [cursor=pointer]:
+            - text: 
+            - generic [ref=f5e522]: Descartar este aviso.
+        - generic [ref=f5e523]:
+          - generic [ref=f5e524]:
+            - button "Biblioteca de fragmentos de código" [ref=f5e525] [cursor=pointer]
+            - button "Generadores de fragmentos de código" [ref=f5e526] [cursor=pointer]
+            - button "Fragmentos de código de plugins" [ref=f5e527] [cursor=pointer]
+            - button "Mi biblioteca" [ref=f5e528] [cursor=pointer]
+          - generic [ref=f5e530]:
+            - generic [ref=f5e531]:
+              - text: Para acelerar el proceso, puedes seleccionar uno de nuestra biblioteca ya creado, o puedes comenzar con un
+              - link "fragmento de código en blanco" [ref=f5e532] [cursor=pointer]:
+                - /url: https://truehifi.cl/wp-admin/admin.php?page=wpcode-snippet-manager&custom=1
+              - text: "y"
+              - link "crear el tuyo propio" [ref=f5e533] [cursor=pointer]:
+                - /url: https://truehifi.cl/wp-admin/admin.php?page=wpcode-snippet-manager&custom=1
+              - text: . ¿Tienes alguna sugerencia para un nuevo fragmento de código?
+              - link "¡Nos encantaría escucharla!" [ref=f5e534] [cursor=pointer]:
+                - /url: https://wpcode.com/suggestions/?wpf78_8=Snippet+Request&utm_source=liteplugin&utm_medium=add-new&utm_campaign=suggestions
+            - generic [ref=f5e535]:
+              - generic [ref=f5e536]:
+                - generic [ref=f5e537]:
+                  - generic [ref=f5e538]: Búsqueda de fragmentos
+                  - searchbox "Búsqueda de fragmentos" [ref=f5e542]
+                - list [ref=f5e543]:
+                  - listitem [ref=f5e544]:
+                    - button "Todos los fragmentos 177" [ref=f5e545] [cursor=pointer]:
+                      - text: Todos los fragmentos
+                      - generic [ref=f5e546]: "177"
+                  - listitem [ref=f5e547]:
+                    - button "Fragmentos disponibles 67" [ref=f5e548] [cursor=pointer]:
+                      - text: Fragmentos disponibles
+                      - generic [ref=f5e549]: "67"
+                  - listitem [ref=f5e550]:
+                    - button "Most Popular 12" [ref=f5e551] [cursor=pointer]:
+                      - text: Most Popular
+                      - generic [ref=f5e552]: "12"
+                  - listitem [ref=f5e553]:
+                    - button "Admin 45" [ref=f5e554] [cursor=pointer]:
+                      - text: Admin
+                      - generic [ref=f5e555]: "45"
+                  - listitem [ref=f5e556]:
+                    - button "Archive 24" [ref=f5e557] [cursor=pointer]:
+                      - text: Archive
+                      - generic [ref=f5e558]: "24"
+                  - listitem [ref=f5e559]:
+                    - button "Attachments 18" [ref=f5e560] [cursor=pointer]:
+                      - text: Attachments
+                      - generic [ref=f5e561]: "18"
+                  - listitem [ref=f5e562]:
+                    - button "Comments 6" [ref=f5e563] [cursor=pointer]:
+                      - text: Comments
+                      - generic [ref=f5e564]: "6"
+                  - listitem [ref=f5e565]:
+                    - button "Disable 52" [ref=f5e566] [cursor=pointer]:
+                      - text: Disable
+                      - generic [ref=f5e567]: "52"
+                  - listitem [ref=f5e568]:
+                    - button "Login 11" [ref=f5e569] [cursor=pointer]:
+                      - text: Login
+                      - generic [ref=f5e570]: "11"
+                  - listitem [ref=f5e571]:
+                    - button "RSS Feeds 6" [ref=f5e572] [cursor=pointer]:
+                      - text: RSS Feeds
+                      - generic [ref=f5e573]: "6"
+                  - listitem [ref=f5e574]:
+                    - button "Widgets 12" [ref=f5e575] [cursor=pointer]:
+                      - text: Widgets
+                      - generic [ref=f5e576]: "12"
+                  - listitem [ref=f5e577]:
+                    - button "WP Mail SMTP 35" [ref=f5e578] [cursor=pointer]:
+                      - text: WP Mail SMTP
+                      - generic [ref=f5e579]: "35"
+              - list [ref=f5e581]:
+                - listitem [ref=f5e582]:
+                  - heading "Añade tu código personalizado (Nuevo fragmento de código)" [level=3] [ref=f5e583]
+                  - generic [ref=f5e584]:
+                    - paragraph [ref=f5e586]: Elige este fragmento en blanco para empezar desde cero y pega cualquier código personalizado o simplemente escribe el tuyo propio.
+                    - link "+ Añadir fragmento personalizado de código" [ref=f5e588] [cursor=pointer]:
+                      - /url: https://truehifi.cl/wp-admin/admin.php?page=wpcode-snippet-manager&custom=1
+                - listitem [ref=f5e589]:
+                  - heading "Generar fragmento de código utilizando IA" [level=3] [ref=f5e590]
+                  - generic [ref=f5e591]: pro
+                  - generic [ref=f5e592]:
+                    - paragraph [ref=f5e594]: Genera un nuevo fragmento de código específico para tus necesidades aprovechando la potencia de la integración de la IA de WPCode.
+                    - generic [ref=f5e595]:
+                      - link "+ Generar fragmento de código":
+                        - /url: "#"
+                - listitem [ref=f5e596]:
+                  - heading "Allow SVG Files Upload" [level=3] [ref=f5e597]
+                  - generic [ref=f5e598]:
+                    - paragraph [ref=f5e600]: Add support for SVG files to be uploaded in WordPress media.
+                    - generic [ref=f5e601]:
+                      - link "Utilizar fragmento de código" [ref=f5e602] [cursor=pointer]:
+                        - /url: https://truehifi.cl/wp-admin/admin.php?snippet_library_id=54&page=wpcode-library&_wpnonce=7e0bcd2873
+                      - button "Previsualizar" [ref=f5e603] [cursor=pointer]
+                - listitem [ref=f5e604]:
+                  - heading "Completely Disable Comments" [level=3] [ref=f5e605]
+                  - generic [ref=f5e606]: Usado
+                  - generic [ref=f5e607]:
+                    - paragraph [ref=f5e609]: Disable comments for all post types, in the admin and the frontend.
+                    - generic [ref=f5e610]:
+                      - link "Editar snippet" [ref=f5e611] [cursor=pointer]:
+                        - /url: https://truehifi.cl/wp-admin/admin.php?page=wpcode-snippet-manager&snippet_id=3794
+                      - button "Previsualizar" [ref=f5e612] [cursor=pointer]
+                - listitem [ref=f5e613]:
+                  - heading "Disable Attachment Pages" [level=3] [ref=f5e614]
+                  - generic [ref=f5e615]:
+                    - paragraph [ref=f5e617]: Hide the Attachment/Attachments pages on the frontend from all visitors.
+                    - generic [ref=f5e618]:
+                      - link "Utilizar fragmento de código" [ref=f5e619] [cursor=pointer]:
+                        - /url: https://truehifi.cl/wp-admin/admin.php?snippet_library_id=40&page=wpcode-library&_wpnonce=7e0bcd2873
+                      - button "Previsualizar" [ref=f5e620] [cursor=pointer]
+                - listitem [ref=f5e621]:
+                  - heading "Disable Automatic Updates" [level=3] [ref=f5e622]
+                  - generic [ref=f5e623]:
+                    - paragraph [ref=f5e625]: Use this snippet to completely disable automatic updates on your website.
+                    - generic [ref=f5e626]:
+                      - link "Utilizar fragmento de código" [ref=f5e627] [cursor=pointer]:
+                        - /url: https://truehifi.cl/wp-admin/admin.php?snippet_library_id=38&page=wpcode-library&_wpnonce=7e0bcd2873
+                      - button "Previsualizar" [ref=f5e628] [cursor=pointer]
+                - generic [ref=f5e629]:
+                  - generic [ref=f5e630]:
+                    - heading "Accede a nuestra biblioteca de 177 fragmentos GRATUITOS" [level=3] [ref=f5e631]
+                    - paragraph [ref=f5e632]: Conecta tu web con WPCode Library y obtén acceso instantáneo a fragmentos de código GRATUITOS escritos por nuestros expertos. Los fragmentos se pueden instalar con sólo 1 clic desde el interior del plugin y se configuran automáticamente para ahorrarte tiempo.
+                  - button "Conectar con la Biblioteca" [ref=f5e634] [cursor=pointer]
+                - listitem [ref=f5e635]:
+                  - heading "Disable Automatic Updates Emails" [level=3] [ref=f5e636]
+                  - generic [ref=f5e637]:
+                    - paragraph [ref=f5e639]: Stop getting emails about automatic updates on your WordPress site.
+                    - generic [ref=f5e640]:
+                      - link "Utilizar fragmento de código" [ref=f5e641] [cursor=pointer]:
+                        - /url: https://truehifi.cl/wp-admin/admin.php?snippet_library_id=39&page=wpcode-library&_wpnonce=7e0bcd2873
+                      - button "Previsualizar" [ref=f5e642] [cursor=pointer]
+                - listitem [ref=f5e643]:
+                  - heading "Disable Gutenberg Editor (use Classic Editor)" [level=3] [ref=f5e644]
+                  - generic [ref=f5e645]:
+                    - paragraph [ref=f5e647]: Switch back to the Classic Editor by disablling the Block Editor.
+                    - generic [ref=f5e648]:
+                      - link "Utilizar fragmento de código" [ref=f5e649] [cursor=pointer]:
+                        - /url: https://truehifi.cl/wp-admin/admin.php?snippet_library_id=14&page=wpcode-library&_wpnonce=7e0bcd2873
+                      - button "Previsualizar" [ref=f5e650] [cursor=pointer]
+                - listitem [ref=f5e651]:
+                  - heading "Disable The WP Admin Bar" [level=3] [ref=f5e652]
+                  - generic [ref=f5e653]:
+                    - paragraph [ref=f5e655]: Hide the WordPress Admin Bar for all users in the frontend.
+                    - generic [ref=f5e656]:
+                      - link "Utilizar fragmento de código" [ref=f5e657] [cursor=pointer]:
+                        - /url: https://truehifi.cl/wp-admin/admin.php?snippet_library_id=42&page=wpcode-library&_wpnonce=7e0bcd2873
+                      - button "Previsualizar" [ref=f5e658] [cursor=pointer]
+                - listitem [ref=f5e659]:
+                  - heading "Disable Widget Blocks (use Classic Widgets)" [level=3] [ref=f5e660]
+                  - generic [ref=f5e661]:
+                    - paragraph [ref=f5e663]: Use the classic interface instead of Blocks to manage Widgets.
+                    - generic [ref=f5e664]:
+                      - link "Utilizar fragmento de código" [ref=f5e665] [cursor=pointer]:
+                        - /url: https://truehifi.cl/wp-admin/admin.php?snippet_library_id=35&page=wpcode-library&_wpnonce=7e0bcd2873
+                      - button "Previsualizar" [ref=f5e666] [cursor=pointer]
+                - listitem [ref=f5e667]:
+                  - heading "Disable WordPress REST API" [level=3] [ref=f5e668]
+                  - generic [ref=f5e669]:
+                    - paragraph [ref=f5e671]: Easily disable the WP REST API on your website with this snippet.
+                    - generic [ref=f5e672]:
+                      - link "Utilizar fragmento de código" [ref=f5e673] [cursor=pointer]:
+                        - /url: https://truehifi.cl/wp-admin/admin.php?snippet_library_id=37&page=wpcode-library&_wpnonce=7e0bcd2873
+                      - button "Previsualizar" [ref=f5e674] [cursor=pointer]
+                - listitem [ref=f5e675]:
+                  - heading "Disable XML-RPC" [level=3] [ref=f5e676]
+                  - generic [ref=f5e677]:
+                    - paragraph [ref=f5e679]: On sites running WordPress 3.5+, disable XML-RPC completely.
+                    - generic [ref=f5e680]:
+                      - link "Utilizar fragmento de código" [ref=f5e681] [cursor=pointer]:
+                        - /url: https://truehifi.cl/wp-admin/admin.php?snippet_library_id=55&page=wpcode-library&_wpnonce=7e0bcd2873
+                      - button "Previsualizar" [ref=f5e682] [cursor=pointer]
+                - listitem [ref=f5e683]:
+                  - heading "Duplicate Post/Page Link" [level=3] [ref=f5e684]
+                  - generic [ref=f5e685]:
+                    - paragraph [ref=f5e687]: Duplicate posts, pages or any post type with 1-click by adding a duplicate link in...
+                    - button "Conéctate a la biblioteca para desbloquear esta opción (gratis)" [ref=f5e689] [cursor=pointer]
+                - listitem [ref=f5e692]:
+                  - heading "Remove WordPress Version Number" [level=3] [ref=f5e693]
+                  - generic [ref=f5e694]:
+                    - paragraph [ref=f5e696]: Hide the WordPress version number from your site's frontend and feeds.
+                    - generic [ref=f5e697]:
+                      - link "Utilizar fragmento de código" [ref=f5e698] [cursor=pointer]:
+                        - /url: https://truehifi.cl/wp-admin/admin.php?snippet_library_id=36&page=wpcode-library&_wpnonce=7e0bcd2873
+                      - button "Previsualizar" [ref=f5e699] [cursor=pointer]
+  - contentinfo [ref=f5e700]:
+    - paragraph [ref=f5e701]:
+      - generic [ref=f5e702]:
+        - text: Por favor, valora
+        - strong [ref=f5e703]: WPCode
+        - text: con
+        - link "★★★★★" [ref=f5e704] [cursor=pointer]:
+          - /url: https://wordpress.org/support/plugin/insert-headers-and-footers/reviews/?filter=5#new-post
+        - text: en
+        - link "WordPress.org" [ref=f5e705] [cursor=pointer]:
+          - /url: https://wordpress.org/support/plugin/insert-headers-and-footers/reviews/?filter=5#new-post
+        - text: para ayudarnos a hacer correr la voz. ¡Gracias del equipo de WPCode!
+    - paragraph [ref=f5e706]:
+      - strong [ref=f5e707]:
+        - link "Obtener la versión 7.0.1" [ref=f5e708] [cursor=pointer]:
+          - /url: https://truehifi.cl/wp-admin/update-core.php
+  - text: 

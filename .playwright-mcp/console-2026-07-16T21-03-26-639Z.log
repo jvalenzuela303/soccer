@@ -1,0 +1,3 @@
+[    6579ms] [LOG] JQMIGRATE: Migrate is installed, version 3.4.1 @ https://truehifi.cl/wp-admin/load-scripts.php?c=0&load%5Bchunk_0%5D=wp-hooks,jquery-core,jquery-migrate,utils&ver=6.8.5:6
+[    6654ms] [LOG] Schema Generator with Smart Tags initialized! @ https://truehifi.cl/wp-content/plugins/insert-headers-and-footers/build/admin.js?ver=99857d6cd5d968a94b8c:0
+[   16750ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://truehifi.cl/wp-admin/admin-ajax.php:0

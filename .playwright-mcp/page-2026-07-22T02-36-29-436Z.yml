@@ -1,0 +1,709 @@
+- generic [ref=f155e1]:
+  - generic [ref=f155e4]:
+    - banner "Panel de navegación superior" [ref=f155e6]:
+      - status
+      - generic [ref=f155e7]:
+        - button [expanded] [ref=f155e8] [cursor=pointer]:
+          - img [ref=f155e11]: menu
+        - heading [level=1] [ref=f155e13]:
+          - button "Google Ads – Ir a la página de inicio" [ref=f155e14]
+      - generic [ref=f155e25]:
+        - button "Buscar" [ref=f155e28] [cursor=pointer]:
+          - generic [ref=f155e30]:
+            - img [ref=f155e31]: search
+            - text: Buscar
+        - generic [ref=f155e33]:
+          - button "Diseño" [ref=f155e36] [cursor=pointer]:
+            - generic [ref=f155e38]:
+              - img [ref=f155e39]: responsive_layout
+              - text: Diseño
+          - button "Actualizar" [ref=f155e43] [cursor=pointer]:
+            - generic [ref=f155e45]:
+              - img [ref=f155e46]: refresh
+              - text: Actualizar
+          - button "Abrir el panel de ayuda rápida" [ref=f155e49] [cursor=pointer]:
+            - generic [ref=f155e50]:
+              - text: Ayuda
+              - generic [ref=f155e51]:
+                - img [ref=f155e52]: help_outline
+                - text: Ayuda
+          - button "Notificaciones" [ref=f155e59] [cursor=pointer]:
+            - generic [ref=f155e61]:
+              - img [ref=f155e64]: notifications
+              - generic [ref=f155e65]: Notificaciones
+      - button "Cuenta de Google" [ref=f155e72] [cursor=pointer]:
+        - img "Cuenta de Google (jvalenzuela303@gmail.com)" [ref=f155e73]
+    - generic [ref=f155e75]:
+      - generic [ref=f155e1123]:
+        - img [ref=f155e1125]: report_problem
+        - generic [ref=f155e1127]:
+          - status [ref=f155e1128]:
+            - generic [ref=f155e1129]: Revisa los objetivos de tu campaña - A partir del 17 de agosto del 2026, las campañas con objetivos de puja (por ejemplo, un objetivo de CPA o de ROAS) ofrecerán un rendimiento más uniforme cuando estén limitadas por el presupuesto, incluso después de ajustar el presupuesto. Revisa estas campañas para asegurarte de que los objetivos se ajusten a los tuyos. Los objetivos no se actualizarán automáticamente.
+          - generic [ref=f155e1132]:
+            - button "Revisar campañas" [ref=f155e1134] [cursor=pointer]
+            - button "Ocultar" [ref=f155e1138] [cursor=pointer]
+      - generic [ref=f155e76]:
+        - generic [ref=f155e78]:
+          - generic [ref=f155e79]:
+            - generic [ref=f155e80]:
+              - button "Crear" [ref=f155e82] [cursor=pointer]
+              - generic [ref=f155e87]: Crear
+            - menu [ref=f155e88]:
+              - menu [ref=f155e89]:
+                - menuitem "Campañas" [ref=f155e92] [cursor=pointer]:
+                  - generic [ref=f155e93]:
+                    - img [ref=f155e95]: campaign
+                    - generic [ref=f155e96]: Campañas
+                - menuitem "Objetivos" [ref=f155e99] [cursor=pointer]:
+                  - generic [ref=f155e100]:
+                    - img [ref=f155e102]: rewarded_ads
+                    - generic [ref=f155e103]: Objetivos
+                - menuitem "Herramientas" [ref=f155e106] [cursor=pointer]:
+                  - generic [ref=f155e107]:
+                    - img [ref=f155e109]: construction
+                    - generic [ref=f155e110]: Herramientas
+                - menuitem "Facturación" [ref=f155e113] [cursor=pointer]:
+                  - generic [ref=f155e114]:
+                    - img [ref=f155e116]: credit_card
+                    - generic [ref=f155e117]: Facturación
+                - menuitem "Administrador" [ref=f155e120] [cursor=pointer]:
+                  - generic [ref=f155e121]:
+                    - img [ref=f155e123]: settings
+                    - generic [ref=f155e124]: Administrador
+          - navigation [ref=f155e125]:
+            - menu [ref=f155e126]:
+              - generic [ref=f155e127]:
+                - menuitem "Vista general" [ref=f155e130] [cursor=pointer]
+                - menuitem "Recomendaciones" [ref=f155e136] [cursor=pointer]
+                - menuitem "Estadísticas e informes" [ref=f155e143] [cursor=pointer]:
+                  - generic [ref=f155e144]:
+                    - generic [ref=f155e145]: Estadísticas e informes
+                    - img [ref=f155e148]: expand_more
+                - menuitem "Campañas" [expanded] [ref=f155e151] [cursor=pointer]:
+                  - generic [ref=f155e152]:
+                    - generic [ref=f155e153]: Campañas
+                    - img [ref=f155e156]: expand_more
+                - generic [ref=f155e157]:
+                  - menuitem "Campañas" [ref=f155e160] [cursor=pointer]
+                  - menuitem "Grupos de anuncios" [ref=f155e166] [cursor=pointer]
+                  - menuitem "Anuncios" [ref=f155e172] [cursor=pointer]
+                  - menuitem "Experimentos" [ref=f155e178] [cursor=pointer]
+                  - menuitem "Grupos de campañas" [ref=f155e184] [cursor=pointer]
+                - menuitem "Recursos" [ref=f155e190] [cursor=pointer]:
+                  - generic [ref=f155e191]:
+                    - generic [ref=f155e192]: Recursos
+                    - img [ref=f155e195]: expand_more
+                - menuitem "Productos" [ref=f155e198] [cursor=pointer]:
+                  - generic [ref=f155e199]:
+                    - generic [ref=f155e200]: Productos
+                    - img [ref=f155e203]: expand_more
+                - menuitem "Audiencias, palabras clave y contenido" [ref=f155e206] [cursor=pointer]:
+                  - generic [ref=f155e207]:
+                    - generic [ref=f155e208]: Audiencias, palabras clave y contenido
+                    - img [ref=f155e211]: expand_more
+                - menuitem "Historial de cambios" [ref=f155e214] [cursor=pointer]
+        - generic [ref=f155e218]:
+          - generic [ref=f155e221]:
+            - button "Vista (2 filtros) Todas las campañas" [ref=f155e226] [cursor=pointer]:
+              - generic [ref=f155e227]:
+                - generic [ref=f155e228]: Vista (2 filtros)
+                - generic [ref=f155e229]:
+                  - img [ref=f155e232]: home
+                  - button "Todas las campañas" [ref=f155e233]
+              - img [ref=f155e235]: arrow_drop_down
+            - button "Campañas (5) Seleccionar una campaña" [ref=f155e240] [cursor=pointer]:
+              - generic [ref=f155e241]:
+                - generic [ref=f155e242]: Campañas (5)
+                - generic [ref=f155e243]: Seleccionar una campaña
+              - img [ref=f155e245]: arrow_drop_down
+          - group [ref=f155e249]:
+            - generic [ref=f155e250]:
+              - generic [ref=f155e251] [cursor=pointer]: Filtros
+              - generic: "Filtros aplicados:"
+              - grid "Filtros aplicados:" [ref=f155e252]:
+                - row [ref=f155e254] [cursor=pointer]:
+                  - gridcell [ref=f155e255]:
+                    - 'button "Estado de la campaña: Habilitado, pausado" [ref=f155e256]'
+                - row [ref=f155e258] [cursor=pointer]:
+                  - gridcell [ref=f155e259]:
+                    - 'button "Estado del grupo de anuncios: Habilitado, pausado" [ref=f155e260]'
+                - row [ref=f155e261]:
+                  - gridcell [ref=f155e262]:
+                    - combobox "Añadir filtro" [ref=f155e263]
+                    - status [ref=f155e264]
+              - button "Guardar" [ref=f155e267] [cursor=pointer]:
+                - generic [ref=f155e268]:
+                  - img [ref=f155e270]: save
+                  - generic [ref=f155e271]: Guardar
+          - generic [ref=f155e274]:
+            - generic [ref=f155e275]:
+              - generic [ref=f155e276]:
+                - generic [ref=f155e278]:
+                  - heading "Campañas" [level=2] [ref=f155e279]
+                  - button "Vista (2 filtros) Todas las campañas" [ref=f155e1289] [cursor=pointer]:
+                    - generic [ref=f155e1291]:
+                      - generic [ref=f155e1292]: Vista (2 filtros)
+                      - generic [ref=f155e1293]:
+                        - img [ref=f155e1296]: home
+                        - generic [ref=f155e1297]: Todas las campañas
+                - generic [ref=f155e282]:
+                  - generic [ref=f155e284] [cursor=pointer]:
+                    - generic [ref=f155e285]: Personalizado
+                    - generic [ref=f155e287]:
+                      - button "24 jun – 21 jul de 2026 No aplicable" [ref=f155e289]:
+                        - generic [ref=f155e290]: 24 jun – 21 jul de 2026
+                        - img [ref=f155e292]: arrow_drop_down
+                      - generic [ref=f155e293]:
+                        - button "Anterior" [ref=f155e294]:
+                          - img [ref=f155e297]: chevron_left
+                        - button "Siguiente" [disabled]:
+                          - generic:
+                            - generic:
+                              - img: chevron_right
+                  - button "Mostrar últimos 30 días" [ref=f155e299] [cursor=pointer]
+              - tablist [ref=f155e305]:
+                - tab "Campañas" [selected] [ref=f155e306] [cursor=pointer]
+                - tab "Borradores" [ref=f155e309] [cursor=pointer]
+                - tab "Configuración" [ref=f155e312] [cursor=pointer]
+            - main [ref=f155e320]:
+              - generic [ref=f155e322]:
+                - generic [ref=f155e326]:
+                  - generic [ref=f155e330]:
+                    - generic [ref=f155e334]:
+                      - generic [ref=f155e335]:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic [ref=f155e342]:
+                                    - generic [ref=f155e343]: Impresiones
+                                    - generic [ref=f155e344]: "129.926"
+                                    - generic [ref=f155e1141]:
+                                      - img [ref=f155e1143]: arrow_downward
+                                      - text: "-30.247"
+                                    - 'button "Impresiones: 129.926 en este periodo. Ocultar esta métrica en el gráfico. Se contabiliza una impresión cada vez que tu anuncio se publica en las redes publicitarias de Google, como Google.com, YouTube o sitios web y aplicaciones de otros editores. Las impresiones ayudan a determinar con qué frecuencia se ve el anuncio.. La métrica Impresiones ha variado un -30.247 (-18,88 %) en comparación con el periodo anterior.. ." [ref=f155e1144] [cursor=pointer]'
+                                  - generic [ref=f155e349]:
+                                    - generic [ref=f155e350]: Coste
+                                    - generic [ref=f155e351]: 2.122.536 CLP
+                                    - generic [ref=f155e1145]:
+                                      - img [ref=f155e1147]: arrow_downward
+                                      - text: "-14.838 CLP"
+                                    - 'button "Coste: 2.122.536 CLP. Mostrar esta métrica en el gráfico. El coste corresponde a la suma de los gastos durante este periodo.. La métrica Coste ha variado un -14.838 CLP (-0,69 %) en comparación con el periodo anterior.. ." [ref=f155e1148] [cursor=pointer]'
+                                  - generic [ref=f155e356]:
+                                    - generic [ref=f155e357]: Valor de conv.
+                                    - generic [ref=f155e358]: 3.898.744,92
+                                    - generic [ref=f155e1149]:
+                                      - img [ref=f155e1151]: arrow_downward
+                                      - text: "-355.513,19"
+                                    - 'button "Valor de conv.: 3.898.744,92. Mostrar esta métrica en el gráfico. El valor de conversión (Valor de conv.) indica la suma de los valores de todas tus conversiones. Esta métrica resulta útil únicamente si has introducido un valor para las acciones de conversión.. La métrica Valor de conv. ha variado un -355.513,19 (-8,36 %) en comparación con el periodo anterior.. ." [ref=f155e1152] [cursor=pointer]'
+                                  - generic [ref=f155e363]:
+                                    - generic [ref=f155e364]: Conversiones
+                                    - generic [ref=f155e365]: 4.212,24
+                                    - generic [ref=f155e1153]:
+                                      - img [ref=f155e1155]: arrow_downward
+                                      - text: "-514,65"
+                                    - 'button "Conversiones: 4.212,24. Mostrar esta métrica en el gráfico. \"Conversiones\" indica el número de conversiones recibidas después de que los usuarios hayan interactuado con sus anuncios; por ejemplo, después de que hayan hecho clic en un anuncio de texto o hayan visto uno de vídeo. Las conversiones recibidas proceden de todas las acciones que haya incluido en esta columna.. La métrica Conversiones ha variado un -514,65 (-10,89 %) en comparación con el periodo anterior.. ." [ref=f155e1156] [cursor=pointer]'
+                                - button [ref=f155e369] [cursor=pointer]:
+                                  - img [ref=f155e372]: chevron_right
+                        - generic [ref=f155e375]:
+                          - button "Indicadores" [ref=f155e376] [cursor=pointer]:
+                            - generic [ref=f155e378]:
+                              - img [ref=f155e380]: add_chart
+                              - generic [ref=f155e381]: Indicadores
+                          - button "3 Ajustar" [ref=f155e385] [cursor=pointer]:
+                            - generic [ref=f155e387]:
+                              - img [ref=f155e389]: tune
+                              - generic [ref=f155e390]: "3"
+                              - generic [ref=f155e391]: Ajustar
+                          - button "Descargar" [ref=f155e394] [cursor=pointer]:
+                            - generic [ref=f155e396]:
+                              - img [ref=f155e398]: file_download
+                              - generic [ref=f155e399]: Descargar
+                          - button "Mostrar gráfico" [ref=f155e401] [cursor=pointer]:
+                            - generic [ref=f155e402]:
+                              - img [ref=f155e404]: fullscreen
+                              - generic [ref=f155e405]: Ampliar
+                      - application [ref=f155e409]:
+                        - generic [ref=f155e410]: Gráfico de barras en el que se muestran Impresiones correspondientes a 24 jun – 21 jul de 2026. Usa las teclas de flecha para desplazarte.
+                    - generic [ref=f155e1160]:
+                      - generic [ref=f155e1161]:
+                        - generic [ref=f155e1163]: Optimizar los presupuestos
+                        - button "+1,1 %" [ref=f155e1165] [cursor=pointer]
+                        - button "Más opciones" [ref=f155e1167] [cursor=pointer]:
+                          - img [ref=f155e1170]: more_vert
+                      - generic [ref=f155e1173]:
+                        - paragraph [ref=f155e1174]: Has perdido valor de conversión porque tu campaña está limitada por el presupuesto. Aumentar el presupuesto puede generar más valor de conversión sin superar el objetivo.
+                        - paragraph [ref=f155e1176]:
+                          - text: Te hacemos esta recomendación porque perdiste tráfico potencial la semana pasada según los datos de las subastas de anuncios en las que has participado
+                          - button "Más información" [ref=f155e1177] [cursor=pointer]:
+                            - img [ref=f155e1179]: help_outline
+                      - generic [ref=f155e1181]:
+                        - button "Ver" [ref=f155e1182] [cursor=pointer]
+                        - button "Crear estrategia de inversión" [ref=f155e1185] [cursor=pointer]
+                  - region "Menú de herramientas principal de Campañas" [ref=f155e416]:
+                    - generic [ref=f155e417]:
+                      - button "Crear campaña" [ref=f155e421] [cursor=pointer]:
+                        - img [ref=f155e424]: add
+                      - generic [ref=f155e428] [cursor=pointer]:
+                        - group:
+                          - generic [ref=f155e429]:
+                            - generic [ref=f155e430]:
+                              - generic:
+                                - img: filter_alt
+                            - grid
+                        - button "Añadir filtro" [ref=f155e432]
+                    - generic [ref=f155e435]:
+                      - search [ref=f155e438] [cursor=pointer]:
+                        - button "Buscar" [ref=f155e441]:
+                          - generic [ref=f155e442]:
+                            - img [ref=f155e444]: search
+                            - generic [ref=f155e445]: Buscar
+                      - button "Segmento. Segmentación desactivada" [ref=f155e451] [cursor=pointer]:
+                        - generic [ref=f155e452]:
+                          - img [ref=f155e454]: segment
+                          - generic [ref=f155e455]: Segmento
+                      - button "Columnas" [ref=f155e461] [cursor=pointer]:
+                        - generic [ref=f155e462]:
+                          - img [ref=f155e464]: view_column
+                          - generic [ref=f155e465]: Columnas
+                      - button "Informes" [ref=f155e471] [cursor=pointer]:
+                        - generic [ref=f155e472]:
+                          - img [ref=f155e474]: assessment
+                          - generic [ref=f155e475]: Informes
+                      - button "Descargar" [ref=f155e481] [cursor=pointer]:
+                        - generic [ref=f155e482]:
+                          - img [ref=f155e484]: file_download
+                          - generic [ref=f155e485]: Descargar
+                      - button "Ampliar" [ref=f155e491] [cursor=pointer]:
+                        - generic [ref=f155e492]:
+                          - img [ref=f155e494]: fullscreen
+                          - generic [ref=f155e495]: Ampliar
+                      - button "Más opciones" [ref=f155e501] [cursor=pointer]:
+                        - generic [ref=f155e502]:
+                          - img [ref=f155e504]: more_vert
+                          - generic [ref=f155e505]: Más
+                      - button "Ocultar gráfico" [ref=f155e514] [cursor=pointer]:
+                        - img [ref=f155e517]: keyboard_arrow_up
+                  - generic [ref=f155e519]:
+                    - grid "Campañas" [ref=f155e522]:
+                      - row [ref=f155e523]:
+                        - gridcell [ref=f155e524]:
+                          - checkbox "Seleccionar todas las filas" [ref=f155e526] [cursor=pointer]
+                        - columnheader [ref=f155e529] [cursor=pointer]:
+                          - img "Estado de la campaña" [ref=f155e530]
+                        - columnheader "Campaña" [ref=f155e531] [cursor=pointer]
+                        - columnheader "Presupuesto" [ref=f155e532] [cursor=pointer]:
+                          - text: Presupuesto
+                          - img [ref=f155e534]: help_outline
+                        - columnheader "Estado" [ref=f155e535] [cursor=pointer]:
+                          - text: Estado
+                          - img [ref=f155e537]: help_outline
+                        - columnheader "Coste" [ref=f155e538] [cursor=pointer]:
+                          - text: Coste
+                          - img [ref=f155e540]: help_outline
+                        - columnheader "Clics" [ref=f155e541] [cursor=pointer]:
+                          - text: Clics
+                          - img [ref=f155e543]: help_outline
+                        - columnheader "CPC medio" [ref=f155e544] [cursor=pointer]:
+                          - text: CPC medio
+                          - img [ref=f155e546]: help_outline
+                        - columnheader "Conversiones" [ref=f155e547] [cursor=pointer]:
+                          - text: Conversiones
+                          - img [ref=f155e549]: help_outline
+                        - columnheader "Coste/conv." [ref=f155e550] [cursor=pointer]:
+                          - text: Coste/conv.
+                          - img [ref=f155e552]: help_outline
+                        - columnheader "Tasa de conversión" [ref=f155e553] [cursor=pointer]:
+                          - text: Tasa de conversión
+                          - img [ref=f155e555]: help_outline
+                        - columnheader "Valor de conv." [ref=f155e556] [cursor=pointer]:
+                          - text: Valor de conv.
+                          - img [ref=f155e558]: help_outline
+                        - columnheader "Valor conv./coste" [ref=f155e559] [cursor=pointer]:
+                          - text: Valor conv./coste
+                          - img [ref=f155e561]: help_outline
+                        - columnheader "Todas las conversiones" [ref=f155e562] [cursor=pointer]:
+                          - text: Todas las conversiones
+                          - img [ref=f155e564]: help_outline
+                      - row [ref=f155e565]:
+                        - gridcell [ref=f155e566]
+                        - gridcell [ref=f155e567]:
+                          - button [ref=f155e569] [cursor=pointer]:
+                            - img "Mostrar fila" [ref=f155e570]: expand_more
+                          - generic:
+                            - generic "Desconocido"
+                        - 'gridcell "Borradores en curso: 0" [ref=f155e571]':
+                          - generic [ref=f155e574]:
+                            - generic [ref=f155e575]: "Borradores en curso:"
+                            - generic [ref=f155e576]: "0"
+                        - gridcell [ref=f155e577]
+                        - gridcell [ref=f155e578]
+                        - gridcell [ref=f155e579]
+                        - gridcell [ref=f155e580]
+                        - gridcell [ref=f155e581]
+                        - gridcell [ref=f155e582]
+                        - gridcell [ref=f155e583]
+                        - gridcell [ref=f155e584]
+                        - gridcell [ref=f155e585]
+                        - gridcell [ref=f155e586]
+                        - gridcell [ref=f155e587]
+                      - row [ref=f155e1188]:
+                        - gridcell [ref=f155e589]:
+                          - checkbox "Seleccionar fila" [ref=f155e591] [cursor=pointer]
+                        - gridcell [ref=f155e594]:
+                          - img "Habilitado" [ref=f155e596]
+                        - gridcell "Venta Instrumentos Editar nombre Editar configuración" [ref=f155e597]:
+                          - generic [ref=f155e599]: Venta Instrumentos
+                          - generic [ref=f155e602]:
+                            - button "Editar nombre" [ref=f155e603] [cursor=pointer]
+                            - button "Editar configuración" [ref=f155e608] [cursor=pointer]:
+                              - img [ref=f155e611]: settings
+                        - gridcell "78.000 CLP/día Simulador de objetivos de campaña" [ref=f155e613]:
+                          - generic [ref=f155e614]: 78.000 CLP/día
+                          - button "Simulador de objetivos de campaña" [ref=f155e620] [cursor=pointer]
+                        - gridcell "Apto" [ref=f155e1189]
+                        - gridcell "1.925.279 CLP" [ref=f155e625]
+                        - gridcell "3.974" [ref=f155e628]
+                        - gridcell "484 CLP" [ref=f155e631]
+                        - gridcell "4.180,04" [ref=f155e635]
+                        - gridcell "461 CLP" [ref=f155e639]
+                        - gridcell "105,18 %" [ref=f155e643]
+                        - gridcell "3.868.894,13" [ref=f155e647]
+                        - gridcell "2,01" [ref=f155e651]
+                        - gridcell "4.189,54" [ref=f155e655]
+                      - row [ref=f155e1210]:
+                        - gridcell [ref=f155e660]:
+                          - checkbox "Seleccionar fila" [ref=f155e662] [cursor=pointer]
+                        - gridcell [ref=f155e665]:
+                          - img "Habilitado" [ref=f155e667]
+                        - gridcell "Website traffic-Search-Bodet Editar nombre Editar configuración" [ref=f155e668]:
+                          - generic [ref=f155e670]: Website traffic-Search-Bodet
+                          - generic [ref=f155e673]:
+                            - button "Editar nombre" [ref=f155e674] [cursor=pointer]
+                            - button "Editar configuración" [ref=f155e679] [cursor=pointer]:
+                              - img [ref=f155e682]: settings
+                        - gridcell "4.900 CLP/día" [ref=f155e684]
+                        - gridcell [ref=f155e1211]:
+                          - button "Limitada por el presupuesto" [ref=f155e1214] [cursor=pointer]
+                        - gridcell "130.677 CLP" [ref=f155e696]
+                        - gridcell "405" [ref=f155e699]
+                        - gridcell "323 CLP" [ref=f155e702]
+                        - gridcell "20,20" [ref=f155e706]
+                        - gridcell "6.469 CLP" [ref=f155e710]
+                        - gridcell "4,99 %" [ref=f155e714]
+                        - gridcell "18.745,57" [ref=f155e718]
+                        - gridcell "0,14" [ref=f155e722]
+                        - gridcell "20,20" [ref=f155e726]
+                      - row [ref=f155e1234]:
+                        - gridcell [ref=f155e731]:
+                          - checkbox "Seleccionar fila" [ref=f155e733] [cursor=pointer]
+                        - gridcell [ref=f155e736]:
+                          - img "Habilitado" [ref=f155e738]
+                        - gridcell "Ley de ductos (Trafico Web) Editar nombre Editar configuración" [ref=f155e739]:
+                          - generic [ref=f155e741]: Ley de ductos (Trafico Web)
+                          - generic [ref=f155e744]:
+                            - button "Editar nombre" [ref=f155e745] [cursor=pointer]
+                            - button "Editar configuración" [ref=f155e750] [cursor=pointer]:
+                              - img [ref=f155e753]: settings
+                        - gridcell "2.500 CLP/día" [ref=f155e755]
+                        - gridcell [ref=f155e1235]:
+                          - button "Limitada por el presupuesto" [ref=f155e1238] [cursor=pointer]
+                        - gridcell "66.579 CLP" [ref=f155e767]
+                        - gridcell "46" [ref=f155e770]
+                        - gridcell "1.447 CLP" [ref=f155e773]
+                        - gridcell "12,00" [ref=f155e777]
+                        - gridcell "5.548 CLP" [ref=f155e781]
+                        - gridcell "26,09 %" [ref=f155e785]
+                        - gridcell "11.105,22" [ref=f155e789]
+                        - gridcell "0,17" [ref=f155e793]
+                        - gridcell "12,00" [ref=f155e797]
+                      - row [ref=f155e1258]:
+                        - gridcell [ref=f155e802]:
+                          - checkbox "Seleccionar fila" [ref=f155e804] [cursor=pointer]
+                        - gridcell [ref=f155e807]:
+                          - img "En pausa" [ref=f155e809]
+                        - gridcell "Sincronismo Editar nombre Editar configuración" [ref=f155e810]:
+                          - generic [ref=f155e812]: Sincronismo
+                          - generic [ref=f155e815]:
+                            - button "Editar nombre" [ref=f155e816] [cursor=pointer]
+                            - button "Editar configuración" [ref=f155e821] [cursor=pointer]:
+                              - img [ref=f155e824]: settings
+                        - gridcell "3.500 CLP/día" [ref=f155e826]
+                        - gridcell "En pausa" [ref=f155e1259]
+                        - gridcell "0 CLP" [ref=f155e838]
+                        - gridcell "0" [ref=f155e841]
+                        - gridcell "—" [ref=f155e844]
+                        - gridcell "0,00" [ref=f155e848]
+                        - gridcell "0 CLP" [ref=f155e852]
+                        - gridcell "0,00 %" [ref=f155e856]
+                        - gridcell "0,00" [ref=f155e860]
+                        - gridcell "0,00" [ref=f155e864]
+                        - gridcell "0,00" [ref=f155e868]
+                      - row [ref=f155e1265]:
+                        - gridcell [ref=f155e873]:
+                          - checkbox "Seleccionar fila" [ref=f155e875] [cursor=pointer]
+                        - gridcell [ref=f155e878]:
+                          - img "En pausa" [ref=f155e880]
+                        - gridcell "Truehifi Editar nombre Editar configuración" [ref=f155e881]:
+                          - generic [ref=f155e883]: Truehifi
+                          - generic [ref=f155e886]:
+                            - button "Editar nombre" [ref=f155e887] [cursor=pointer]
+                            - button "Editar configuración" [ref=f155e892] [cursor=pointer]:
+                              - img [ref=f155e895]: settings
+                        - gridcell "500 CLP/día" [ref=f155e897]
+                        - gridcell "En pausa" [ref=f155e1266]
+                        - gridcell "0 CLP" [ref=f155e909]
+                        - gridcell "0" [ref=f155e912]
+                        - gridcell "—" [ref=f155e915]
+                        - gridcell "0,00" [ref=f155e919]
+                        - gridcell "0 CLP" [ref=f155e923]
+                        - gridcell "0,00 %" [ref=f155e927]
+                        - gridcell "0,00" [ref=f155e931]
+                        - gridcell "0,00" [ref=f155e935]
+                        - gridcell "0,00" [ref=f155e939]
+                      - 'row "Total: todas las campañas de tu vista actual, excepto las retiradas Más información 2.122.536 CLP 4.425 480 CLP 4.212,24 504 CLP 95,19 % 3.898.744,92 1,84 4.221,74" [ref=f155e943]':
+                        - gridcell [ref=f155e944]
+                        - gridcell [ref=f155e945]:
+                          - button [ref=f155e947] [cursor=pointer]:
+                            - img [ref=f155e948]: expand_more
+                        - 'gridcell "Total: todas las campañas de tu vista actual, excepto las retiradas Más información"':
+                          - generic [ref=f155e949]:
+                            - generic [ref=f155e950]: "Total: todas las campañas de tu vista actual, excepto las retiradas"
+                            - button "Más información" [ref=f155e952] [cursor=pointer]:
+                              - img [ref=f155e954]: help_outline
+                        - gridcell [ref=f155e955]
+                        - gridcell [ref=f155e956]
+                        - gridcell [ref=f155e958]
+                        - gridcell "2.122.536 CLP" [ref=f155e959]
+                        - gridcell "4.425" [ref=f155e962]
+                        - gridcell "480 CLP" [ref=f155e965]
+                        - gridcell "4.212,24" [ref=f155e969]
+                        - gridcell "504 CLP" [ref=f155e973]
+                        - gridcell "95,19 %" [ref=f155e977]
+                        - gridcell "3.898.744,92" [ref=f155e981]
+                        - gridcell "1,84" [ref=f155e985]
+                        - gridcell "4.221,74" [ref=f155e989]
+                      - 'row "Ocultar fila Total: cuenta Más información 85.400 CLP/día 2.122.536 CLP 4.425 480 CLP 4.212,24 504 CLP 95,19 % 3.898.744,92 1,84 4.221,74" [ref=f155e993]':
+                        - gridcell [ref=f155e994]
+                        - gridcell [ref=f155e995]:
+                          - button [expanded] [ref=f155e997] [cursor=pointer]:
+                            - img "Ocultar fila" [ref=f155e998]: expand_more
+                        - 'gridcell "Total: cuenta Más información"':
+                          - generic [ref=f155e999]:
+                            - generic [ref=f155e1000]: "Total: cuenta"
+                            - button "Más información" [ref=f155e1002] [cursor=pointer]:
+                              - img [ref=f155e1004]: help_outline
+                        - gridcell [ref=f155e1005]
+                        - gridcell "85.400 CLP/día" [ref=f155e1006]
+                        - gridcell [ref=f155e1012]
+                        - gridcell "2.122.536 CLP" [ref=f155e1013]
+                        - gridcell "4.425" [ref=f155e1016]
+                        - gridcell "480 CLP" [ref=f155e1019]
+                        - gridcell "4.212,24" [ref=f155e1023]
+                        - gridcell "504 CLP" [ref=f155e1027]
+                        - gridcell "95,19 %" [ref=f155e1031]
+                        - gridcell "3.898.744,92" [ref=f155e1035]
+                        - gridcell "1,84" [ref=f155e1039]
+                        - gridcell "4.221,74" [ref=f155e1043]
+                      - 'row "Total: campañas de búsqueda Más información 2.122.536 CLP 4.425 480 CLP 4.212,24 504 CLP 95,19 % 3.898.744,92 1,84 4.221,74" [ref=f155e1047]':
+                        - gridcell [ref=f155e1048]
+                        - gridcell [ref=f155e1049]:
+                          - button [ref=f155e1051] [cursor=pointer]:
+                            - img [ref=f155e1052]: expand_more
+                        - 'gridcell "Total: campañas de búsqueda Más información"':
+                          - generic [ref=f155e1053]:
+                            - generic [ref=f155e1054]: "Total: campañas de búsqueda"
+                            - button "Más información" [ref=f155e1056] [cursor=pointer]:
+                              - img [ref=f155e1058]: help_outline
+                        - gridcell [ref=f155e1059]
+                        - gridcell [ref=f155e1060]
+                        - gridcell [ref=f155e1062]
+                        - gridcell "2.122.536 CLP" [ref=f155e1063]
+                        - gridcell "4.425" [ref=f155e1066]
+                        - gridcell "480 CLP" [ref=f155e1069]
+                        - gridcell "4.212,24" [ref=f155e1073]
+                        - gridcell "504 CLP" [ref=f155e1077]
+                        - gridcell "95,19 %" [ref=f155e1081]
+                        - gridcell "3.898.744,92" [ref=f155e1085]
+                        - gridcell "1,84" [ref=f155e1089]
+                        - gridcell "4.221,74" [ref=f155e1093]
+                    - generic [ref=f155e1099]: 1 - 5 de 5
+                - generic [ref=f155e1106]:
+                  - generic [ref=f155e1107]:
+                    - link "Los informes no se generan en tiempo real." [ref=f155e1109] [cursor=pointer]:
+                      - /url: https://support.google.com/google-ads/?p=help_2544985&hl=es
+                    - text: "Zona horaria aplicable a todas las fechas y horas: (GMT-04:00) hora de Chile."
+                    - link "Más información sobre cómo cambiar la configuración de tu cuenta de Google Ads" [ref=f155e1111] [cursor=pointer]:
+                      - /url: https://support.google.com/google-ads/?p=help_9842104&hl=es
+                      - text: Más información
+                    - generic [ref=f155e1112]: Es posible que una parte del inventario se proporcione a través de intermediarios externos.
+                    - generic [ref=f155e1113]: La acreditación del Media Rating Council (MRC) se muestra al colocar el cursor sobre el encabezado de la columna de la métrica acreditada.
+                  - generic [ref=f155e1114]: © Google, 2026.
+  - generic:
+    - dialog:
+      - generic:
+        - generic:
+          - heading [level=1]: Turn off ad blockers
+          - paragraph: Google Ads can't work when you're using an ad blocker. To use Google Ads, please turn off any ad blockers for now.
+  - generic:
+    - generic:
+      - generic:
+        - dialog "cuadro de diálogo"
+  - generic:
+    - generic:
+      - dialog "Configuración" [ref=f155e1304]:
+        - generic [ref=f155e1309]:
+          - generic [ref=f155e1310]:
+            - button "Cerrar" [active] [ref=f155e1311] [cursor=pointer]:
+              - img [ref=f155e1314]: close
+            - text: Configuración
+          - generic [ref=f155e1317]:
+            - generic [ref=f155e1318]:
+              - generic [ref=f155e1319]:
+                - generic [ref=f155e1320]: "Estado:"
+                - generic [ref=f155e1321]: "--"
+              - generic [ref=f155e1326]:
+                - generic [ref=f155e1327]: "Tipo:"
+                - generic [ref=f155e1328]: Búsqueda
+              - generic [ref=f155e1330]:
+                - generic [ref=f155e1331]: "Nivel de optimización:"
+                - generic [ref=f155e1332]: —
+            - main [ref=f155e1335]:
+              - generic [ref=f155e1337]:
+                - generic [ref=f155e1353]:
+                  - generic [ref=f155e1355]:
+                    - heading [level=2] [ref=f155e1364]:
+                      - button [ref=f155e1365] [cursor=pointer]:
+                        - paragraph [ref=f155e1367]: Nombre de la campaña
+                        - generic [ref=f155e1368]: Venta Instrumentos
+                        - img [ref=f155e1370]: expand_less
+                    - heading [level=2] [ref=f155e1379]:
+                      - button [ref=f155e1380] [cursor=pointer]:
+                        - paragraph [ref=f155e1382]: Estado de la campaña
+                        - generic [ref=f155e1383]: Habilitado
+                        - img [ref=f155e1387]: expand_less
+                    - heading [level=2] [ref=f155e1396]:
+                      - button [ref=f155e1397] [cursor=pointer]:
+                        - paragraph [ref=f155e1399]: Objetivo de marketing
+                        - generic [ref=f155e1400]: Ventas
+                        - img [ref=f155e1402]: expand_less
+                    - heading [level=2] [ref=f155e1411]:
+                      - button [ref=f155e1412] [cursor=pointer]:
+                        - paragraph [ref=f155e1414]: Redes
+                        - generic [ref=f155e1415]: Red de Búsqueda de Google, Partners de búsqueda, Red de Display
+                        - img [ref=f155e1417]: expand_less
+                  - generic [ref=f155e1418]:
+                    - heading "Optimización de presupuesto y puja" [level=2] [ref=f155e1419]
+                    - generic [ref=f155e1420]:
+                      - heading [level=3] [ref=f155e1429]:
+                        - button [ref=f155e1430] [cursor=pointer]:
+                          - paragraph [ref=f155e1432]: Presupuesto
+                          - generic [ref=f155e1433]: 78.000 CLP al día
+                          - img [ref=f155e1438]: expand_less
+                      - heading [level=3] [ref=f155e1448]:
+                        - button [ref=f155e1449] [cursor=pointer]:
+                          - paragraph [ref=f155e1451]: Objetivos de conversión
+                          - generic [ref=f155e1452]: Predeterminado de la cuenta
+                          - img [ref=f155e1456]: expand_less
+                      - heading [level=3] [ref=f155e1465]:
+                        - button [ref=f155e1466] [cursor=pointer]:
+                          - paragraph [ref=f155e1468]: Puja
+                          - generic [ref=f155e1469]: "ROAS objetivo: 200 %"
+                          - img [ref=f155e1472]: expand_less
+                      - heading [level=3] [ref=f155e1482]:
+                        - button [ref=f155e1483] [cursor=pointer]:
+                          - generic [ref=f155e1485]:
+                            - text: Exploración de Smart Bidding
+                            - generic [ref=f155e1486]: Beta
+                          - generic [ref=f155e1487]: Aumentar la diversidad del tráfico
+                          - img [ref=f155e1489]: expand_less
+                      - heading [level=3] [ref=f155e1499]:
+                        - button [ref=f155e1500] [cursor=pointer]:
+                          - paragraph [ref=f155e1502]: Adquisición de clientes
+                          - generic [ref=f155e1503]: Pujar lo mismo por clientes nuevos y por los actuales
+                          - img [ref=f155e1507]: expand_less
+                      - heading [level=3] [ref=f155e1516]:
+                        - button [ref=f155e1517] [cursor=pointer]:
+                          - paragraph [ref=f155e1519]: Reglas de valor
+                          - generic [ref=f155e1520]: No se ha definido ninguna regla
+                          - img [ref=f155e1523]: expand_less
+                  - generic [ref=f155e1524]:
+                    - heading "AI Max para campañas de búsqueda" [level=2] [ref=f155e1525]
+                    - generic [ref=f155e1526]:
+                      - generic [ref=f155e1532]:
+                        - generic [ref=f155e1535]:
+                          - generic [ref=f155e1536]: Consigue el mejor rendimiento basado en IA en la Búsqueda de Google
+                          - generic [ref=f155e1537]: Los anunciantes que activan IA Max en las campañas de búsqueda suelen conseguir un 14 % más de conversiones o de valor de conversión con un CPA o un ROAS similares
+                        - generic [ref=f155e1538]:
+                          - generic [ref=f155e1539]:
+                            - img [ref=f155e1541]: trending_up
+                            - text: Atrae a más clientes y mejora el rendimiento. Amplía fácilmente tus palabras clave con la tecnología de concordancia amplia y deja que la IA de Google asocie el contenido de tus páginas de destino y de tus recursos para mostrar tus anuncios en búsquedas más relevantes. Los nuevos ajustes de grupos de anuncios te ayudan a elegir los clientes a los que quieres llegar.
+                          - generic [ref=f155e1542]:
+                            - img [ref=f155e1544]: tune
+                            - text: Personaliza tus anuncios y mantenlos actualizados. Usa la IA de Google para mostrar los textos de anuncio y las páginas de destino más relevantes a cada cliente en función de sus intereses e intención.
+                          - generic [ref=f155e1545]:
+                            - img [ref=f155e1547]: add_chart
+                            - text: Descubre cómo puede ayudarte la mejor y más reciente IA de Google. Obtendrás nuevos datos y métricas en los informes de términos de búsqueda que muestran cómo mejora IA Max el rendimiento.
+                          - button "Más información sobre IA Max" [ref=f155e1549] [cursor=pointer]:
+                            - generic [ref=f155e1550]: Más información
+                        - generic [ref=f155e1552]:
+                          - button [ref=f155e1553]:
+                            - switch "Optimiza tu campaña con IA Max" [checked] [ref=f155e1554] [cursor=pointer]
+                          - generic [ref=f155e1560]: Optimiza tu campaña con IA Max
+                      - generic [ref=f155e1566] [cursor=pointer]:
+                        - paragraph [ref=f155e1568]: Cargando nombre
+                        - paragraph [ref=f155e1570]: Cargando resumen
+                      - generic [ref=f155e1576] [cursor=pointer]:
+                        - paragraph [ref=f155e1578]: Cargando nombre
+                        - paragraph [ref=f155e1580]: Cargando resumen
+                  - generic [ref=f155e1581]:
+                    - heading "Otros ajustes" [level=2] [ref=f155e1582]
+                    - generic [ref=f155e1583]:
+                      - generic [ref=f155e1589] [cursor=pointer]:
+                        - paragraph [ref=f155e1591]: Cargando nombre
+                        - paragraph [ref=f155e1593]: Cargando resumen
+                      - generic [ref=f155e1599] [cursor=pointer]:
+                        - paragraph [ref=f155e1601]: Cargando nombre
+                        - paragraph [ref=f155e1603]: Cargando resumen
+                      - generic [ref=f155e1609] [cursor=pointer]:
+                        - paragraph [ref=f155e1611]: Cargando nombre
+                        - paragraph [ref=f155e1613]: Cargando resumen
+                      - generic [ref=f155e1619] [cursor=pointer]:
+                        - paragraph [ref=f155e1621]: Cargando nombre
+                        - paragraph [ref=f155e1623]: Cargando resumen
+                      - generic [ref=f155e1629] [cursor=pointer]:
+                        - paragraph [ref=f155e1631]: Cargando nombre
+                        - paragraph [ref=f155e1633]: Cargando resumen
+                      - generic [ref=f155e1639] [cursor=pointer]:
+                        - paragraph [ref=f155e1641]: Cargando nombre
+                        - paragraph [ref=f155e1643]: Cargando resumen
+                      - generic [ref=f155e1649] [cursor=pointer]:
+                        - paragraph [ref=f155e1651]: Cargando nombre
+                        - paragraph [ref=f155e1653]: Cargando resumen
+                      - generic [ref=f155e1659] [cursor=pointer]:
+                        - paragraph [ref=f155e1661]: Cargando nombre
+                        - paragraph [ref=f155e1663]: Cargando resumen
+                      - generic [ref=f155e1669] [cursor=pointer]:
+                        - paragraph [ref=f155e1671]: Cargando nombre
+                        - paragraph [ref=f155e1673]: Cargando resumen
+                      - generic [ref=f155e1679] [cursor=pointer]:
+                        - paragraph [ref=f155e1681]: Cargando nombre
+                        - paragraph [ref=f155e1683]: Cargando resumen
+                      - generic [ref=f155e1689] [cursor=pointer]:
+                        - paragraph [ref=f155e1691]: Cargando nombre
+                        - paragraph [ref=f155e1693]: Cargando resumen
+                      - generic [ref=f155e1699] [cursor=pointer]:
+                        - paragraph [ref=f155e1701]: Cargando nombre
+                        - paragraph [ref=f155e1703]: Cargando resumen
+                - generic [ref=f155e1346]: © Google, 2026.
+      - generic:
+        - dialog "cuadro de diálogo"
+  - generic:
+    - text: search
+    - generic:
+      - generic:
+        - dialog "cuadro de diálogo"
+    - generic:
+      - generic:
+        - dialog "cuadro de diálogo"

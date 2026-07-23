@@ -1,0 +1,55 @@
+- main [ref=f1e2]:
+  - generic [ref=f1e3]:
+    - generic [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - text: 🔍
+        - heading "Verificación de calibración" [level=1] [ref=f1e6]
+      - paragraph [ref=f1e7]: Ingrese el número de serie del equipo para verificar su estado de calibración y autenticidad.
+    - form "Buscar equipo por serie" [ref=f1e9]:
+      - generic [ref=f1e10]:
+        - text: Número de serie
+        - generic [ref=f1e11]:
+          - textbox "Número de serie" [ref=f1e12]:
+            - /placeholder: "Ej: GS-401-0001"
+            - text: EXFO-OTDR-2022-006
+          - button "Verificar" [ref=f1e13]
+        - paragraph [ref=f1e14]: El número de serie se encuentra impreso en el equipo o en el certificado de calibración.
+    - generic [ref=f1e16]:
+      - generic [ref=f1e17]:
+        - heading "EXFO AXS-200" [level=2] [ref=f1e18]
+        - generic [ref=f1e19]:
+          - generic [ref=f1e20]:
+            - term [ref=f1e21]: Tipo de equipo
+            - definition [ref=f1e22]: OTDR
+          - generic [ref=f1e23]:
+            - term [ref=f1e24]: Número de serie
+            - definition [ref=f1e25]:
+              - code [ref=f1e26]: EXFO-OTDR-2022-006
+          - generic [ref=f1e27]:
+            - term [ref=f1e28]: Marca
+            - definition [ref=f1e29]: EXFO
+          - generic [ref=f1e30]:
+            - term [ref=f1e31]: Modelo
+            - definition [ref=f1e32]: AXS-200
+      - 'status "Estado de calibración: Vencido" [ref=f1e34]': Vencido
+    - generic [ref=f1e35]:
+      - heading "Historial de servicios" [level=3] [ref=f1e36]
+      - generic "Historial de calibraciones y mantenimientos" [ref=f1e37]:
+        - table [ref=f1e38]:
+          - rowgroup [ref=f1e39]:
+            - row [ref=f1e40]:
+              - columnheader "Fecha" [ref=f1e41]
+              - columnheader "Tipo" [ref=f1e42]
+              - columnheader "N° OT" [ref=f1e43]
+              - columnheader "Técnico" [ref=f1e44]
+              - columnheader "Próxima calibración" [ref=f1e45]
+              - columnheader "Documentos" [ref=f1e46]
+          - rowgroup [ref=f1e47]:
+            - row [ref=f1e48]:
+              - cell "11/07/2024" [ref=f1e49]
+              - cell "Calibración" [ref=f1e50]
+              - cell "OT-2022-019" [ref=f1e51]
+              - cell "admin" [ref=f1e52]
+              - cell "11/07/2025" [ref=f1e53]
+              - cell "Sin documentos" [ref=f1e54]
+    - paragraph [ref=f1e56]: ✅ Este registro es la fuente de verdad del sistema. La información mostrada aquí certifica la autenticidad del servicio realizado.

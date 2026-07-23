@@ -1,0 +1,85 @@
+- generic [active] [ref=f3e1]:
+  - banner [ref=f3e2]:
+    - generic [ref=f3e3]:
+      - generic [ref=f3e4]:
+        - generic [ref=f3e5]: TrueTech
+        - generic [ref=f3e6]: Panel de Gestión
+      - navigation [ref=f3e7]:
+        - link "Inicio" [ref=f3e8] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/
+        - link "+ Nueva OI" [ref=f3e9] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/nueva-oi/
+        - link "+ Nueva OT" [ref=f3e10] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/nueva-ot/
+        - link "OI" [ref=f3e11] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/?filtro=oi
+        - link "OT" [ref=f3e12] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/?filtro=ot
+        - link "Equipos" [ref=f3e13] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/equipos/
+        - link "Clientes" [ref=f3e14] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/clientes/
+        - link "Técnicos" [ref=f3e15] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/tecnicos/
+        - link "Salir" [ref=f3e16] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/salir/
+  - main [ref=f3e17]:
+    - generic [ref=f3e18]:
+      - generic [ref=f3e19]:
+        - heading "Clientes registrados" [level=1] [ref=f3e20]
+        - link "+ Nuevo Cliente" [ref=f3e21] [cursor=pointer]:
+          - /url: http://localhost:8088/wp-admin/post-new.php?post_type=cliente
+      - generic [ref=f3e22]:
+        - textbox "Buscar por nombre o RUT…" [ref=f3e23]
+        - button "Buscar" [ref=f3e24] [cursor=pointer]
+      - table [ref=f3e26]:
+        - rowgroup [ref=f3e27]:
+          - row [ref=f3e28]:
+            - columnheader "Empresa" [ref=f3e29]
+            - columnheader "RUT" [ref=f3e30]
+            - columnheader "Contacto" [ref=f3e31]
+            - columnheader "Teléfono" [ref=f3e32]
+            - columnheader "Correo" [ref=f3e33]
+            - columnheader [ref=f3e34]
+        - rowgroup [ref=f3e35]:
+          - row [ref=f3e36]:
+            - cell [ref=f3e37]:
+              - strong [ref=f3e38]: Fibernet SpA
+            - cell [ref=f3e39]:
+              - code [ref=f3e40]: 78.001.234-5
+            - cell "Roberto Lagos" [ref=f3e41]
+            - cell "+56 9 7654 3210" [ref=f3e42]
+            - cell [ref=f3e43]:
+              - link "rlagos@fibernet.cl" [ref=f3e44] [cursor=pointer]:
+                - /url: mailto:rlagos@fibernet.cl
+            - cell [ref=f3e45]:
+              - link "Editar" [ref=f3e46] [cursor=pointer]:
+                - /url: http://localhost:8088/wp-admin/post.php?post=33&action=edit
+          - row [ref=f3e47]:
+            - cell [ref=f3e48]:
+              - strong [ref=f3e49]: PROINTEL S.A.
+            - cell [ref=f3e50]:
+              - code [ref=f3e51]: 76.123.456-7
+            - cell "Carlos Muñoz" [ref=f3e52]
+            - cell "+56 9 8765 4321" [ref=f3e53]
+            - cell [ref=f3e54]:
+              - link "jvalenzuela303+cliente@gmail.com" [ref=f3e55] [cursor=pointer]:
+                - /url: mailto:jvalenzuela303+cliente@gmail.com
+            - cell [ref=f3e56]:
+              - link "Editar" [ref=f3e57] [cursor=pointer]:
+                - /url: http://localhost:8088/wp-admin/post.php?post=31&action=edit
+          - row [ref=f3e58]:
+            - cell [ref=f3e59]:
+              - strong [ref=f3e60]: Telecom Chile Ltda.
+            - cell [ref=f3e61]:
+              - code [ref=f3e62]: 77.654.321-K
+            - cell "Ana Torres" [ref=f3e63]
+            - cell "+56 9 9123 4567" [ref=f3e64]
+            - cell [ref=f3e65]:
+              - link "atorres@telecomchile.cl" [ref=f3e66] [cursor=pointer]:
+                - /url: mailto:atorres@telecomchile.cl
+            - cell [ref=f3e67]:
+              - link "Editar" [ref=f3e68] [cursor=pointer]:
+                - /url: http://localhost:8088/wp-admin/post.php?post=32&action=edit
+  - contentinfo [ref=f3e69]:
+    - paragraph [ref=f3e70]: © 2026 TrueTech SpA — Panel interno

@@ -1,0 +1,42 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: Cargando
+        - progressbar [ref=e8]
+      - main [ref=e15]:
+        - generic [ref=e24]:
+          - heading "Inicia sesión" [level=1] [ref=e25]
+          - generic [ref=e26]: con tu cuenta de Google para ir a Google Ads. Esta cuenta estará disponible para otras aplicaciones de Google en el navegador.
+        - generic [ref=e29]:
+          - generic [ref=e34]:
+            - generic [ref=e39]:
+              - textbox "Correo electrónico o teléfono" [active] [ref=e40]
+              - generic: Correo electrónico o teléfono
+            - button "¿Has olvidado tu correo electrónico?" [ref=e44] [cursor=pointer]
+          - generic [ref=e47]:
+            - text: ¿No es tu ordenador? Usa el modo Invitado para iniciar sesión de forma privada.
+            - link "Más información sobre cómo usar el modo Invitado (enlace externo, se abre en una ventana nueva)" [ref=e48] [cursor=pointer]:
+              - /url: https://support.google.com/chrome/answer/6130773?hl=es
+              - text: Más información sobre cómo usar el modo Invitado
+        - generic [ref=e50]:
+          - button "Siguiente" [ref=e54]
+          - button "Crear cuenta" [ref=e63]
+    - contentinfo [ref=e70]:
+      - combobox "Cómo cambiar de idioma Español (España)" [ref=e74] [cursor=pointer]:
+        - generic: Español (España)
+      - list [ref=e76]:
+        - listitem [ref=e77]:
+          - link "Abrir el Centro de Ayuda de Cuenta de Google (enlace externo, se abre en una ventana nueva)" [ref=e78] [cursor=pointer]:
+            - /url: https://support.google.com/accounts?hl=es&p=account_iph
+            - text: Ayuda
+        - listitem [ref=e79]:
+          - link "Política de Privacidad (enlace externo, se abre en una ventana nueva)" [ref=e80] [cursor=pointer]:
+            - /url: https://accounts.google.com/TOS?loc=CL&hl=es&privacy=true
+            - text: Privacidad
+        - listitem [ref=e81]:
+          - link "Términos del Servicio de Google (enlace externo, se abre en una ventana nueva)" [ref=e82] [cursor=pointer]:
+            - /url: https://accounts.google.com/TOS?loc=CL&hl=es
+            - text: Términos
+  - iframe [ref=e83]:
+    

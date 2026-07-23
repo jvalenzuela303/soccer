@@ -1,0 +1,145 @@
+- generic [active] [ref=f7e1]:
+  - banner [ref=f7e2]:
+    - generic [ref=f7e3]:
+      - generic [ref=f7e4]:
+        - generic [ref=f7e5]: TrueTech
+        - generic [ref=f7e6]: Panel de Gestión
+      - navigation [ref=f7e7]:
+        - link "Inicio" [ref=f7e8] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/
+        - link "+ Nueva OI" [ref=f7e9] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/nueva-oi/
+        - link "+ Nueva OT" [ref=f7e10] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/nueva-ot/
+        - link "OI" [ref=f7e11] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/?filtro=oi
+        - link "OT" [ref=f7e12] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/?filtro=ot
+        - link "Equipos" [ref=f7e13] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/equipos/
+        - link "Mi perfil" [ref=f7e14] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/perfil/
+        - link "Salir" [ref=f7e15] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/salir/
+  - main [ref=f7e16]:
+    - generic [ref=f7e17]:
+      - generic [ref=f7e18]:
+        - heading "Nueva Orden de Trabajo" [level=1] [ref=f7e19]
+        - link "← Volver al panel" [ref=f7e20] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/
+      - generic [ref=f7e21]:
+        - generic [ref=f7e22]:
+          - generic [ref=f7e23]: OI vinculada *
+          - combobox "OI vinculada *" [ref=f7e24]:
+            - option "— Seleccione una OI —"
+            - option "OI-2026-009" [selected]
+            - option "OI-2026-008"
+            - option "OI-2026-007"
+            - option "OI-2026-006"
+            - option "OI-2026-004"
+            - option "OI-2026-001"
+            - option "OI-2026-005"
+            - option "OI-2026-002"
+            - option "OI-2026-003"
+        - generic [ref=f7e25]:
+          - generic [ref=f7e26]: Equipo *
+          - combobox "Equipo *" [ref=f7e27]:
+            - option "— Seleccionar equipo —"
+            - option "EXFO-OTDR-2022-006 — EXFO AXS-200"
+            - option "EXFO-PM-2024-002 — EXFO MAX-715B"
+            - option "FLUKE-CERT-2024-004 — Fluke Networks DSX2-8000"
+            - option "FK-EMP-2023-003 — Fujikura FSM-70S"
+            - option "GW-FUENTE-2023-005 — Grandway FLS-430"
+            - option "GW-OTDR-2024-001 — Grandway GS-401" [selected]
+        - generic [ref=f7e28]:
+          - generic [ref=f7e29]: Técnico responsable *
+          - combobox "Técnico responsable *" [ref=f7e30]:
+            - option "— Seleccionar técnico —"
+            - option "admin"
+            - option "tecnico1" [selected]
+        - generic [ref=f7e31]:
+          - generic [ref=f7e32]:
+            - generic [ref=f7e33]: N° de Orden de Trabajo *
+            - textbox "N° de Orden de Trabajo *" [ref=f7e34]: OT-2026-025
+          - generic [ref=f7e35]:
+            - generic [ref=f7e36]: Tipo de servicio *
+            - combobox "Tipo de servicio *" [ref=f7e37]:
+              - option "— Seleccionar —"
+              - option "Calibración"
+              - option "Mantenimiento" [selected]
+        - generic [ref=f7e38]:
+          - generic [ref=f7e39]:
+            - generic [ref=f7e40]: Fecha de ejecución *
+            - textbox "Fecha de ejecución *" [ref=f7e41]
+          - generic [ref=f7e42]:
+            - generic [ref=f7e43]: Próxima fecha de control
+            - textbox "Próxima fecha de control" [ref=f7e44]
+        - generic [ref=f7e45]:
+          - generic [ref=f7e46]: Falla reportada por el cliente
+          - textbox "Falla reportada por el cliente" [ref=f7e47]: Equipo presenta errores de medición en modo de onda corta. Cliente reporta lecturas inconsistentes.
+        - generic [ref=f7e48]:
+          - generic [ref=f7e49]: Descripción del trabajo / servicio realizado
+          - textbox "Descripción del trabajo / servicio realizado" [ref=f7e50]
+        - generic [ref=f7e51]:
+          - generic [ref=f7e52]: Observaciones
+          - textbox "Observaciones" [ref=f7e53]
+        - generic [ref=f7e54]:
+          - generic [ref=f7e55]: Ítems de costo
+          - generic [ref=f7e56]:
+            - textbox "Buscar producto WooCommerce…" [ref=f7e57]
+            - button "Buscar" [ref=f7e58] [cursor=pointer]
+          - generic [ref=f7e59]:
+            - table [ref=f7e60]:
+              - rowgroup [ref=f7e61]:
+                - row [ref=f7e62]:
+                  - columnheader "Detalle" [ref=f7e63]
+                  - columnheader "Cantidad" [ref=f7e64]
+                  - columnheader "Precio unitario" [ref=f7e65]
+                  - columnheader "Subtotal" [ref=f7e66]
+                  - columnheader [ref=f7e67]
+              - rowgroup [ref=f7e68]:
+                - row [ref=f7e69]:
+                  - cell [ref=f7e70]:
+                    - textbox "Descripción del ítem" [ref=f7e71]
+                  - cell [ref=f7e72]:
+                    - spinbutton [ref=f7e73]: "1"
+                  - cell [ref=f7e74]:
+                    - spinbutton [ref=f7e75]: "0"
+                  - cell "0" [ref=f7e76]
+                  - cell [ref=f7e77]:
+                    - button "×" [ref=f7e78] [cursor=pointer]
+            - generic [ref=f7e79]:
+              - button "+ Agregar ítem" [ref=f7e80] [cursor=pointer]
+              - generic [ref=f7e81]:
+                - generic [ref=f7e82]:
+                  - text: "Subtotal:"
+                  - strong [ref=f7e83]: $0
+                - generic [ref=f7e84]:
+                  - text: "IVA 19%:"
+                  - strong [ref=f7e85]: $0
+                - generic [ref=f7e86]:
+                  - text: "Total:"
+                  - strong [ref=f7e87]: $0
+          - paragraph [ref=f7e88]: Los totales son una vista previa. El cálculo final se realiza en el servidor al guardar.
+        - generic [ref=f7e89]:
+          - generic [ref=f7e90]: Estado del servicio
+          - paragraph [ref=f7e91]: Al marcar como "Completado" se generará el certificado PDF y se enviará al cliente automáticamente.
+          - combobox "Estado del servicio" [ref=f7e92]:
+            - option "En proceso" [selected]
+            - option "En ejecución"
+            - option "Listo para revisión"
+            - option "Completado — Emitir certificado"
+        - generic [ref=f7e93]:
+          - generic [ref=f7e94]: Evidencia fotográfica
+          - button "Evidencia fotográfica" [ref=f7e95]
+          - paragraph [ref=f7e96]: JPG, PNG o WEBP. Puede seleccionar varias fotos.
+        - generic [ref=f7e97]:
+          - generic [ref=f7e98]: Documentos adjuntos (PDF)
+          - button "Documentos adjuntos (PDF)" [ref=f7e99]
+          - paragraph [ref=f7e100]: PDF. Protocolos, informes u otros documentos del servicio.
+        - generic [ref=f7e101]:
+          - button "Crear Orden de Trabajo" [ref=f7e102] [cursor=pointer]
+          - link "Cancelar" [ref=f7e103] [cursor=pointer]:
+            - /url: http://localhost:8088/panel/
+  - contentinfo [ref=f7e104]:
+    - paragraph [ref=f7e105]: © 2026 TrueTech SpA — Panel interno

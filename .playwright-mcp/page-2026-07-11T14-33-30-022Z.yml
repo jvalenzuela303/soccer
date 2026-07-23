@@ -1,0 +1,77 @@
+- generic [active] [ref=f5e1]:
+  - text: "Deprecated: El archivo Tema sin header.php se encuentra"
+  - strong [ref=f5e2]: descontinuado
+  - text: desde la versión 3.0.0 sin reemplazo disponible. Por favor, incluye una plantilla header.php en tu tema. in /var/www/html/wp-includes/functions.php on line 5583
+  - generic [ref=f5e3]:
+    - banner [ref=f5e4]:
+      - heading [level=1] [ref=f5e6]:
+        - link "truetech" [ref=f5e7] [cursor=pointer]:
+          - /url: http://localhost:8088/
+    - separator [ref=f5e8]
+    - main [ref=f5e9]:
+      - generic [ref=f5e10]:
+        - generic [ref=f5e11]:
+          - heading "Verificación de calibración" [level=1] [ref=f5e15]
+          - paragraph [ref=f5e16]: Ingrese el número de serie del equipo para verificar su estado de calibración y autenticidad.
+        - form "Buscar equipo por serie" [ref=f5e18]:
+          - generic [ref=f5e19]:
+            - generic [ref=f5e20]: Número de serie
+            - generic [ref=f5e21]:
+              - textbox "Número de serie" [ref=f5e22]:
+                - /placeholder: "Ej: GS-401-0001"
+                - text: GW-OTDR-2024-001
+              - button "Verificar" [ref=f5e23] [cursor=pointer]
+            - paragraph [ref=f5e24]: El número de serie se encuentra impreso en el equipo o en el certificado de calibración.
+        - alert [ref=f5e25]:
+          - generic [ref=f5e28]:
+            - strong [ref=f5e29]: Error al consultar el sistema
+            - paragraph [ref=f5e30]: No fue posible conectar con el sistema de verificación. Por favor intente más tarde.
+    - text: "Deprecated: El archivo Tema sin footer.php se encuentra"
+    - strong [ref=f5e31]: descontinuado
+    - text: desde la versión 3.0.0 sin reemplazo disponible. Por favor, incluye una plantilla footer.php en tu tema. in /var/www/html/wp-includes/functions.php on line 5583
+    - separator [ref=f5e32]
+    - contentinfo [ref=f5e33]:
+      - paragraph [ref=f5e34]:
+        - text: truetech es gestionado con
+        - link "WordPress" [ref=f5e35] [cursor=pointer]:
+          - /url: https://wordpress.org/
+  - generic [ref=f5e36]:
+    - link "Saltar a la barra de herramientas" [ref=f5e37] [cursor=pointer]:
+      - /url: "#wp-toolbar"
+    - navigation "Barra de Herramientas":
+      - list:
+        - listitem [ref=f5e38]:
+          - link "Acerca de WordPress" [ref=f5e39] [cursor=pointer]:
+            - /url: http://localhost:8088/wp-admin/about.php
+            - generic [ref=f5e40]: 
+        - listitem [ref=f5e42]:
+          - link " truetech" [ref=f5e43] [cursor=pointer]:
+            - /url: http://localhost:8088/wp-admin/
+        - listitem [ref=f5e44]:
+          - link " Editar sitio" [ref=f5e45] [cursor=pointer]:
+            - /url: http://localhost:8088/wp-admin/site-editor.php
+        - listitem [ref=f5e46]:
+          - link "5 updates available" [ref=f5e47] [cursor=pointer]:
+            - /url: http://localhost:8088/wp-admin/update-core.php
+            - generic [ref=f5e48]: 
+            - generic [ref=f5e49]: "5"
+        - listitem [ref=f5e51]:
+          - link "0 Comentarios en moderación" [ref=f5e52] [cursor=pointer]:
+            - /url: http://localhost:8088/wp-admin/edit-comments.php
+            - generic [ref=f5e53]: 
+            - generic [ref=f5e54]: "0"
+        - listitem [ref=f5e56]:
+          - link "Nuevo" [ref=f5e57] [cursor=pointer]:
+            - /url: http://localhost:8088/wp-admin/post-new.php
+            - generic [ref=f5e58]: 
+      - list [ref=f5e60]:
+        - listitem [ref=f5e61]:
+          - generic [ref=f5e63]:
+            - text: 
+            - textbox "Buscar" [ref=f5e64] [cursor=pointer]
+            - generic [ref=f5e65]: Buscar
+        - listitem [ref=f5e66]:
+          - link "Hola, admin" [ref=f5e67] [cursor=pointer]:
+            - /url: http://localhost:8088/wp-admin/profile.php
+    - link "Cerrar sesión" [ref=f5e68] [cursor=pointer]:
+      - /url: http://localhost:8088/wp-login.php?action=logout&_wpnonce=6e0e1491ad

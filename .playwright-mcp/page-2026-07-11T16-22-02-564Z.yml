@@ -1,0 +1,456 @@
+- generic [ref=f3e2]:
+  - navigation "Menú principal":
+    - link "Saltar al contenido principal" [ref=f3e3] [cursor=pointer]:
+      - /url: "#wpbody-content"
+    - link "Saltar a la barra de herramientas" [ref=f3e4] [cursor=pointer]:
+      - /url: "#wp-toolbar"
+    - list [ref=f3e7]:
+      - listitem [ref=f3e8]:
+        - link "Escritorio" [ref=f3e9] [cursor=pointer]:
+          - /url: index.php
+          - generic [ref=f3e10]: 
+        - list [ref=f3e12]:
+          - listitem [ref=f3e13]:
+            - link "Inicio" [ref=f3e14] [cursor=pointer]:
+              - /url: index.php
+          - listitem [ref=f3e15]:
+            - link "Actualización 6" [ref=f3e16] [cursor=pointer]:
+              - /url: update-core.php
+              - text: Actualización
+              - generic [ref=f3e17]: "6"
+      - listitem [ref=f3e18]
+      - listitem [ref=f3e20]:
+        - link "Entradas" [ref=f3e21] [cursor=pointer]:
+          - /url: edit.php
+          - generic [ref=f3e22]: 
+        - list [ref=f3e24]:
+          - listitem [ref=f3e25]:
+            - link "Todas las Entradas" [ref=f3e26] [cursor=pointer]:
+              - /url: edit.php
+          - listitem [ref=f3e27]:
+            - link "Agregar entrada" [ref=f3e28] [cursor=pointer]:
+              - /url: post-new.php
+          - listitem [ref=f3e29]:
+            - link "Categorías" [ref=f3e30] [cursor=pointer]:
+              - /url: edit-tags.php?taxonomy=category
+          - listitem [ref=f3e31]:
+            - link "Etiquetas" [ref=f3e32] [cursor=pointer]:
+              - /url: edit-tags.php?taxonomy=post_tag
+      - listitem [ref=f3e33]:
+        - link "Multimedia" [ref=f3e34] [cursor=pointer]:
+          - /url: upload.php
+          - generic [ref=f3e35]: 
+        - list [ref=f3e37]:
+          - listitem [ref=f3e38]:
+            - link "Biblioteca" [ref=f3e39] [cursor=pointer]:
+              - /url: upload.php
+          - listitem [ref=f3e40]:
+            - link "Agregar nueva" [ref=f3e41] [cursor=pointer]:
+              - /url: media-new.php
+      - listitem [ref=f3e42]:
+        - link "Páginas" [ref=f3e43] [cursor=pointer]:
+          - /url: edit.php?post_type=page
+          - generic [ref=f3e44]: 
+        - list [ref=f3e46]:
+          - listitem [ref=f3e47]:
+            - link "Todas las páginas" [ref=f3e48] [cursor=pointer]:
+              - /url: edit.php?post_type=page
+          - listitem [ref=f3e49]:
+            - link "Agregar nueva" [ref=f3e50] [cursor=pointer]:
+              - /url: post-new.php?post_type=page
+      - listitem [ref=f3e51]:
+        - link "Comentarios" [ref=f3e52] [cursor=pointer]:
+          - /url: edit-comments.php
+          - generic [ref=f3e53]: 
+      - listitem [ref=f3e55]:
+        - link "CalibraTrack" [ref=f3e56] [cursor=pointer]:
+          - /url: admin.php?page=calibratrack
+          - generic [ref=f3e57]: 
+        - list [ref=f3e59]:
+          - listitem [ref=f3e60]:
+            - link "Dashboard" [ref=f3e61] [cursor=pointer]:
+              - /url: admin.php?page=calibratrack
+          - listitem [ref=f3e62]:
+            - link "Equipos" [ref=f3e63] [cursor=pointer]:
+              - /url: edit.php?post_type=equipo
+          - listitem [ref=f3e64]:
+            - link "+ Nuevo Equipo" [ref=f3e65] [cursor=pointer]:
+              - /url: post-new.php?post_type=equipo
+          - listitem [ref=f3e66]:
+            - link "Clientes" [ref=f3e67] [cursor=pointer]:
+              - /url: edit.php?post_type=cliente
+          - listitem [ref=f3e68]:
+            - link "Eventos de Servicio" [ref=f3e69] [cursor=pointer]:
+              - /url: edit.php?post_type=evento_servicio
+          - listitem [ref=f3e70]:
+            - link "Configuración" [ref=f3e71] [cursor=pointer]:
+              - /url: admin.php?page=calibratrack-settings
+      - listitem [ref=f3e72]:
+        - link "Equipos" [ref=f3e73] [cursor=pointer]:
+          - /url: edit.php?post_type=equipo
+          - generic [ref=f3e74]: 
+        - list [ref=f3e76]:
+          - listitem [ref=f3e77]:
+            - link "Todos los equipos" [ref=f3e78] [cursor=pointer]:
+              - /url: edit.php?post_type=equipo
+          - listitem [ref=f3e79]:
+            - link "Agregar nuevo" [ref=f3e80] [cursor=pointer]:
+              - /url: post-new.php?post_type=equipo
+      - listitem [ref=f3e81]:
+        - link "Clientes" [ref=f3e82] [cursor=pointer]:
+          - /url: edit.php?post_type=cliente
+          - generic [ref=f3e83]: 
+        - list [ref=f3e85]:
+          - listitem [ref=f3e86]:
+            - link "Todos los clientes" [ref=f3e87] [cursor=pointer]:
+              - /url: edit.php?post_type=cliente
+          - listitem [ref=f3e88]:
+            - link "Agregar nuevo" [ref=f3e89] [cursor=pointer]:
+              - /url: post-new.php?post_type=cliente
+      - listitem [ref=f3e90]:
+        - link "Eventos de servicio" [ref=f3e91] [cursor=pointer]:
+          - /url: edit.php?post_type=evento_servicio
+          - generic [ref=f3e92]: 
+        - list [ref=f3e94]:
+          - listitem [ref=f3e95]:
+            - link "Todos los eventos" [ref=f3e96] [cursor=pointer]:
+              - /url: edit.php?post_type=evento_servicio
+          - listitem [ref=f3e97]:
+            - link "Registrar nuevo" [ref=f3e98] [cursor=pointer]:
+              - /url: post-new.php?post_type=evento_servicio
+      - listitem [ref=f3e99]
+      - listitem [ref=f3e101]:
+        - link "Aspecto" [ref=f3e102] [cursor=pointer]:
+          - /url: themes.php
+          - generic [ref=f3e103]: 
+        - list [ref=f3e105]:
+          - listitem [ref=f3e106]:
+            - link "Temas 3" [ref=f3e107] [cursor=pointer]:
+              - /url: themes.php
+              - text: Temas
+              - generic [ref=f3e108]: "3"
+          - listitem [ref=f3e109]:
+            - link "Editor beta" [ref=f3e110] [cursor=pointer]:
+              - /url: site-editor.php
+              - text: Editor
+              - generic [ref=f3e111]: beta
+      - listitem [ref=f3e112]:
+        - link "Plugins 1" [ref=f3e113] [cursor=pointer]:
+          - /url: plugins.php
+          - generic [ref=f3e114]: 
+          - generic [ref=f3e115]:
+            - text: Plugins
+            - generic [ref=f3e116]: "1"
+        - list [ref=f3e117]:
+          - listitem [ref=f3e118]:
+            - link "Plugins instalados" [ref=f3e119] [cursor=pointer]:
+              - /url: plugins.php
+          - listitem [ref=f3e120]:
+            - link "Agregar nuevo" [ref=f3e121] [cursor=pointer]:
+              - /url: plugin-install.php
+      - listitem [ref=f3e122]:
+        - link "Usuarios" [ref=f3e123] [cursor=pointer]:
+          - /url: users.php
+          - generic [ref=f3e124]: 
+        - list [ref=f3e126]:
+          - listitem [ref=f3e127]:
+            - link "Todos los usuarios" [ref=f3e128] [cursor=pointer]:
+              - /url: users.php
+          - listitem [ref=f3e129]:
+            - link "Agregar nuevo" [ref=f3e130] [cursor=pointer]:
+              - /url: user-new.php
+          - listitem [ref=f3e131]:
+            - link "Perfil" [ref=f3e132] [cursor=pointer]:
+              - /url: profile.php
+      - listitem [ref=f3e133]:
+        - link "Herramientas" [ref=f3e134] [cursor=pointer]:
+          - /url: tools.php
+          - generic [ref=f3e135]: 
+        - list [ref=f3e137]:
+          - listitem [ref=f3e138]:
+            - link "Herramientas Disponibles" [ref=f3e139] [cursor=pointer]:
+              - /url: tools.php
+          - listitem [ref=f3e140]:
+            - link "Importar" [ref=f3e141] [cursor=pointer]:
+              - /url: import.php
+          - listitem [ref=f3e142]:
+            - link "Exportar" [ref=f3e143] [cursor=pointer]:
+              - /url: export.php
+          - listitem [ref=f3e144]:
+            - link "Site Health" [ref=f3e145] [cursor=pointer]:
+              - /url: site-health.php
+          - listitem [ref=f3e146]:
+            - link "Exportar Datos Personales" [ref=f3e147] [cursor=pointer]:
+              - /url: export-personal-data.php
+          - listitem [ref=f3e148]:
+            - link "Borrar Datos Personales" [ref=f3e149] [cursor=pointer]:
+              - /url: erase-personal-data.php
+          - listitem [ref=f3e150]:
+            - link "Editor de archivos de temas" [ref=f3e151] [cursor=pointer]:
+              - /url: theme-editor.php
+          - listitem [ref=f3e152]:
+            - link "Editor de archivos de plugins" [ref=f3e153] [cursor=pointer]:
+              - /url: plugin-editor.php
+      - listitem [ref=f3e154]:
+        - link "Opciones" [ref=f3e155] [cursor=pointer]:
+          - /url: options-general.php
+          - generic [ref=f3e156]: 
+        - list [ref=f3e158]:
+          - listitem [ref=f3e159]:
+            - link "General" [ref=f3e160] [cursor=pointer]:
+              - /url: options-general.php
+          - listitem [ref=f3e161]:
+            - link "Escritura" [ref=f3e162] [cursor=pointer]:
+              - /url: options-writing.php
+          - listitem [ref=f3e163]:
+            - link "Lectura" [ref=f3e164] [cursor=pointer]:
+              - /url: options-reading.php
+          - listitem [ref=f3e165]:
+            - link "Discusión" [ref=f3e166] [cursor=pointer]:
+              - /url: options-discussion.php
+          - listitem [ref=f3e167]:
+            - link "Multimedia" [ref=f3e168] [cursor=pointer]:
+              - /url: options-media.php
+          - listitem [ref=f3e169]:
+            - link "Enlaces permanentes" [ref=f3e170] [cursor=pointer]:
+              - /url: options-permalink.php
+          - listitem [ref=f3e171]:
+            - link "Privacidad" [ref=f3e172] [cursor=pointer]:
+              - /url: options-privacy.php
+      - listitem [ref=f3e173]:
+        - button "Contraer Menú principal" [expanded] [ref=f3e174] [cursor=pointer]:
+          - generic [ref=f3e175]: 
+          - generic [ref=f3e176]: Plegar menú
+  - generic [ref=f3e177]:
+    - generic [ref=f3e178]:
+      - navigation "Barra de Herramientas":
+        - list:
+          - listitem [ref=f3e179]:
+            - link "Acerca de WordPress" [ref=f3e180] [cursor=pointer]:
+              - /url: http://localhost:8088/wp-admin/about.php
+              - generic [ref=f3e181]: 
+          - listitem [ref=f3e183]:
+            - link " truetech" [ref=f3e184] [cursor=pointer]:
+              - /url: http://localhost:8088/
+          - listitem [ref=f3e185]:
+            - link "6 updates available" [ref=f3e186] [cursor=pointer]:
+              - /url: http://localhost:8088/wp-admin/update-core.php
+              - generic [ref=f3e187]: 
+              - generic [ref=f3e188]: "6"
+          - listitem [ref=f3e190]:
+            - link "0 Comentarios en moderación" [ref=f3e191] [cursor=pointer]:
+              - /url: http://localhost:8088/wp-admin/edit-comments.php
+              - generic [ref=f3e192]: 
+              - generic [ref=f3e193]: "0"
+          - listitem [ref=f3e195]:
+            - link "Nuevo" [ref=f3e196] [cursor=pointer]:
+              - /url: http://localhost:8088/wp-admin/post-new.php
+              - generic [ref=f3e197]: 
+          - listitem [ref=f3e199]:
+            - link "Ver Usuario" [ref=f3e200] [cursor=pointer]:
+              - /url: http://localhost:8088/author/tecnico1/
+        - list [ref=f3e201]:
+          - listitem [ref=f3e202]:
+            - link "Hola, admin" [ref=f3e203] [cursor=pointer]:
+              - /url: http://localhost:8088/wp-admin/profile.php
+      - link "Cerrar sesión" [ref=f3e204] [cursor=pointer]:
+        - /url: http://localhost:8088/wp-login.php?action=logout&_wpnonce=ed0d5ec5fc
+    - main [ref=f3e205]:
+      - generic [ref=f3e206]:
+        - button "Ayuda " [ref=f3e209] [cursor=pointer]
+        - generic [ref=f3e210]:
+          - text: ¡
+          - link "WordPress 7.0.1" [ref=f3e211] [cursor=pointer]:
+            - /url: https://wordpress.org/support/wordpress-version/version-7-0-1/
+          - text: está disponible!
+          - link "Por favor actualiza WordPress ahora" [ref=f3e212] [cursor=pointer]:
+            - /url: http://localhost:8088/wp-admin/update-core.php
+            - text: Por favor actualiza ahora
+          - text: .
+        - generic [ref=f3e213]:
+          - heading "Editar usuario tecnico1" [level=1] [ref=f3e214]
+          - link "Agregar nuevo" [ref=f3e215] [cursor=pointer]:
+            - /url: user-new.php
+          - generic [ref=f3e216]:
+            - paragraph
+            - heading "Opciones personales" [level=2] [ref=f3e217]
+            - text: Editor visual
+            - generic [ref=f3e218] [cursor=pointer]:
+              - checkbox "Desactivar el editor visual al escribir" [ref=f3e219]
+              - text: Desactivar el editor visual al escribir
+            - text: Esquema de colores para la administración
+            - group "Esquema de colores para la administración" [ref=f3e220]:
+              - generic [ref=f3e223] [cursor=pointer]:
+                - radio "Por Defecto" [checked] [ref=f3e224]
+                - generic [ref=f3e225]: Por Defecto
+                - table [ref=f3e226]:
+                  - rowgroup [ref=f3e227]:
+                    - row [ref=f3e228]:
+                      - cell [ref=f3e229]
+                      - cell [ref=f3e230]
+                      - cell [ref=f3e231]
+                      - cell [ref=f3e232]
+              - generic [ref=f3e233] [cursor=pointer]:
+                - radio "Claro" [ref=f3e234]
+                - generic [ref=f3e235]: Claro
+                - table [ref=f3e236]:
+                  - rowgroup [ref=f3e237]:
+                    - row [ref=f3e238]:
+                      - cell [ref=f3e239]
+                      - cell [ref=f3e240]
+                      - cell [ref=f3e241]
+                      - cell [ref=f3e242]
+              - generic [ref=f3e243] [cursor=pointer]:
+                - radio "Moderno" [ref=f3e244]
+                - generic [ref=f3e245]: Moderno
+                - table [ref=f3e246]:
+                  - rowgroup [ref=f3e247]:
+                    - row [ref=f3e248]:
+                      - cell [ref=f3e249]
+                      - cell [ref=f3e250]
+                      - cell [ref=f3e251]
+              - generic [ref=f3e252] [cursor=pointer]:
+                - radio "Azul" [ref=f3e253]
+                - generic [ref=f3e254]: Azul
+                - table [ref=f3e255]:
+                  - rowgroup [ref=f3e256]:
+                    - row [ref=f3e257]:
+                      - cell [ref=f3e258]
+                      - cell [ref=f3e259]
+                      - cell [ref=f3e260]
+                      - cell [ref=f3e261]
+              - generic [ref=f3e262] [cursor=pointer]:
+                - radio "Café" [ref=f3e263]
+                - generic [ref=f3e264]: Café
+                - table [ref=f3e265]:
+                  - rowgroup [ref=f3e266]:
+                    - row [ref=f3e267]:
+                      - cell [ref=f3e268]
+                      - cell [ref=f3e269]
+                      - cell [ref=f3e270]
+                      - cell [ref=f3e271]
+              - generic [ref=f3e272] [cursor=pointer]:
+                - radio "Ectoplasma" [ref=f3e273]
+                - generic [ref=f3e274]: Ectoplasma
+                - table [ref=f3e275]:
+                  - rowgroup [ref=f3e276]:
+                    - row [ref=f3e277]:
+                      - cell [ref=f3e278]
+                      - cell [ref=f3e279]
+                      - cell [ref=f3e280]
+                      - cell [ref=f3e281]
+              - generic [ref=f3e282] [cursor=pointer]:
+                - radio "Medianoche" [ref=f3e283]
+                - generic [ref=f3e284]: Medianoche
+                - table [ref=f3e285]:
+                  - rowgroup [ref=f3e286]:
+                    - row [ref=f3e287]:
+                      - cell [ref=f3e288]
+                      - cell [ref=f3e289]
+                      - cell [ref=f3e290]
+                      - cell [ref=f3e291]
+              - generic [ref=f3e292] [cursor=pointer]:
+                - radio "Océano" [ref=f3e293]
+                - generic [ref=f3e294]: Océano
+                - table [ref=f3e295]:
+                  - rowgroup [ref=f3e296]:
+                    - row [ref=f3e297]:
+                      - cell [ref=f3e298]
+                      - cell [ref=f3e299]
+                      - cell [ref=f3e300]
+                      - cell [ref=f3e301]
+              - generic [ref=f3e302] [cursor=pointer]:
+                - radio "Amanecer" [ref=f3e303]
+                - generic [ref=f3e304]: Amanecer
+                - table [ref=f3e305]:
+                  - rowgroup [ref=f3e306]:
+                    - row [ref=f3e307]:
+                      - cell [ref=f3e308]
+                      - cell [ref=f3e309]
+                      - cell [ref=f3e310]
+                      - cell [ref=f3e311]
+            - text: Atajos de teclado
+            - generic [ref=f3e312] [cursor=pointer]:
+              - checkbox "Activar los atajos del teclado para la moderación de comentarios." [ref=f3e313]
+              - text: Activar los atajos del teclado para la moderación de comentarios.
+            - link "Más información" [ref=f3e314] [cursor=pointer]:
+              - /url: https://wordpress.org/support/article/keyboard-shortcuts/
+            - text: Barra de Herramientas
+            - generic [ref=f3e315] [cursor=pointer]:
+              - checkbox "Mostrar la barra de herramientas durante la visualización del sitio" [checked] [ref=f3e316]
+              - text: Mostrar la barra de herramientas durante la visualización del sitio
+            - generic [ref=f3e317] [cursor=pointer]:
+              - text: Idioma
+              - generic [ref=f3e318]: 
+            - combobox "Idioma" [ref=f3e319] [cursor=pointer]:
+              - option "Por defecto del sitio" [selected]
+              - option "English (United States)"
+              - option "Español de Chile"
+            - heading "Nombre" [level=2] [ref=f3e320]
+            - text: Nombre de usuario
+            - textbox "Nombre de usuario" [disabled] [ref=f3e321]: tecnico1
+            - text: Los nombres de usuario no se pueden cambiar. Función
+            - combobox "Función" [ref=f3e322] [cursor=pointer]:
+              - option "Técnico de calibración" [selected]
+              - option "Suscriptor"
+              - option "Colaborador"
+              - option "Autor"
+              - option "Editor"
+              - option "Administrador"
+              - option "— Sin rol de usuario en este sitio —"
+            - text: Nombre
+            - textbox "Nombre" [ref=f3e323]
+            - text: Apellidos
+            - textbox "Apellidos" [ref=f3e324]
+            - generic [ref=f3e325] [cursor=pointer]: Alias (requerido)
+            - textbox "Alias (requerido)" [ref=f3e326]: tecnico1
+            - text: Mostrar como nombre público
+            - combobox "Mostrar como nombre público" [ref=f3e327] [cursor=pointer]:
+              - option "tecnico1" [selected]
+            - heading "Información de contacto" [level=2] [ref=f3e328]
+            - generic [ref=f3e329] [cursor=pointer]: Correo (requerido)
+            - textbox "Correo (requerido)" [ref=f3e330]: tecnico1@truetech.cl
+            - text: Sitio web
+            - textbox "Sitio web" [ref=f3e331]
+            - heading "Acerca del usuario" [level=2] [ref=f3e332]
+            - text: Información biográfica
+            - textbox "Información biográfica" [ref=f3e333]
+            - paragraph [ref=f3e334]: Incluye alguna información biográfica en tu perfil. Esto podría mostrarse públicamente.
+            - text: Imagen de Perfil
+            - paragraph
+            - heading "Administrador de cuentas" [level=2] [ref=f3e335]
+            - text: Nueva clave
+            - button "Establecer nueva contraseña" [ref=f3e336] [cursor=pointer]
+            - text:   Clave restablecida
+            - button "Enviar el enlace para restablecer" [ref=f3e338] [cursor=pointer]
+            - paragraph [ref=f3e339]: Envía a tecnico1 un enlace para restablecer su contraseña. Esto no cambiará su contraseña ni le forzará a cambiarla.
+            - generic [ref=f3e340]:
+              - heading "Contraseñas de Aplicación" [level=2] [ref=f3e341]
+              - paragraph [ref=f3e342]: Las contraseñas de aplicación permiten la autenticación a través de sistemas no interactivos, como XML-RPC o la API de REST, sin proporcionar la contraseña real. Las contraseñas de aplicación se pueden revocar fácilmente. No se pueden utilizar para los inicios de sesión tradicionales en su sitio web.
+              - paragraph [ref=f3e343]: La característica de contraseña de aplicación necesita HTTPS, que no está activo en este sitio.
+              - paragraph [ref=f3e344]:
+                - text: Si esta es una web de desarrollo, puedes
+                - link "establecer el tipo de entorno como corresponda" [ref=f3e345] [cursor=pointer]:
+                  - /url: https://developer.wordpress.org/apis/wp-config-php/#wp-environment-type
+                - text: para activar las contraseñas de aplicación.
+            - heading "CalibraTrack" [level=2] [ref=f3e346]
+            - text: Cargo / título profesional
+            - textbox "Cargo / título profesional" [ref=f3e347]: Técnico en fibra óptica
+            - paragraph [ref=f3e348]: Aparece debajo del nombre en los certificados PDF.
+            - text: Firma digital
+            - button "Choose File" [ref=f3e349] [cursor=pointer]
+            - paragraph [ref=f3e350]: PNG con fondo transparente recomendado. Máx. 1 MB. Sube una nueva imagen para reemplazar la actual.
+            - paragraph [ref=f3e351]:
+              - button "Actualizar usuario" [ref=f3e352] [cursor=pointer]
+  - contentinfo [ref=f3e353]:
+    - paragraph [ref=f3e354]:
+      - generic [ref=f3e355]:
+        - text: Gracias por crear con
+        - link "WordPress" [ref=f3e356] [cursor=pointer]:
+          - /url: https://wordpress.org/
+        - text: .
+    - paragraph [ref=f3e357]:
+      - strong [ref=f3e358]:
+        - link "Obtener Versión 7.0.1" [ref=f3e359] [cursor=pointer]:
+          - /url: http://localhost:8088/wp-admin/update-core.php
+  - text: 

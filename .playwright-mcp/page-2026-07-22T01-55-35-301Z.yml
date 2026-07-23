@@ -1,0 +1,62 @@
+- generic [active] [ref=f125e1]:
+  - generic [ref=f125e4]:
+    - generic [ref=f125e5]:
+      - banner "Panel de navegación superior" [ref=f125e6]:
+        - status
+        - generic [ref=f125e7]:
+          - button [expanded] [ref=f125e8] [cursor=pointer]:
+            - img [ref=f125e11]: menu
+          - heading [level=1] [ref=f125e13]:
+            - button "Google Ads – Ir a la página de inicio" [ref=f125e14]
+        - button "Abrir menú de la cuenta de Google" [ref=f125e27]
+      - progressbar "cargando" [ref=f125e29]
+    - generic [ref=f125e37]:
+      - generic [ref=f125e38]:
+        - generic [ref=f125e39]:
+          - button "Crear" [ref=f125e41] [cursor=pointer]
+          - generic [ref=f125e46]: Crear
+        - menu [ref=f125e47]:
+          - menu [ref=f125e48]:
+            - menuitem "Campañas" [ref=f125e51] [cursor=pointer]:
+              - generic [ref=f125e52]:
+                - img [ref=f125e54]: campaign
+                - generic [ref=f125e55]: Campañas
+            - menuitem "Objetivos" [ref=f125e58] [cursor=pointer]:
+              - generic [ref=f125e59]:
+                - img [ref=f125e61]: rewarded_ads
+                - generic [ref=f125e62]: Objetivos
+            - menuitem "Herramientas" [ref=f125e65] [cursor=pointer]:
+              - generic [ref=f125e66]:
+                - img [ref=f125e68]: construction
+                - generic [ref=f125e69]: Herramientas
+            - menuitem "Facturación" [ref=f125e72] [cursor=pointer]:
+              - generic [ref=f125e73]:
+                - img [ref=f125e75]: credit_card
+                - generic [ref=f125e76]: Facturación
+            - menuitem "Administrador" [ref=f125e79] [cursor=pointer]:
+              - generic [ref=f125e80]:
+                - img [ref=f125e82]: settings
+                - generic [ref=f125e83]: Administrador
+      - navigation [ref=f125e84]:
+        - menu [ref=f125e85]:
+          - generic [ref=f125e86]:
+            - menuitem "Conversiones" [expanded] [ref=f125e89] [cursor=pointer]:
+              - generic [ref=f125e90]:
+                - generic [ref=f125e91]: Conversiones
+                - img [ref=f125e94]: expand_more
+            - generic [ref=f125e95]:
+              - menuitem "Resumen" [ref=f125e98] [cursor=pointer]
+              - menuitem "Reglas de valor" [ref=f125e104] [cursor=pointer]
+              - menuitem "Variables personalizadas" [ref=f125e110] [cursor=pointer]
+              - menuitem "Configuración" [ref=f125e116] [cursor=pointer]
+              - menuitem "Subidas" [ref=f125e122] [cursor=pointer]
+            - menuitem "Medición" [ref=f125e128] [cursor=pointer]:
+              - generic [ref=f125e129]:
+                - generic [ref=f125e130]: Medición
+                - img [ref=f125e133]: expand_more
+  - generic:
+    - dialog:
+      - generic:
+        - generic:
+          - heading [level=1]: Turn off ad blockers
+          - paragraph: Google Ads can't work when you're using an ad blocker. To use Google Ads, please turn off any ad blockers for now.

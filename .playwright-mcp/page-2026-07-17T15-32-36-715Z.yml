@@ -1,0 +1,34 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - heading [level=1] [ref=e3]:
+      - link "Funciona con WordPress" [ref=e4] [cursor=pointer]:
+        - /url: https://wordpress.org/
+    - generic [ref=e5]:
+      - paragraph [ref=e6]:
+        - generic [ref=e7] [cursor=pointer]: Nombre de usuario o correo electrónico
+        - textbox "Nombre de usuario o correo electrónico" [ref=e8]
+      - generic [ref=e9]:
+        - generic [ref=e10] [cursor=pointer]: Contraseña
+        - generic [ref=e11]:
+          - textbox "Contraseña" [ref=e12]
+          - button "Mostrar clave" [ref=e13] [cursor=pointer]:
+            - generic [ref=e14]: 
+      - paragraph [ref=e15]:
+        - checkbox "Recuérdame" [ref=e16] [cursor=pointer]
+        - generic [ref=e17] [cursor=pointer]: Recuérdame
+      - paragraph:
+        - button "Iniciar sesión" [ref=e18] [cursor=pointer]
+    - paragraph [ref=e19]:
+      - link "¿Olvidaste tu contraseña?" [ref=e20] [cursor=pointer]:
+        - /url: http://localhost:8088/my-account/lost-password/
+    - paragraph [ref=e21]:
+      - link "← Ir a truetech" [ref=e22] [cursor=pointer]:
+        - /url: http://localhost:8088/
+  - generic [ref=e24]:
+    - generic [ref=e25] [cursor=pointer]:
+      - generic [ref=e26]: 
+      - generic [ref=e27]: Idioma
+    - combobox "Idioma" [ref=e28] [cursor=pointer]:
+      - option "English (United States)"
+      - option "Español de Chile" [selected]
+    - button "Cambiar" [ref=e29] [cursor=pointer]

@@ -1,0 +1,320 @@
+/**
+ * Estilos del panel de administración de CalibraTrack.
+ *
+ * Solo se carga en páginas del plugin (condicional por $hook en enqueue).
+ * Usa el prefijo .ct-admin- para evitar colisiones con estilos del core de WP.
+ *
+ * @package CalibraTrack
+ */
+
+/* ── Metabox genérico ─────────────────────────────────────────────────────── */
+.ct-admin-section-title {
+	font-size: 13px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: #555;
+	margin: 18px 0 10px;
+	padding-bottom: 6px;
+	border-bottom: 1px solid #e5e5e5;
+}
+
+/* ── Repetidor de ítems de costo ─────────────────────────────────────────── */
+#calibratrack-items-costo {
+	border-collapse: collapse;
+	width: 100%;
+	margin-bottom: 10px;
+}
+
+#calibratrack-items-costo thead th {
+	background: #f9f9f9;
+	font-weight: 700;
+	font-size: 12px;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: #555;
+	padding: 8px 10px;
+	border: 1px solid #ddd;
+	text-align: left;
+}
+
+#calibratrack-items-costo tbody tr {
+	border-bottom: 1px solid #eee;
+}
+
+#calibratrack-items-costo tbody td {
+	padding: 7px 8px;
+	border: 1px solid #eee;
+	vertical-align: middle;
+}
+
+#calibratrack-items-costo .ct-item-detalle {
+	width: 50%;
+}
+
+#calibratrack-items-costo .ct-item-cantidad {
+	width: 100px;
+}
+
+#calibratrack-items-costo .ct-item-precio {
+	width: 130px;
+}
+
+#calibratrack-items-costo .ct-item-subtotal {
+	width: 120px;
+	color: #444;
+	font-weight: 600;
+	text-align: right;
+	padding-right: 10px;
+}
+
+#calibratrack-items-costo .ct-item-acciones {
+	width: 36px;
+	text-align: center;
+}
+
+.ct-btn-quitar-item {
+	background: none;
+	border: 1px solid #c00;
+	color: #c00;
+	border-radius: 3px;
+	padding: 3px 7px;
+	cursor: pointer;
+	font-size: 14px;
+	line-height: 1;
+	transition: background 0.15s, color 0.15s;
+}
+
+.ct-btn-quitar-item:hover {
+	background: #c00;
+	color: #fff;
+}
+
+/* Fila de tfoot con totales */
+#calibratrack-items-costo tfoot td {
+	padding: 8px 10px;
+	font-weight: 600;
+	border-top: 2px solid #ddd;
+	background: #f9f9f9;
+	text-align: right;
+}
+
+#calibratrack-items-costo tfoot .ct-totales-label {
+	text-align: left;
+	color: #555;
+}
+
+#calibratrack-items-costo tfoot .ct-total-final {
+	font-size: 14px;
+	color: #23282d;
+}
+
+/* Botón agregar ítem */
+#ct-btn-agregar-item {
+	margin-top: 6px;
+}
+
+/* ── Totales de solo lectura ─────────────────────────────────────────────── */
+.ct-totales-row {
+	display: flex;
+	gap: 20px;
+	margin-top: 10px;
+	padding: 12px 14px;
+	background: #f0f4ff;
+	border: 1px solid #d0d8f0;
+	border-radius: 5px;
+	flex-wrap: wrap;
+}
+
+.ct-totales-item {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 120px;
+}
+
+.ct-totales-item .ct-totales-item-label {
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: #666;
+}
+
+.ct-totales-item .ct-totales-item-valor {
+	font-size: 14px;
+	font-weight: 700;
+	color: #23282d;
+}
+
+/* ── Galería de evidencia fotográfica ────────────────────────────────────── */
+.ct-galeria-wrapper {
+	margin-top: 8px;
+}
+
+.ct-galeria-preview {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 10px;
+	min-height: 20px;
+}
+
+.ct-galeria-thumb {
+	position: relative;
+	width: 72px;
+	height: 72px;
+	border-radius: 4px;
+	overflow: hidden;
+	border: 2px solid #ddd;
+}
+
+.ct-galeria-thumb img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.ct-galeria-thumb .ct-thumb-remove {
+	position: absolute;
+	top: 2px;
+	right: 2px;
+	background: rgba(0,0,0,0.7);
+	color: #fff;
+	border: none;
+	border-radius: 50%;
+	width: 18px;
+	height: 18px;
+	cursor: pointer;
+	font-size: 11px;
+	line-height: 18px;
+	text-align: center;
+	padding: 0;
+	display: none;
+}
+
+.ct-galeria-thumb:hover .ct-thumb-remove {
+	display: block;
+}
+
+/* ── Selector de PDF (certificado / OT) ─────────────────────────────────── */
+.ct-pdf-selector {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+	margin-top: 4px;
+}
+
+.ct-pdf-nombre {
+	font-size: 13px;
+	color: #444;
+	font-style: italic;
+	word-break: break-all;
+}
+
+.ct-pdf-nombre.ct-sin-archivo {
+	color: #aaa;
+}
+
+/* ── Toggle garantía ─────────────────────────────────────────────────────── */
+.ct-garantia-dias-row {
+	margin-top: 8px;
+	padding: 8px 12px;
+	background: #fffbea;
+	border: 1px solid #f0c419;
+	border-radius: 4px;
+	display: none; /* Visible solo cuando garantía = checked */
+}
+
+.ct-garantia-dias-row.visible {
+	display: block;
+}
+
+/* ── Selects de equipo/técnico mejorados ─────────────────────────────────── */
+.ct-select-with-search {
+	max-width: 400px;
+}
+
+/* ── Etiqueta QR imprimible (RF-09) ──────────────────────────────────────── */
+.ct-qr-print-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 14px;
+	background: #23282d;
+	color: #fff;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 13px;
+	font-weight: 600;
+	text-decoration: none;
+	margin-top: 12px;
+	transition: background 0.15s;
+}
+
+.ct-qr-print-btn:hover {
+	background: #444;
+	color: #fff;
+	text-decoration: none;
+}
+
+.ct-qr-preview {
+	margin-top: 10px;
+}
+
+.ct-qr-preview img {
+	max-width: 150px;
+	height: auto;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	display: block;
+	margin-bottom: 8px;
+}
+
+/* ── Estados en la lista de equipos ─────────────────────────────────────── */
+.calibratrack-estado-vigente {
+	display: inline-block;
+	padding: 2px 10px;
+	border-radius: 999px;
+	background: #d4edda;
+	color: #155724;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.calibratrack-estado-por-vencer {
+	display: inline-block;
+	padding: 2px 10px;
+	border-radius: 999px;
+	background: #fff3cd;
+	color: #856404;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.calibratrack-estado-vencido {
+	display: inline-block;
+	padding: 2px 10px;
+	border-radius: 999px;
+	background: #f8d7da;
+	color: #721c24;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.calibratrack-estado-sin-evento {
+	display: inline-block;
+	padding: 2px 10px;
+	border-radius: 999px;
+	background: #e2e3e5;
+	color: #383d41;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+/* ── Ventana de impresión QR ─────────────────────────────────────────────── */
+/* Estos estilos van en la página de impresión generada dinámicamente por JS */
+/* Solo se incluyen aquí como referencia; el JS los inyecta inline en la ventana nueva */

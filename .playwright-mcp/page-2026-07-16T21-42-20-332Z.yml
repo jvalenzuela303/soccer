@@ -1,0 +1,149 @@
+- generic [active] [ref=f2e1]:
+  - banner [ref=f2e2]:
+    - generic [ref=f2e3]:
+      - generic [ref=f2e4]:
+        - generic [ref=f2e5]: TrueTech
+        - generic [ref=f2e6]: Panel de Gestión
+      - navigation [ref=f2e7]:
+        - link "Inicio" [ref=f2e8] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/
+        - link "+ Nueva OI" [ref=f2e9] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/nueva-oi/
+        - link "+ Nueva OT" [ref=f2e10] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/nueva-ot/
+        - link "OI" [ref=f2e11] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/?filtro=oi
+        - link "OT" [ref=f2e12] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/?filtro=ot
+        - link "Equipos" [ref=f2e13] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/equipos/
+        - link "Salir" [ref=f2e14] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/salir/
+  - main [ref=f2e15]:
+    - generic [ref=f2e16]:
+      - generic [ref=f2e18]:
+        - heading "Hola, admin" [level=1] [ref=f2e19]
+        - paragraph [ref=f2e20]: Jueves 16 de Julio de 2026
+      - generic [ref=f2e21]:
+        - link "Todo" [ref=f2e22] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/
+        - link "Órdenes de Ingreso" [ref=f2e23] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/?filtro=oi
+        - link "Órdenes de Trabajo" [ref=f2e24] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/?filtro=ot
+      - generic [ref=f2e25]:
+        - heading "Órdenes de Trabajo" [level=2] [ref=f2e27]
+        - generic [ref=f2e28]:
+          - textbox "Buscar por N° OT o serie…" [ref=f2e29]
+          - combobox [ref=f2e30]:
+            - option "Todos los tipos" [selected]
+            - option "Calibración"
+            - option "Mantenimiento"
+          - combobox [ref=f2e31]:
+            - option "Todos los técnicos" [selected]
+            - option "admin"
+            - option "tecnico1"
+          - combobox [ref=f2e32]:
+            - option "Todos los estados" [selected]
+            - option "En proceso"
+            - option "En ejecución"
+            - option "Listo para revisión"
+            - option "Completado"
+          - button "Filtrar" [ref=f2e33] [cursor=pointer]
+        - table [ref=f2e35]:
+          - rowgroup [ref=f2e36]:
+            - row [ref=f2e37]:
+              - columnheader "Fecha" [ref=f2e38]
+              - columnheader "N° OT" [ref=f2e39]
+              - columnheader "Equipo" [ref=f2e40]
+              - columnheader "Técnico" [ref=f2e41]
+              - columnheader "Tipo" [ref=f2e42]
+              - columnheader "Estado" [ref=f2e43]
+              - columnheader "OI vinculada" [ref=f2e44]
+              - columnheader [ref=f2e45]
+          - rowgroup [ref=f2e46]:
+            - row [ref=f2e47]:
+              - cell "16/07/2026" [ref=f2e48]
+              - cell "OT-2026-025" [ref=f2e49]
+              - cell "GW-OTDR-2024-001" [ref=f2e50]
+              - cell "tecnico1" [ref=f2e51]
+              - cell "Mantenimiento" [ref=f2e52]
+              - cell "Completado" [ref=f2e53]
+              - cell [ref=f2e55]:
+                - link "OI-2026-009" [ref=f2e56] [cursor=pointer]:
+                  - /url: http://localhost:8088/panel/oi/166/
+              - cell [ref=f2e57]:
+                - link "Editar" [ref=f2e58] [cursor=pointer]:
+                  - /url: http://localhost:8088/panel/ot/167/
+            - row [ref=f2e59]:
+              - cell "11/06/2026" [ref=f2e60]
+              - cell "OT-2024-096" [ref=f2e61]
+              - cell "GW-OTDR-2024-001" [ref=f2e62]
+              - cell "tecnico1" [ref=f2e63]
+              - cell "Calibración" [ref=f2e64]
+              - cell "En proceso" [ref=f2e65]
+              - cell [ref=f2e67]:
+                - link "OI-2026-004" [ref=f2e68] [cursor=pointer]:
+                  - /url: http://localhost:8088/panel/oi/153/
+              - cell [ref=f2e69]:
+                - link "Editar" [ref=f2e70] [cursor=pointer]:
+                  - /url: http://localhost:8088/panel/ot/46/
+            - row [ref=f2e71]:
+              - cell "31/07/2025" [ref=f2e72]
+              - cell "OT-2024-097" [ref=f2e73]
+              - cell "EXFO-PM-2024-002" [ref=f2e74]
+              - cell "admin" [ref=f2e75]
+              - cell "Mantenimiento" [ref=f2e76]
+              - cell "En proceso" [ref=f2e77]
+              - cell "—" [ref=f2e79]
+              - cell [ref=f2e80]:
+                - link "Editar" [ref=f2e81] [cursor=pointer]:
+                  - /url: http://localhost:8088/panel/ot/47/
+            - row [ref=f2e82]:
+              - cell "26/06/2025" [ref=f2e83]
+              - cell "OT-2023-058" [ref=f2e84]
+              - cell "FK-EMP-2023-003" [ref=f2e85]
+              - cell "admin" [ref=f2e86]
+              - cell "Calibración" [ref=f2e87]
+              - cell "En proceso" [ref=f2e88]
+              - cell "—" [ref=f2e90]
+              - cell [ref=f2e91]:
+                - link "Editar" [ref=f2e92] [cursor=pointer]:
+                  - /url: http://localhost:8088/panel/ot/48/
+            - row [ref=f2e93]:
+              - cell "21/07/2024" [ref=f2e94]
+              - cell "OT-2023-041" [ref=f2e95]
+              - cell "FLUKE-CERT-2024-004" [ref=f2e96]
+              - cell "admin" [ref=f2e97]
+              - cell "Mantenimiento" [ref=f2e98]
+              - cell "En proceso" [ref=f2e99]
+              - cell "—" [ref=f2e101]
+              - cell [ref=f2e102]:
+                - link "Editar" [ref=f2e103] [cursor=pointer]:
+                  - /url: http://localhost:8088/panel/ot/49/
+            - row [ref=f2e104]:
+              - cell "01/07/2026" [ref=f2e105]
+              - cell "OT-2024-082" [ref=f2e106]
+              - cell "FLUKE-CERT-2024-004" [ref=f2e107]
+              - cell "tecnico1" [ref=f2e108]
+              - cell "Calibración" [ref=f2e109]
+              - cell "En proceso" [ref=f2e110]
+              - cell [ref=f2e112]:
+                - link "OI-2026-006" [ref=f2e113] [cursor=pointer]:
+                  - /url: http://localhost:8088/panel/oi/155/
+              - cell [ref=f2e114]:
+                - link "Editar" [ref=f2e115] [cursor=pointer]:
+                  - /url: http://localhost:8088/panel/ot/50/
+            - row [ref=f2e116]:
+              - cell "11/07/2024" [ref=f2e117]
+              - cell "OT-2022-019" [ref=f2e118]
+              - cell "EXFO-OTDR-2022-006" [ref=f2e119]
+              - cell "tecnico1" [ref=f2e120]
+              - cell "Calibración" [ref=f2e121]
+              - cell "En ejecución" [ref=f2e122]
+              - cell "—" [ref=f2e124]
+              - cell [ref=f2e125]:
+                - link "Editar" [ref=f2e126] [cursor=pointer]:
+                  - /url: http://localhost:8088/panel/ot/51/
+  - contentinfo [ref=f2e127]:
+    - paragraph [ref=f2e128]: © 2026 TrueTech SpA — Panel interno

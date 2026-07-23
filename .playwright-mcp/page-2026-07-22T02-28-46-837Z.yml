@@ -1,0 +1,300 @@
+- generic [ref=f132e1]:
+  - generic [ref=f132e4]:
+    - banner "Panel de navegación superior" [ref=f132e6]:
+      - status
+      - generic [ref=f132e7]:
+        - button [expanded] [ref=f132e8] [cursor=pointer]:
+          - img [ref=f132e11]: menu
+        - heading [level=1] [ref=f132e13]:
+          - button "Google Ads – Ir a la página de inicio" [ref=f132e14]
+      - generic [ref=f132e159]:
+        - button "Buscar" [ref=f132e162] [cursor=pointer]:
+          - generic [ref=f132e164]:
+            - img [ref=f132e165]: search
+            - text: Buscar
+        - generic [ref=f132e167]:
+          - button "Diseño" [ref=f132e170] [cursor=pointer]:
+            - generic [ref=f132e172]:
+              - img [ref=f132e173]: responsive_layout
+              - text: Diseño
+          - button "Actualizar" [ref=f132e177] [cursor=pointer]:
+            - generic [ref=f132e179]:
+              - img [ref=f132e180]: refresh
+              - text: Actualizar
+          - button "Abrir el panel de ayuda rápida" [ref=f132e183] [cursor=pointer]:
+            - generic [ref=f132e184]:
+              - text: Ayuda
+              - generic [ref=f132e185]:
+                - img [ref=f132e186]: help_outline
+                - text: Ayuda
+          - button "Notificaciones" [ref=f132e193] [cursor=pointer]:
+            - generic [ref=f132e195]:
+              - img [ref=f132e198]: notifications
+              - generic [ref=f132e200]: Notificaciones
+      - button "Cuenta de Google" [ref=f132e205] [cursor=pointer]:
+        - img "Cuenta de Google (jvalenzuela303@gmail.com)" [ref=f132e206]
+    - generic [ref=f132e34]:
+      - generic [ref=f132e211]:
+        - img [ref=f132e213]: report_problem
+        - generic [ref=f132e215]:
+          - status [ref=f132e216]:
+            - generic [ref=f132e217]: Revisa los objetivos de tu campaña - A partir del 17 de agosto del 2026, las campañas con objetivos de puja (por ejemplo, un objetivo de CPA o de ROAS) ofrecerán un rendimiento más uniforme cuando estén limitadas por el presupuesto, incluso después de ajustar el presupuesto. Revisa estas campañas para asegurarte de que los objetivos se ajusten a los tuyos. Los objetivos no se actualizarán automáticamente.
+          - generic [ref=f132e220]:
+            - button "Revisar campañas" [ref=f132e222] [cursor=pointer]
+            - button "Ocultar" [ref=f132e226] [cursor=pointer]
+      - generic [ref=f132e35]:
+        - generic [ref=f132e37]:
+          - generic [ref=f132e38]:
+            - generic [ref=f132e39]:
+              - button "Crear" [ref=f132e41] [cursor=pointer]
+              - generic [ref=f132e46]: Crear
+            - menu [ref=f132e47]:
+              - menu [ref=f132e48]:
+                - menuitem "Campañas" [ref=f132e51] [cursor=pointer]:
+                  - generic [ref=f132e52]:
+                    - img [ref=f132e54]: campaign
+                    - generic [ref=f132e55]: Campañas
+                - menuitem "Objetivos" [ref=f132e58] [cursor=pointer]:
+                  - generic [ref=f132e59]:
+                    - img [ref=f132e61]: rewarded_ads
+                    - generic [ref=f132e62]: Objetivos
+                - menuitem "Herramientas" [ref=f132e65] [cursor=pointer]:
+                  - generic [ref=f132e66]:
+                    - img [ref=f132e68]: construction
+                    - generic [ref=f132e69]: Herramientas
+                - menuitem "Facturación" [ref=f132e72] [cursor=pointer]:
+                  - generic [ref=f132e73]:
+                    - img [ref=f132e75]: credit_card
+                    - generic [ref=f132e76]: Facturación
+                - menuitem "Administrador" [ref=f132e79] [cursor=pointer]:
+                  - generic [ref=f132e80]:
+                    - img [ref=f132e82]: settings
+                    - generic [ref=f132e83]: Administrador
+          - navigation [ref=f132e84]:
+            - menu [ref=f132e85]:
+              - generic [ref=f132e86]:
+                - menuitem "Conversiones" [expanded] [ref=f132e89] [cursor=pointer]:
+                  - generic [ref=f132e90]:
+                    - generic [ref=f132e91]: Conversiones
+                    - img [ref=f132e94]: expand_more
+                - generic [ref=f132e95]:
+                  - menuitem "Resumen" [ref=f132e98] [cursor=pointer]
+                  - menuitem "Reglas de valor" [ref=f132e104] [cursor=pointer]
+                  - menuitem "Variables personalizadas" [ref=f132e110] [cursor=pointer]
+                  - menuitem "Configuración" [ref=f132e116] [cursor=pointer]
+                  - menuitem "Subidas" [ref=f132e122] [cursor=pointer]
+                - menuitem "Medición" [ref=f132e128] [cursor=pointer]:
+                  - generic [ref=f132e129]:
+                    - generic [ref=f132e130]: Medición
+                    - img [ref=f132e133]: expand_more
+        - generic [ref=f132e136]:
+          - generic [ref=f132e229]:
+            - generic [ref=f132e230]:
+              - heading "Resumen" [level=2] [ref=f132e233]
+              - generic [ref=f132e236]:
+                - generic [ref=f132e238] [cursor=pointer]:
+                  - generic [ref=f132e239]: Personalizado
+                  - generic [ref=f132e241]:
+                    - button "24 jun – 21 jul de 2026 No aplicable" [ref=f132e243]:
+                      - generic [ref=f132e244]: 24 jun – 21 jul de 2026
+                      - img [ref=f132e246]: arrow_drop_down
+                    - generic [ref=f132e247]:
+                      - button "Anterior" [ref=f132e248]:
+                        - img [ref=f132e251]: chevron_left
+                      - button "Siguiente" [disabled]:
+                        - generic:
+                          - generic:
+                            - img: chevron_right
+                - button "Mostrar últimos 30 días" [ref=f132e253] [cursor=pointer]
+            - tablist [ref=f132e259]:
+              - tab "Objetivos" [selected] [ref=f132e260] [cursor=pointer]
+              - tab "Diagnóstico" [ref=f132e263] [cursor=pointer]
+          - main [ref=f132e270]:
+            - generic [ref=f132e272]:
+              - generic [ref=f132e755]:
+                - generic: info
+                - region "Menú de herramientas principal" [ref=f132e760]:
+                  - generic [ref=f132e761]:
+                    - button "Nuevo tipo de conversión" [ref=f132e765] [cursor=pointer]:
+                      - img [ref=f132e768]: add
+                    - generic [ref=f132e772] [cursor=pointer]:
+                      - group [ref=f132e773]:
+                        - generic [ref=f132e774]:
+                          - button "Mostrar 1 filtros activos" [ref=f132e777]:
+                            - generic [ref=f132e779]:
+                              - img [ref=f132e781]: filter_alt
+                              - generic [ref=f132e782]: "1"
+                          - generic: "Filtros aplicados:"
+                          - grid "Filtros aplicados:" [ref=f132e784]:
+                            - row [ref=f132e786]:
+                              - gridcell [ref=f132e787]:
+                                - 'button "Estado: Todo lo habilitado" [ref=f132e788]'
+                      - button "Añadir filtro" [ref=f132e790]
+                  - generic [ref=f132e793]:
+                    - button "Segmento. Se ha agrupado por Categoría del objetivo" [ref=f132e798] [cursor=pointer]:
+                      - generic [ref=f132e799]:
+                        - img [ref=f132e801]: segment
+                        - generic [ref=f132e802]: Segmento
+                    - button "Columnas" [ref=f132e808] [cursor=pointer]:
+                      - generic [ref=f132e809]:
+                        - img [ref=f132e811]: view_column
+                        - generic [ref=f132e812]: Columnas
+                    - button "Ampliar" [ref=f132e818] [cursor=pointer]:
+                      - generic [ref=f132e819]:
+                        - img [ref=f132e821]: fullscreen
+                        - generic [ref=f132e822]: Ampliar
+                - generic [ref=f132e824]:
+                  - grid [ref=f132e827]:
+                    - row [ref=f132e828]:
+                      - gridcell [ref=f132e829]:
+                        - checkbox "Seleccionar todas las filas" [ref=f132e831] [cursor=pointer]
+                      - columnheader [ref=f132e834] [cursor=pointer]:
+                        - img "Estado" [ref=f132e835]
+                      - columnheader "Acción de conversión" [ref=f132e836] [cursor=pointer]:
+                        - text: Acción de conversión
+                        - img [ref=f132e838]: help_outline
+                      - columnheader "Fuente de conversión" [ref=f132e839] [cursor=pointer]
+                      - columnheader "Estado de seguimiento" [ref=f132e840]:
+                        - text: Estado de seguimiento
+                        - img [ref=f132e842]: help_outline
+                      - columnheader "Optimización de acciones" [ref=f132e843] [cursor=pointer]:
+                        - text: Optimización de acciones
+                        - img [ref=f132e845]: help_outline
+                      - columnheader "Recuento" [ref=f132e846] [cursor=pointer]:
+                        - text: Recuento
+                        - img [ref=f132e848]: help_outline
+                      - columnheader "Ventana de conversión post-clic" [ref=f132e849] [cursor=pointer]:
+                        - text: Ventana de conversión post-clic
+                        - img [ref=f132e851]: help_outline
+                      - columnheader "Incluido en los objetivos a nivel de cuenta" [ref=f132e852] [cursor=pointer]:
+                        - text: Incluido en los objetivos a nivel de cuenta
+                        - img [ref=f132e854]: help_outline
+                      - columnheader "Todas las conversiones" [ref=f132e855] [cursor=pointer]:
+                        - text: Todas las conversiones
+                        - img [ref=f132e857]: help_outline
+                      - columnheader "Valor de todas las conversiones" [ref=f132e858] [cursor=pointer]:
+                        - text: Valor de todas las conversiones
+                        - img [ref=f132e860]: help_outline
+                    - generic [ref=f132e861]: Clientes potenciales por teléfono (Objetivo predeterminado de la cuenta)
+                    - row [ref=f132e864]:
+                      - gridcell [ref=f132e865]:
+                        - checkbox "Seleccionar fila" [ref=f132e867] [cursor=pointer]
+                      - gridcell [ref=f132e870]:
+                        - img "habilitado" [ref=f132e872]
+                      - gridcell "Calls from ads" [ref=f132e873]
+                      - gridcell "Llamada desde anuncios" [ref=f132e879]
+                      - gridcell [ref=f132e881]:
+                        - button "No hay conversiones recientes" [ref=f132e885] [cursor=pointer]
+                      - gridcell [ref=f132e886]
+                      - gridcell "Todas" [ref=f132e888]
+                      - gridcell "30 días" [ref=f132e890]
+                      - gridcell "Sí" [ref=f132e892]
+                      - gridcell "0,00" [ref=f132e894]
+                      - gridcell "0,00" [ref=f132e896]
+                    - row [disabled] [ref=f132e898]:
+                      - gridcell [disabled] [ref=f132e899]:
+                        - checkbox "Seleccionar fila" [disabled] [ref=f132e901]
+                      - gridcell [disabled] [ref=f132e904]:
+                        - img "habilitado" [ref=f132e906]
+                      - gridcell "Calls from Smart Campaign Ads" [disabled] [ref=f132e907]:
+                        - generic [ref=f132e911] [cursor=pointer]:
+                          - generic [ref=f132e912]: Calls from Smart Campaign Ads
+                          - img [ref=f132e915]: lock_outline
+                      - gridcell "Llamada desde anuncios" [disabled] [ref=f132e916]
+                      - gridcell [disabled] [ref=f132e918]:
+                        - button "No hay conversiones recientes" [disabled] [ref=f132e922] [cursor=pointer]
+                      - gridcell [disabled] [ref=f132e923]
+                      - gridcell "Una" [disabled] [ref=f132e925]
+                      - gridcell "30 días" [disabled] [ref=f132e927]
+                      - gridcell "Sí" [disabled] [ref=f132e929]
+                      - gridcell "0,00" [disabled] [ref=f132e931]
+                      - gridcell "0,00" [disabled] [ref=f132e933]
+                    - generic [ref=f132e935]: Contactos (Objetivo predeterminado de la cuenta, llamada desde anuncios solamente)
+                    - row [ref=f132e938]:
+                      - gridcell [ref=f132e939]:
+                        - checkbox "Seleccionar fila" [ref=f132e941] [cursor=pointer]
+                      - gridcell [ref=f132e944]:
+                        - img "habilitado" [ref=f132e946]
+                      - gridcell "Clicks to call" [ref=f132e947]
+                      - gridcell "En páginas alojadas en Google" [ref=f132e953]
+                      - gridcell [ref=f132e955]:
+                        - button "No hay conversiones recientes" [ref=f132e959] [cursor=pointer]
+                      - gridcell [ref=f132e960]
+                      - gridcell "Todas" [ref=f132e962]
+                      - gridcell "30 días" [ref=f132e964]
+                      - gridcell "No" [ref=f132e966]
+                      - gridcell "0,00" [ref=f132e968]
+                      - gridcell "0,00" [ref=f132e970]
+                    - row [disabled] [ref=f132e972]:
+                      - gridcell [disabled] [ref=f132e973]:
+                        - checkbox "Seleccionar fila" [disabled] [ref=f132e975]
+                      - gridcell [disabled] [ref=f132e978]:
+                        - img "habilitado" [ref=f132e980]
+                      - gridcell "Smart campaign map clicks to call" [disabled] [ref=f132e981]:
+                        - generic [ref=f132e985] [cursor=pointer]:
+                          - generic [ref=f132e986]: Smart campaign map clicks to call
+                          - img [ref=f132e989]: lock_outline
+                      - gridcell "En páginas alojadas en Google" [disabled] [ref=f132e990]
+                      - gridcell [disabled] [ref=f132e992]:
+                        - button "No hay conversiones recientes" [disabled] [ref=f132e996] [cursor=pointer]
+                      - gridcell [disabled] [ref=f132e997]
+                      - gridcell "Todas" [disabled] [ref=f132e999]
+                      - gridcell "30 días" [disabled] [ref=f132e1001]
+                      - gridcell "No" [disabled] [ref=f132e1003]
+                      - gridcell "0,00" [disabled] [ref=f132e1005]
+                      - gridcell "0,00" [disabled] [ref=f132e1007]
+                    - row [disabled] [ref=f132e1009]:
+                      - gridcell [disabled] [ref=f132e1010]:
+                        - checkbox "Seleccionar fila" [disabled] [ref=f132e1012]
+                      - gridcell [disabled] [ref=f132e1015]:
+                        - img "habilitado" [ref=f132e1017]
+                      - gridcell "Smart campaign ad clicks to call" [disabled] [ref=f132e1018]:
+                        - generic [ref=f132e1022] [cursor=pointer]:
+                          - generic [ref=f132e1023]: Smart campaign ad clicks to call
+                          - img [ref=f132e1026]: lock_outline
+                      - gridcell "Llamada desde anuncios" [disabled] [ref=f132e1027]
+                      - gridcell [disabled] [ref=f132e1029]:
+                        - button "No hay conversiones recientes" [disabled] [ref=f132e1033] [cursor=pointer]
+                      - gridcell [disabled] [ref=f132e1034]
+                      - gridcell "Todas" [disabled] [ref=f132e1036]
+                      - gridcell "30 días" [disabled] [ref=f132e1038]
+                      - gridcell "Sí" [disabled] [ref=f132e1040]
+                      - gridcell "0,00" [disabled] [ref=f132e1042]
+                      - gridcell "0,00" [disabled] [ref=f132e1044]
+                    - generic [ref=f132e1046]: Solicitud de presupuestos (Objetivo predeterminado de la cuenta)
+                  - generic [ref=f132e1056]:
+                    - generic [ref=f132e1057]:
+                      - generic [ref=f132e1058]: "Mostrar filas:"
+                      - 'button "Mostrar filas: 10 seleccionadas." [ref=f132e1061] [cursor=pointer]':
+                        - generic [ref=f132e1062]: "10"
+                        - img [ref=f132e1064]: arrow_drop_down
+                    - generic [ref=f132e1065]:
+                      - generic [ref=f132e1066]: 1 - 10 de 13
+                      - generic [ref=f132e1068]:
+                        - button "Ir a la primera página" [disabled] [ref=f132e1069]:
+                          - generic:
+                            - generic:
+                              - img: first_page
+                        - button "Ir a la página anterior" [disabled] [ref=f132e1070]:
+                          - generic:
+                            - generic:
+                              - img: chevron_left
+                        - button "Ir a la página siguiente" [ref=f132e1071] [cursor=pointer]:
+                          - img [ref=f132e1074]: chevron_right
+                        - button "Ir a la última página" [ref=f132e1076] [cursor=pointer]:
+                          - img [ref=f132e1079]: last_page
+              - generic [ref=f132e682]: © Google, 2026.
+  - generic:
+    - dialog:
+      - generic:
+        - generic:
+          - heading [level=1]: Turn off ad blockers
+          - paragraph: Google Ads can't work when you're using an ad blocker. To use Google Ads, please turn off any ad blockers for now.
+  - generic:
+    - generic:
+      - generic:
+        - dialog "cuadro de diálogo"
+  - generic:
+    - generic:
+      - generic:
+        - dialog "cuadro de diálogo"

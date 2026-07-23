@@ -1,0 +1,452 @@
+- generic [ref=f15e2]:
+  - navigation "Menú principal":
+    - link "Saltar al contenido principal" [ref=f15e3] [cursor=pointer]:
+      - /url: "#wpbody-content"
+    - link "Saltar a la barra de herramientas" [ref=f15e4] [cursor=pointer]:
+      - /url: "#wp-toolbar"
+    - list [ref=f15e7]:
+      - listitem [ref=f15e8]:
+        - link "Escritorio" [ref=f15e9] [cursor=pointer]:
+          - /url: index.php
+          - generic [ref=f15e10]: 
+        - list [ref=f15e12]:
+          - listitem [ref=f15e13]:
+            - link "Inicio" [ref=f15e14] [cursor=pointer]:
+              - /url: index.php
+          - listitem [ref=f15e15]:
+            - link "Actualización 6" [ref=f15e16] [cursor=pointer]:
+              - /url: update-core.php
+              - text: Actualización
+              - generic [ref=f15e17]: "6"
+      - listitem [ref=f15e18]
+      - listitem [ref=f15e20]:
+        - link "Entradas" [ref=f15e21] [cursor=pointer]:
+          - /url: edit.php
+          - generic [ref=f15e22]: 
+        - list [ref=f15e24]:
+          - listitem [ref=f15e25]:
+            - link "Todas las Entradas" [ref=f15e26] [cursor=pointer]:
+              - /url: edit.php
+          - listitem [ref=f15e27]:
+            - link "Agregar entrada" [ref=f15e28] [cursor=pointer]:
+              - /url: post-new.php
+          - listitem [ref=f15e29]:
+            - link "Categorías" [ref=f15e30] [cursor=pointer]:
+              - /url: edit-tags.php?taxonomy=category
+          - listitem [ref=f15e31]:
+            - link "Etiquetas" [ref=f15e32] [cursor=pointer]:
+              - /url: edit-tags.php?taxonomy=post_tag
+      - listitem [ref=f15e33]:
+        - link "Multimedia" [ref=f15e34] [cursor=pointer]:
+          - /url: upload.php
+          - generic [ref=f15e35]: 
+        - list [ref=f15e37]:
+          - listitem [ref=f15e38]:
+            - link "Biblioteca" [ref=f15e39] [cursor=pointer]:
+              - /url: upload.php
+          - listitem [ref=f15e40]:
+            - link "Agregar nueva" [ref=f15e41] [cursor=pointer]:
+              - /url: media-new.php
+      - listitem [ref=f15e42]:
+        - link "Páginas" [ref=f15e43] [cursor=pointer]:
+          - /url: edit.php?post_type=page
+          - generic [ref=f15e44]: 
+        - list [ref=f15e46]:
+          - listitem [ref=f15e47]:
+            - link "Todas las páginas" [ref=f15e48] [cursor=pointer]:
+              - /url: edit.php?post_type=page
+          - listitem [ref=f15e49]:
+            - link "Agregar nueva" [ref=f15e50] [cursor=pointer]:
+              - /url: post-new.php?post_type=page
+      - listitem [ref=f15e51]:
+        - link "Comentarios" [ref=f15e52] [cursor=pointer]:
+          - /url: edit-comments.php
+          - generic [ref=f15e53]: 
+      - listitem [ref=f15e55]:
+        - link "CalibraTrack" [ref=f15e56] [cursor=pointer]:
+          - /url: admin.php?page=calibratrack
+          - generic [ref=f15e57]: 
+        - list [ref=f15e59]:
+          - listitem [ref=f15e60]:
+            - link "Dashboard" [ref=f15e61] [cursor=pointer]:
+              - /url: admin.php?page=calibratrack
+          - listitem [ref=f15e62]:
+            - link "Equipos" [ref=f15e63] [cursor=pointer]:
+              - /url: edit.php?post_type=equipo
+          - listitem [ref=f15e64]:
+            - link "+ Nuevo Equipo" [ref=f15e65] [cursor=pointer]:
+              - /url: post-new.php?post_type=equipo
+          - listitem [ref=f15e66]:
+            - link "Clientes" [ref=f15e67] [cursor=pointer]:
+              - /url: edit.php?post_type=cliente
+          - listitem [ref=f15e68]:
+            - link "Eventos de Servicio" [ref=f15e69] [cursor=pointer]:
+              - /url: edit.php?post_type=evento_servicio
+          - listitem [ref=f15e70]:
+            - link "Configuración" [ref=f15e71] [cursor=pointer]:
+              - /url: admin.php?page=calibratrack-settings
+      - listitem [ref=f15e72]:
+        - link "Equipos" [ref=f15e73] [cursor=pointer]:
+          - /url: edit.php?post_type=equipo
+          - generic [ref=f15e74]: 
+        - list [ref=f15e76]:
+          - listitem [ref=f15e77]:
+            - link "Todos los equipos" [ref=f15e78] [cursor=pointer]:
+              - /url: edit.php?post_type=equipo
+          - listitem [ref=f15e79]:
+            - link "Agregar nuevo" [ref=f15e80] [cursor=pointer]:
+              - /url: post-new.php?post_type=equipo
+      - listitem [ref=f15e81]:
+        - link "Clientes" [ref=f15e82] [cursor=pointer]:
+          - /url: edit.php?post_type=cliente
+          - generic [ref=f15e83]: 
+        - list [ref=f15e85]:
+          - listitem [ref=f15e86]:
+            - link "Todos los clientes" [ref=f15e87] [cursor=pointer]:
+              - /url: edit.php?post_type=cliente
+          - listitem [ref=f15e88]:
+            - link "Agregar nuevo" [ref=f15e89] [cursor=pointer]:
+              - /url: post-new.php?post_type=cliente
+      - listitem [ref=f15e90]:
+        - link "Eventos de servicio" [ref=f15e91] [cursor=pointer]:
+          - /url: edit.php?post_type=evento_servicio
+          - generic [ref=f15e92]: 
+        - list [ref=f15e94]:
+          - listitem [ref=f15e95]:
+            - link "Todos los eventos" [ref=f15e96] [cursor=pointer]:
+              - /url: edit.php?post_type=evento_servicio
+          - listitem [ref=f15e97]:
+            - link "Registrar nuevo" [ref=f15e98] [cursor=pointer]:
+              - /url: post-new.php?post_type=evento_servicio
+      - listitem [ref=f15e99]
+      - listitem [ref=f15e101]:
+        - link "Aspecto" [ref=f15e102] [cursor=pointer]:
+          - /url: themes.php
+          - generic [ref=f15e103]: 
+        - list [ref=f15e105]:
+          - listitem [ref=f15e106]:
+            - link "Temas 3" [ref=f15e107] [cursor=pointer]:
+              - /url: themes.php
+              - text: Temas
+              - generic [ref=f15e108]: "3"
+          - listitem [ref=f15e109]:
+            - link "Editor beta" [ref=f15e110] [cursor=pointer]:
+              - /url: site-editor.php
+              - text: Editor
+              - generic [ref=f15e111]: beta
+      - listitem [ref=f15e112]:
+        - link "Plugins 1" [ref=f15e113] [cursor=pointer]:
+          - /url: plugins.php
+          - generic [ref=f15e114]: 
+          - generic [ref=f15e115]:
+            - text: Plugins
+            - generic [ref=f15e116]: "1"
+        - list [ref=f15e117]:
+          - listitem [ref=f15e118]:
+            - link "Plugins instalados" [ref=f15e119] [cursor=pointer]:
+              - /url: plugins.php
+          - listitem [ref=f15e120]:
+            - link "Agregar nuevo" [ref=f15e121] [cursor=pointer]:
+              - /url: plugin-install.php
+      - listitem [ref=f15e122]:
+        - link "Usuarios" [ref=f15e123] [cursor=pointer]:
+          - /url: users.php
+          - generic [ref=f15e124]: 
+        - list [ref=f15e126]:
+          - listitem [ref=f15e127]:
+            - link "Todos los usuarios" [ref=f15e128] [cursor=pointer]:
+              - /url: users.php
+          - listitem [ref=f15e129]:
+            - link "Agregar nuevo" [ref=f15e130] [cursor=pointer]:
+              - /url: user-new.php
+          - listitem [ref=f15e131]:
+            - link "Perfil" [ref=f15e132] [cursor=pointer]:
+              - /url: profile.php
+      - listitem [ref=f15e133]:
+        - link "Herramientas" [ref=f15e134] [cursor=pointer]:
+          - /url: tools.php
+          - generic [ref=f15e135]: 
+        - list [ref=f15e137]:
+          - listitem [ref=f15e138]:
+            - link "Herramientas Disponibles" [ref=f15e139] [cursor=pointer]:
+              - /url: tools.php
+          - listitem [ref=f15e140]:
+            - link "Importar" [ref=f15e141] [cursor=pointer]:
+              - /url: import.php
+          - listitem [ref=f15e142]:
+            - link "Exportar" [ref=f15e143] [cursor=pointer]:
+              - /url: export.php
+          - listitem [ref=f15e144]:
+            - link "Site Health" [ref=f15e145] [cursor=pointer]:
+              - /url: site-health.php
+          - listitem [ref=f15e146]:
+            - link "Exportar Datos Personales" [ref=f15e147] [cursor=pointer]:
+              - /url: export-personal-data.php
+          - listitem [ref=f15e148]:
+            - link "Borrar Datos Personales" [ref=f15e149] [cursor=pointer]:
+              - /url: erase-personal-data.php
+          - listitem [ref=f15e150]:
+            - link "Editor de archivos de temas" [ref=f15e151] [cursor=pointer]:
+              - /url: theme-editor.php
+          - listitem [ref=f15e152]:
+            - link "Editor de archivos de plugins" [ref=f15e153] [cursor=pointer]:
+              - /url: plugin-editor.php
+      - listitem [ref=f15e154]:
+        - link "Opciones" [ref=f15e155] [cursor=pointer]:
+          - /url: options-general.php
+          - generic [ref=f15e156]: 
+        - list [ref=f15e158]:
+          - listitem [ref=f15e159]:
+            - link "General" [ref=f15e160] [cursor=pointer]:
+              - /url: options-general.php
+          - listitem [ref=f15e161]:
+            - link "Escritura" [ref=f15e162] [cursor=pointer]:
+              - /url: options-writing.php
+          - listitem [ref=f15e163]:
+            - link "Lectura" [ref=f15e164] [cursor=pointer]:
+              - /url: options-reading.php
+          - listitem [ref=f15e165]:
+            - link "Discusión" [ref=f15e166] [cursor=pointer]:
+              - /url: options-discussion.php
+          - listitem [ref=f15e167]:
+            - link "Multimedia" [ref=f15e168] [cursor=pointer]:
+              - /url: options-media.php
+          - listitem [ref=f15e169]:
+            - link "Enlaces permanentes" [ref=f15e170] [cursor=pointer]:
+              - /url: options-permalink.php
+          - listitem [ref=f15e171]:
+            - link "Privacidad" [ref=f15e172] [cursor=pointer]:
+              - /url: options-privacy.php
+      - listitem [ref=f15e173]:
+        - button "Contraer Menú principal" [expanded] [ref=f15e174] [cursor=pointer]:
+          - generic [ref=f15e175]: 
+          - generic [ref=f15e176]: Plegar menú
+  - generic [ref=f15e177]:
+    - generic [ref=f15e178]:
+      - navigation "Barra de Herramientas":
+        - list:
+          - listitem [ref=f15e179]:
+            - link "Acerca de WordPress" [ref=f15e180] [cursor=pointer]:
+              - /url: http://localhost:8088/wp-admin/about.php
+              - generic [ref=f15e181]: 
+          - listitem [ref=f15e183]:
+            - link " truetech" [ref=f15e184] [cursor=pointer]:
+              - /url: http://localhost:8088/
+          - listitem [ref=f15e185]:
+            - link "6 updates available" [ref=f15e186] [cursor=pointer]:
+              - /url: http://localhost:8088/wp-admin/update-core.php
+              - generic [ref=f15e187]: 
+              - generic [ref=f15e188]: "6"
+          - listitem [ref=f15e190]:
+            - link "0 Comentarios en moderación" [ref=f15e191] [cursor=pointer]:
+              - /url: http://localhost:8088/wp-admin/edit-comments.php
+              - generic [ref=f15e192]: 
+              - generic [ref=f15e193]: "0"
+          - listitem [ref=f15e195]:
+            - link "Nuevo" [ref=f15e196] [cursor=pointer]:
+              - /url: http://localhost:8088/wp-admin/post-new.php
+              - generic [ref=f15e197]: 
+        - list [ref=f15e199]:
+          - listitem [ref=f15e200]:
+            - link "Hola, admin" [ref=f15e201] [cursor=pointer]:
+              - /url: http://localhost:8088/wp-admin/profile.php
+      - link "Cerrar sesión" [ref=f15e202] [cursor=pointer]:
+        - /url: http://localhost:8088/wp-login.php?action=logout&_wpnonce=3eb95dba9a
+    - main [ref=f15e203]:
+      - generic [ref=f15e204]:
+        - button "Ayuda " [ref=f15e207] [cursor=pointer]
+        - generic [ref=f15e208]:
+          - text: ¡
+          - link "WordPress 7.0.1" [ref=f15e209] [cursor=pointer]:
+            - /url: https://wordpress.org/support/wordpress-version/version-7-0-1/
+          - text: está disponible!
+          - link "Por favor actualiza WordPress ahora" [ref=f15e210] [cursor=pointer]:
+            - /url: http://localhost:8088/wp-admin/update-core.php
+            - text: Por favor actualiza ahora
+          - text: .
+        - generic [ref=f15e211]:
+          - heading "Perfil" [level=1] [ref=f15e212]
+          - generic [ref=f15e213]:
+            - paragraph
+            - heading "Opciones personales" [level=2] [ref=f15e214]
+            - text: Editor visual
+            - generic [ref=f15e215] [cursor=pointer]:
+              - checkbox "Desactivar el editor visual al escribir" [ref=f15e216]
+              - text: Desactivar el editor visual al escribir
+            - text: Resaltado de Sintaxis
+            - generic [ref=f15e217] [cursor=pointer]:
+              - checkbox "Deshabilitar resaltado de sintaxis al editar código" [ref=f15e218]
+              - text: Deshabilitar resaltado de sintaxis al editar código
+            - text: Esquema de colores para la administración
+            - group "Esquema de colores para la administración" [ref=f15e219]:
+              - generic [ref=f15e222] [cursor=pointer]:
+                - radio "Por Defecto" [checked] [ref=f15e223]
+                - generic [ref=f15e224]: Por Defecto
+                - table [ref=f15e225]:
+                  - rowgroup [ref=f15e226]:
+                    - row [ref=f15e227]:
+                      - cell [ref=f15e228]
+                      - cell [ref=f15e229]
+                      - cell [ref=f15e230]
+                      - cell [ref=f15e231]
+              - generic [ref=f15e232] [cursor=pointer]:
+                - radio "Claro" [ref=f15e233]
+                - generic [ref=f15e234]: Claro
+                - table [ref=f15e235]:
+                  - rowgroup [ref=f15e236]:
+                    - row [ref=f15e237]:
+                      - cell [ref=f15e238]
+                      - cell [ref=f15e239]
+                      - cell [ref=f15e240]
+                      - cell [ref=f15e241]
+              - generic [ref=f15e242] [cursor=pointer]:
+                - radio "Moderno" [ref=f15e243]
+                - generic [ref=f15e244]: Moderno
+                - table [ref=f15e245]:
+                  - rowgroup [ref=f15e246]:
+                    - row [ref=f15e247]:
+                      - cell [ref=f15e248]
+                      - cell [ref=f15e249]
+                      - cell [ref=f15e250]
+              - generic [ref=f15e251] [cursor=pointer]:
+                - radio "Azul" [ref=f15e252]
+                - generic [ref=f15e253]: Azul
+                - table [ref=f15e254]:
+                  - rowgroup [ref=f15e255]:
+                    - row [ref=f15e256]:
+                      - cell [ref=f15e257]
+                      - cell [ref=f15e258]
+                      - cell [ref=f15e259]
+                      - cell [ref=f15e260]
+              - generic [ref=f15e261] [cursor=pointer]:
+                - radio "Café" [ref=f15e262]
+                - generic [ref=f15e263]: Café
+                - table [ref=f15e264]:
+                  - rowgroup [ref=f15e265]:
+                    - row [ref=f15e266]:
+                      - cell [ref=f15e267]
+                      - cell [ref=f15e268]
+                      - cell [ref=f15e269]
+                      - cell [ref=f15e270]
+              - generic [ref=f15e271] [cursor=pointer]:
+                - radio "Ectoplasma" [ref=f15e272]
+                - generic [ref=f15e273]: Ectoplasma
+                - table [ref=f15e274]:
+                  - rowgroup [ref=f15e275]:
+                    - row [ref=f15e276]:
+                      - cell [ref=f15e277]
+                      - cell [ref=f15e278]
+                      - cell [ref=f15e279]
+                      - cell [ref=f15e280]
+              - generic [ref=f15e281] [cursor=pointer]:
+                - radio "Medianoche" [ref=f15e282]
+                - generic [ref=f15e283]: Medianoche
+                - table [ref=f15e284]:
+                  - rowgroup [ref=f15e285]:
+                    - row [ref=f15e286]:
+                      - cell [ref=f15e287]
+                      - cell [ref=f15e288]
+                      - cell [ref=f15e289]
+                      - cell [ref=f15e290]
+              - generic [ref=f15e291] [cursor=pointer]:
+                - radio "Océano" [ref=f15e292]
+                - generic [ref=f15e293]: Océano
+                - table [ref=f15e294]:
+                  - rowgroup [ref=f15e295]:
+                    - row [ref=f15e296]:
+                      - cell [ref=f15e297]
+                      - cell [ref=f15e298]
+                      - cell [ref=f15e299]
+                      - cell [ref=f15e300]
+              - generic [ref=f15e301] [cursor=pointer]:
+                - radio "Amanecer" [ref=f15e302]
+                - generic [ref=f15e303]: Amanecer
+                - table [ref=f15e304]:
+                  - rowgroup [ref=f15e305]:
+                    - row [ref=f15e306]:
+                      - cell [ref=f15e307]
+                      - cell [ref=f15e308]
+                      - cell [ref=f15e309]
+                      - cell [ref=f15e310]
+            - text: Atajos de teclado
+            - generic [ref=f15e311] [cursor=pointer]:
+              - checkbox "Activar los atajos del teclado para la moderación de comentarios." [ref=f15e312]
+              - text: Activar los atajos del teclado para la moderación de comentarios.
+            - link "Más información" [ref=f15e313] [cursor=pointer]:
+              - /url: https://wordpress.org/support/article/keyboard-shortcuts/
+            - text: Barra de Herramientas
+            - generic [ref=f15e314] [cursor=pointer]:
+              - checkbox "Mostrar la barra de herramientas durante la visualización del sitio" [checked] [ref=f15e315]
+              - text: Mostrar la barra de herramientas durante la visualización del sitio
+            - generic [ref=f15e316] [cursor=pointer]:
+              - text: Idioma
+              - generic [ref=f15e317]: 
+            - combobox "Idioma" [ref=f15e318] [cursor=pointer]:
+              - option "Por defecto del sitio" [selected]
+              - option "English (United States)"
+              - option "Español de Chile"
+            - heading "Nombre" [level=2] [ref=f15e319]
+            - text: Nombre de usuario
+            - textbox "Nombre de usuario" [disabled] [ref=f15e320]: admin
+            - text: Los nombres de usuario no se pueden cambiar. Nombre
+            - textbox "Nombre" [ref=f15e321]
+            - text: Apellidos
+            - textbox "Apellidos" [ref=f15e322]
+            - generic [ref=f15e323] [cursor=pointer]: Alias (requerido)
+            - textbox "Alias (requerido)" [ref=f15e324]: admin
+            - text: Mostrar como nombre público
+            - combobox "Mostrar como nombre público" [ref=f15e325] [cursor=pointer]:
+              - option "admin" [selected]
+            - heading "Información de contacto" [level=2] [ref=f15e326]
+            - generic [ref=f15e327] [cursor=pointer]: Correo (requerido)
+            - textbox "Correo (requerido)" [ref=f15e328]: jvalenzuela303@gmail.com
+            - paragraph [ref=f15e329]:
+              - text: Si cambias esto, se te enviará un correo electrónico a tu nueva dirección para confirmarlo.
+              - strong [ref=f15e330]: La nueva dirección no se convertirá en la activa hasta que se confirme.
+            - text: Sitio web
+            - textbox "Sitio web" [ref=f15e331]: http://localhost:8088
+            - heading "Acerca tuyo" [level=2] [ref=f15e332]
+            - text: Información biográfica
+            - textbox "Información biográfica" [ref=f15e333]
+            - paragraph [ref=f15e334]: Incluye alguna información biográfica en tu perfil. Esto podría mostrarse públicamente.
+            - text: Imagen de Perfil
+            - paragraph [ref=f15e335]:
+              - link "Puedes cambiar tu foto de perfil en Gravatar" [ref=f15e336] [cursor=pointer]:
+                - /url: https://es.gravatar.com/
+              - text: .
+            - heading "Administrador de cuentas" [level=2] [ref=f15e337]
+            - text: Nueva clave
+            - button "Establecer nueva contraseña" [ref=f15e338] [cursor=pointer]
+            - text:   Sesiones
+            - button "Cerrar todas las otras sesiones" [ref=f15e340] [cursor=pointer]
+            - paragraph [ref=f15e341]: ¿Perdiste tu teléfono o dejaste tu cuenta iniciada en un computador público? Puedes cerrar el resto de las sesiones y mantener esta iniciada.
+            - generic [ref=f15e342]:
+              - heading "Contraseñas de Aplicación" [level=2] [ref=f15e343]
+              - paragraph [ref=f15e344]: Las contraseñas de aplicación permiten la autenticación a través de sistemas no interactivos, como XML-RPC o la API de REST, sin proporcionar la contraseña real. Las contraseñas de aplicación se pueden revocar fácilmente. No se pueden utilizar para los inicios de sesión tradicionales en su sitio web.
+              - paragraph [ref=f15e345]: La característica de contraseña de aplicación necesita HTTPS, que no está activo en este sitio.
+              - paragraph [ref=f15e346]:
+                - text: Si esta es una web de desarrollo, puedes
+                - link "establecer el tipo de entorno como corresponda" [ref=f15e347] [cursor=pointer]:
+                  - /url: https://developer.wordpress.org/apis/wp-config-php/#wp-environment-type
+                - text: para activar las contraseñas de aplicación.
+            - heading "CalibraTrack" [level=2] [ref=f15e348]
+            - text: Cargo / título profesional
+            - textbox "Cargo / título profesional" [ref=f15e349]: Técnico en fibra óptica
+            - paragraph [ref=f15e350]: Aparece debajo del nombre en los certificados PDF.
+            - text: Firma digital
+            - button "Choose File" [ref=f15e351] [cursor=pointer]
+            - paragraph [ref=f15e352]: PNG con fondo transparente recomendado. Máx. 1 MB. Sube una nueva imagen para reemplazar la actual.
+            - paragraph [ref=f15e353]:
+              - button "Actualizar perfil" [ref=f15e354] [cursor=pointer]
+  - contentinfo [ref=f15e355]:
+    - paragraph [ref=f15e356]:
+      - generic [ref=f15e357]:
+        - text: Gracias por crear con
+        - link "WordPress" [ref=f15e358] [cursor=pointer]:
+          - /url: https://wordpress.org/
+        - text: .
+    - paragraph [ref=f15e359]:
+      - strong [ref=f15e360]:
+        - link "Obtener Versión 7.0.1" [ref=f15e361] [cursor=pointer]:
+          - /url: http://localhost:8088/wp-admin/update-core.php
+  - text: 

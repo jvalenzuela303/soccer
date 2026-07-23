@@ -1,0 +1,94 @@
+- generic [active] [ref=f9e1]:
+  - banner [ref=f9e2]:
+    - generic [ref=f9e3]:
+      - generic [ref=f9e4]:
+        - generic [ref=f9e5]: TrueTech
+        - generic [ref=f9e6]: Panel Técnico
+      - navigation [ref=f9e7]:
+        - link "Inicio" [ref=f9e8] [cursor=pointer]:
+          - /url: http://localhost:8088/tecnico/
+        - link "+ Nuevo evento" [ref=f9e9] [cursor=pointer]:
+          - /url: http://localhost:8088/tecnico/nuevo-evento/
+        - link "Mis eventos" [ref=f9e10] [cursor=pointer]:
+          - /url: http://localhost:8088/tecnico/eventos/
+        - link "Equipos" [ref=f9e11] [cursor=pointer]:
+          - /url: http://localhost:8088/tecnico/equipos/
+        - link "Mi perfil" [ref=f9e12] [cursor=pointer]:
+          - /url: http://localhost:8088/tecnico/perfil/
+        - link "Salir" [ref=f9e13] [cursor=pointer]:
+          - /url: http://localhost:8088/tecnico/salir/
+  - main [ref=f9e14]:
+    - generic [ref=f9e15]:
+      - heading "Equipos registrados" [level=1] [ref=f9e17]
+      - table [ref=f9e19]:
+        - rowgroup [ref=f9e20]:
+          - row [ref=f9e21]:
+            - columnheader "Serie" [ref=f9e22]
+            - columnheader "Marca / Modelo" [ref=f9e23]
+            - columnheader "Tipo" [ref=f9e24]
+            - columnheader "Cliente" [ref=f9e25]
+            - columnheader "Estado" [ref=f9e26]
+            - columnheader [ref=f9e27]
+        - rowgroup [ref=f9e28]:
+          - row [ref=f9e29]:
+            - cell [ref=f9e30]:
+              - code [ref=f9e31]: EXFO-OTDR-2022-006
+            - cell "EXFO AXS-200" [ref=f9e32]
+            - cell "OTDR" [ref=f9e33]
+            - cell "Fibernet SpA" [ref=f9e34]
+            - cell "Vencido" [ref=f9e35]
+            - cell [ref=f9e37]:
+              - link "Ver verificación" [ref=f9e38] [cursor=pointer]:
+                - /url: http://localhost:8088/verificar/EXFO-OTDR-2022-006/
+          - row [ref=f9e39]:
+            - cell [ref=f9e40]:
+              - code [ref=f9e41]: EXFO-PM-2024-002
+            - cell "EXFO MAX-715B" [ref=f9e42]
+            - cell "Medidor de potencia (Power Meter)" [ref=f9e43]
+            - cell "PROINTEL S.A." [ref=f9e44]
+            - cell "Por vencer" [ref=f9e45]
+            - cell [ref=f9e47]:
+              - link "Ver verificación" [ref=f9e48] [cursor=pointer]:
+                - /url: http://localhost:8088/verificar/EXFO-PM-2024-002/
+          - row [ref=f9e49]:
+            - cell [ref=f9e50]:
+              - code [ref=f9e51]: FLUKE-CERT-2024-004
+            - cell "Fluke Networks DSX2-8000" [ref=f9e52]
+            - cell "certificador" [ref=f9e53]
+            - cell "Telecom Chile Ltda." [ref=f9e54]
+            - cell "Vigente" [ref=f9e55]
+            - cell [ref=f9e57]:
+              - link "Ver verificación" [ref=f9e58] [cursor=pointer]:
+                - /url: http://localhost:8088/verificar/FLUKE-CERT-2024-004/
+          - row [ref=f9e59]:
+            - cell [ref=f9e60]:
+              - code [ref=f9e61]: FK-EMP-2023-003
+            - cell "Fujikura FSM-70S" [ref=f9e62]
+            - cell "Empalmadora de fusión" [ref=f9e63]
+            - cell "Telecom Chile Ltda." [ref=f9e64]
+            - cell "Vencido" [ref=f9e65]
+            - cell [ref=f9e67]:
+              - link "Ver verificación" [ref=f9e68] [cursor=pointer]:
+                - /url: http://localhost:8088/verificar/FK-EMP-2023-003/
+          - row [ref=f9e69]:
+            - cell [ref=f9e70]:
+              - code [ref=f9e71]: GW-FUENTE-2023-005
+            - cell "Grandway FLS-430" [ref=f9e72]
+            - cell "Fuente de luz" [ref=f9e73]
+            - cell "Fibernet SpA" [ref=f9e74]
+            - cell "Sin calibración" [ref=f9e75]
+            - cell [ref=f9e77]:
+              - link "Ver verificación" [ref=f9e78] [cursor=pointer]:
+                - /url: http://localhost:8088/verificar/GW-FUENTE-2023-005/
+          - row [ref=f9e79]:
+            - cell [ref=f9e80]:
+              - code [ref=f9e81]: GW-OTDR-2024-001
+            - cell "Grandway GS-401" [ref=f9e82]
+            - cell "OTDR" [ref=f9e83]
+            - cell "PROINTEL S.A." [ref=f9e84]
+            - cell "Vigente" [ref=f9e85]
+            - cell [ref=f9e87]:
+              - link "Ver verificación" [ref=f9e88] [cursor=pointer]:
+                - /url: http://localhost:8088/verificar/GW-OTDR-2024-001/
+  - contentinfo [ref=f9e89]:
+    - paragraph [ref=f9e90]: © 2026 TrueTech SpA — Panel interno del técnico

@@ -1,0 +1,421 @@
+- generic [ref=f25e1]:
+  - generic [ref=f25e4]:
+    - banner "Panel de navegación superior" [ref=f25e6]:
+      - status
+      - generic [ref=f25e7]:
+        - button [expanded] [ref=f25e8] [cursor=pointer]:
+          - img [ref=f25e11]: menu
+        - heading [level=1] [ref=f25e13]:
+          - button "Google Ads – Ir a la página de inicio" [ref=f25e14]:
+            - generic [ref=f25e15] [cursor=pointer]: Ads
+      - generic [ref=f25e165]:
+        - generic [ref=f25e167]:
+          - generic [ref=f25e173]:
+            - img [ref=f25e176]: search
+            - generic [ref=f25e177]:
+              - generic: Buscar una página o una campaña
+              - combobox "Buscar una página o una campaña" [ref=f25e178]
+          - text: Buscar
+        - generic [ref=f25e179]:
+          - button "Diseño" [ref=f25e182] [cursor=pointer]:
+            - generic [ref=f25e184]:
+              - img [ref=f25e185]: responsive_layout
+              - text: Diseño
+          - button "Actualizar" [ref=f25e189] [cursor=pointer]:
+            - generic [ref=f25e191]:
+              - img [ref=f25e192]: refresh
+              - text: Actualizar
+          - button "Abrir el panel de ayuda rápida" [ref=f25e195] [cursor=pointer]:
+            - generic [ref=f25e196]:
+              - text: Ayuda
+              - generic [ref=f25e197]:
+                - img [ref=f25e198]: help_outline
+                - text: Ayuda
+          - button "Notificaciones" [ref=f25e205] [cursor=pointer]:
+            - generic [ref=f25e207]:
+              - img [ref=f25e210]: notifications
+              - generic [ref=f25e212]: Notificaciones
+      - generic [ref=f25e28]:
+        - generic "917-047-0641" [ref=f25e29]
+        - generic [ref=f25e30]: jvalenzuela303@gmail.com
+      - button "Cuenta de Google" [ref=f25e217] [cursor=pointer]:
+        - img "Cuenta de Google (jvalenzuela303@gmail.com)" [ref=f25e218]
+    - generic [ref=f25e35]:
+      - generic [ref=f25e223]:
+        - img [ref=f25e225]: report_problem
+        - generic [ref=f25e227]:
+          - status [ref=f25e228]:
+            - generic [ref=f25e229]: Revisa los objetivos de tu campaña - A partir del 17 de agosto del 2026, las campañas con objetivos de puja (por ejemplo, un objetivo de CPA o de ROAS) ofrecerán un rendimiento más uniforme cuando estén limitadas por el presupuesto, incluso después de ajustar el presupuesto. Revisa estas campañas para asegurarte de que los objetivos se ajusten a los tuyos. Los objetivos no se actualizarán automáticamente.
+          - generic [ref=f25e232]:
+            - button "Revisar campañas" [ref=f25e234] [cursor=pointer]
+            - button "Ocultar" [ref=f25e238] [cursor=pointer]
+      - generic [ref=f25e36]:
+        - generic [ref=f25e38]:
+          - generic [ref=f25e39]:
+            - generic [ref=f25e40]:
+              - button "Crear" [ref=f25e42] [cursor=pointer]
+              - generic [ref=f25e47]: Crear
+            - menu [ref=f25e48]:
+              - menu [ref=f25e49]:
+                - menuitem "Campañas" [ref=f25e52] [cursor=pointer]:
+                  - generic [ref=f25e53]:
+                    - img [ref=f25e55]: campaign
+                    - generic [ref=f25e56]: Campañas
+                - menuitem "Objetivos" [ref=f25e59] [cursor=pointer]:
+                  - generic [ref=f25e60]:
+                    - img [ref=f25e62]: rewarded_ads
+                    - generic [ref=f25e63]: Objetivos
+                - menuitem "Herramientas" [ref=f25e66] [cursor=pointer]:
+                  - generic [ref=f25e67]:
+                    - img [ref=f25e69]: construction
+                    - generic [ref=f25e70]: Herramientas
+                - menuitem "Facturación" [ref=f25e73] [cursor=pointer]:
+                  - generic [ref=f25e74]:
+                    - img [ref=f25e76]: credit_card
+                    - generic [ref=f25e77]: Facturación
+                - menuitem "Administrador" [ref=f25e80] [cursor=pointer]:
+                  - generic [ref=f25e81]:
+                    - img [ref=f25e83]: settings
+                    - generic [ref=f25e84]: Administrador
+          - navigation [ref=f25e85]:
+            - menu [ref=f25e86]:
+              - generic [ref=f25e87]:
+                - menuitem "Conversiones" [expanded] [ref=f25e90] [cursor=pointer]:
+                  - generic [ref=f25e91]:
+                    - generic [ref=f25e92]: Conversiones
+                    - img [ref=f25e95]: expand_more
+                - generic [ref=f25e96]:
+                  - menuitem "Resumen" [ref=f25e99] [cursor=pointer]
+                  - menuitem "Reglas de valor" [ref=f25e105] [cursor=pointer]
+                  - menuitem "Variables personalizadas" [ref=f25e111] [cursor=pointer]
+                  - menuitem "Configuración" [ref=f25e117] [cursor=pointer]
+                  - menuitem "Subidas" [ref=f25e123] [cursor=pointer]
+                - menuitem "Medición" [expanded] [ref=f25e129] [cursor=pointer]:
+                  - generic [ref=f25e130]:
+                    - generic [ref=f25e131]: Medición
+                    - img [ref=f25e134]: expand_more
+                - menuitem "Atribución" [ref=f25e761] [cursor=pointer]
+        - generic [ref=f25e137]:
+          - generic [ref=f25e241]:
+            - generic [ref=f25e242]:
+              - heading "Resumen" [level=2] [ref=f25e245]
+              - generic [ref=f25e248]:
+                - generic [ref=f25e250] [cursor=pointer]:
+                  - generic [ref=f25e251]: Personalizado
+                  - generic [ref=f25e253]:
+                    - button "24 jun – 21 jul de 2026 No aplicable" [ref=f25e255]:
+                      - generic [ref=f25e256]: 24 jun – 21 jul de 2026
+                      - img [ref=f25e258]: arrow_drop_down
+                    - generic [ref=f25e259]:
+                      - button "Anterior" [ref=f25e260]:
+                        - img [ref=f25e263]: chevron_left
+                      - button "Siguiente" [disabled]:
+                        - generic:
+                          - generic:
+                            - img: chevron_right
+                - button "Mostrar últimos 30 días" [ref=f25e265] [cursor=pointer]
+            - tablist [ref=f25e271]:
+              - tab "Objetivos" [selected] [ref=f25e272] [cursor=pointer]
+              - tab "Diagnóstico" [ref=f25e275] [cursor=pointer]
+          - main [ref=f25e279]:
+            - generic [ref=f25e281]:
+              - generic [ref=f25e288]:
+                - generic [ref=f25e296]:
+                  - generic [ref=f25e297]:
+                    - tablist [ref=f25e301]:
+                      - tab "Sales" [selected] [ref=f25e302] [cursor=pointer]
+                      - tab "Leads" [ref=f25e305] [cursor=pointer]
+                    - button [ref=f25e309] [cursor=pointer]:
+                      - generic [ref=f25e310]:
+                        - img [ref=f25e312]: add
+                        - text: Crear gráfico
+                  - generic [ref=f25e314]:
+                    - button "Editar gráfico" [ref=f25e316] [cursor=pointer]:
+                      - generic [ref=f25e318]:
+                        - img [ref=f25e320]: bar_chart
+                        - generic [ref=f25e321]: Editar gráfico
+                    - generic [ref=f25e323]: Parece que no hay datos disponibles. Edita filtros para obtener resultados o soluciona problemas de la configuración de las conversiones.
+                    - generic [ref=f25e325]:
+                      - generic [ref=f25e326]:
+                        - button "Objetivos de Grupo 1" [ref=f25e327] [cursor=pointer]
+                        - generic [ref=f25e329]:
+                          - button "Resultados" [ref=f25e330] [cursor=pointer]
+                          - generic [ref=f25e331]: "0"
+                        - generic [ref=f25e333]:
+                          - button "Vistas de una página" [ref=f25e334] [cursor=pointer]
+                          - 'generic "Vistas de una página: 0" [ref=f25e335]': "0"
+                      - generic [ref=f25e336]:
+                        - button "Objetivos de Grupo 2" [ref=f25e337] [cursor=pointer]
+                        - generic [ref=f25e339]:
+                          - button "Resultados" [ref=f25e340] [cursor=pointer]
+                          - generic [ref=f25e341]: "0"
+                        - generic [ref=f25e343]:
+                          - button "Visitas a tienda" [ref=f25e344] [cursor=pointer]
+                          - 'generic "Visitas a tienda: 0" [ref=f25e345]': "0"
+                      - generic [ref=f25e346]:
+                        - button "Objetivos de Grupo 3" [ref=f25e347] [cursor=pointer]
+                        - generic [ref=f25e349]:
+                          - button "Resultados" [ref=f25e350] [cursor=pointer]
+                          - generic [ref=f25e351]: "-"
+                        - generic [ref=f25e354]:
+                          - generic [ref=f25e355]: En este momento no estás midiendo ningún objetivo aquí. Para añadir un nuevo objetivo, puedes crear una acción de conversión principal.
+                          - button "Añadir objetivo" [ref=f25e357] [cursor=pointer]
+                - generic [ref=f25e360]:
+                  - generic [ref=f25e361]: Todos tus objetivos
+                  - button "Ver todas las acciones de conversión" [ref=f25e362] [cursor=pointer]
+                  - button [ref=f25e366] [cursor=pointer]:
+                    - generic [ref=f25e367]:
+                      - img [ref=f25e369]: add
+                      - text: Crear acción de conversión
+                - generic [ref=f25e373]:
+                  - generic [ref=f25e374]:
+                    - img [ref=f25e376]: person_add_alt
+                    - heading "Optimización del ciclo de vida de los clientes" [level=2] [ref=f25e377]
+                    - button "Editar objetivo" [ref=f25e378] [cursor=pointer]
+                  - generic [ref=f25e382]:
+                    - generic [ref=f25e383]: Adquisición de clientes
+                    - generic [ref=f25e385]:
+                      - generic [ref=f25e386]:
+                        - generic [ref=f25e387]: Valor de conversión incremental
+                        - generic [ref=f25e389]: Sin establecer
+                      - generic [ref=f25e391]:
+                        - generic [ref=f25e392]: Segmentos de audiencia
+                        - button "4 segmentos seleccionados" [ref=f25e394] [cursor=pointer]
+                    - generic [ref=f25e395]: Retención de clientes
+                    - generic [ref=f25e396]:
+                      - generic [ref=f25e397]:
+                        - generic [ref=f25e398]: Valor de conversión incremental para la retención de clientes
+                        - generic [ref=f25e400]: Sin establecer
+                      - generic [ref=f25e402]:
+                        - generic [ref=f25e403]: Segmentos de audiencia
+                        - generic [ref=f25e405]: 0 segmentos seleccionados
+                      - generic [ref=f25e412]:
+                        - img "Advertencia" [ref=f25e414]: warning_amber
+                        - paragraph [ref=f25e418]: Para ajustar las pujas por clientes inactivos, debes incluir un segmento de audiencia que tenga como mínimo 100 miembros activos en al menos una red. Esto ayudará a identificar a los clientes inactivos.
+                - heading "storefront Visita a tienda Campañas 0 de 5 campañas Acciones de conversión principales 1 Estado Completado sin errores Activa Editar configuración de objetivos" [level=2] [ref=f25e423]:
+                  - generic [ref=f25e426]:
+                    - generic [ref=f25e429]:
+                      - img [ref=f25e431]: storefront
+                      - generic [ref=f25e432]: Visita a tienda
+                    - generic [ref=f25e433]:
+                      - generic [ref=f25e434]:
+                        - generic [ref=f25e435]: Campañas
+                        - generic [ref=f25e436]: 0 de 5
+                      - generic [ref=f25e437]:
+                        - generic [ref=f25e438]: Acciones de conversión principales
+                        - generic [ref=f25e439]: "1"
+                      - generic [ref=f25e440]:
+                        - generic [ref=f25e441]: Estado
+                        - generic [ref=f25e442]:
+                          - img [ref=f25e444]: check_circle
+                          - button [ref=f25e445]:
+                            - generic [ref=f25e446] [cursor=pointer]: Activa
+                    - button [ref=f25e448]:
+                      - generic [ref=f25e451]: Editar objetivo
+                  - button [ref=f25e452] [cursor=pointer]:
+                    - img "Mostrar panel" [ref=f25e453]: expand_less
+                - heading "Predeterminado de la cuenta call Cliente potencial por teléfono Campañas 5 de 5 campañas Acciones de conversión principales 2 Estado Completado sin errores Activa Editar configuración de objetivos" [level=2] [ref=f25e458]:
+                  - generic [ref=f25e461]:
+                    - generic [ref=f25e463]:
+                      - generic [ref=f25e464]: Predeterminado de la cuenta
+                      - generic [ref=f25e465]:
+                        - img [ref=f25e467]: call
+                        - generic [ref=f25e468]: Cliente potencial por teléfono
+                    - generic [ref=f25e469]:
+                      - generic [ref=f25e470]:
+                        - generic [ref=f25e471]: Campañas
+                        - button [ref=f25e473] [cursor=pointer]: 5 de 5
+                      - generic [ref=f25e474]:
+                        - generic [ref=f25e475]: Acciones de conversión principales
+                        - generic [ref=f25e476]: "2"
+                      - generic [ref=f25e477]:
+                        - generic [ref=f25e478]: Estado
+                        - generic [ref=f25e479]:
+                          - img [ref=f25e481]: check_circle
+                          - button [ref=f25e482]:
+                            - generic [ref=f25e483] [cursor=pointer]: Activa
+                    - button [ref=f25e485]:
+                      - generic [ref=f25e488]: Editar objetivo
+                  - button [ref=f25e489] [cursor=pointer]:
+                    - img "Mostrar panel" [ref=f25e490]: expand_less
+                - heading "Predeterminado de la cuenta people_outline Contacto Campañas 5 de 5 campañas Acciones de conversión principales 3 Estado Completado sin errores Activa Editar configuración de objetivos" [level=2] [ref=f25e495]:
+                  - generic [ref=f25e498]:
+                    - generic [ref=f25e500]:
+                      - generic [ref=f25e501]: Predeterminado de la cuenta
+                      - generic [ref=f25e502]:
+                        - img [ref=f25e504]: people_outline
+                        - generic [ref=f25e505]: Contacto
+                    - generic [ref=f25e506]:
+                      - generic [ref=f25e507]:
+                        - generic [ref=f25e508]: Campañas
+                        - button [ref=f25e510] [cursor=pointer]: 5 de 5
+                      - generic [ref=f25e511]:
+                        - generic [ref=f25e512]: Acciones de conversión principales
+                        - generic [ref=f25e513]: "3"
+                      - generic [ref=f25e514]:
+                        - generic [ref=f25e515]: Estado
+                        - generic [ref=f25e516]:
+                          - img [ref=f25e518]: check_circle
+                          - button [ref=f25e519]:
+                            - generic [ref=f25e520] [cursor=pointer]: Activa
+                    - button [ref=f25e522]:
+                      - generic [ref=f25e525]: Editar objetivo
+                  - button [ref=f25e526] [cursor=pointer]:
+                    - img "Mostrar panel" [ref=f25e527]: expand_less
+                - heading "Predeterminado de la cuenta request_quote Solicitud de presupuesto Campañas 5 de 5 campañas Acciones de conversión principales 1 Estado Completado sin errores Activa Editar configuración de objetivos" [level=2] [ref=f25e532]:
+                  - generic [ref=f25e535]:
+                    - generic [ref=f25e537]:
+                      - generic [ref=f25e538]: Predeterminado de la cuenta
+                      - generic [ref=f25e539]:
+                        - img [ref=f25e541]: request_quote
+                        - generic [ref=f25e542]: Solicitud de presupuesto
+                    - generic [ref=f25e543]:
+                      - generic [ref=f25e544]:
+                        - generic [ref=f25e545]: Campañas
+                        - button [ref=f25e547] [cursor=pointer]: 5 de 5
+                      - generic [ref=f25e548]:
+                        - generic [ref=f25e549]: Acciones de conversión principales
+                        - generic [ref=f25e550]: "1"
+                      - generic [ref=f25e551]:
+                        - generic [ref=f25e552]: Estado
+                        - generic [ref=f25e553]:
+                          - img [ref=f25e555]: check_circle
+                          - button [ref=f25e556]:
+                            - generic [ref=f25e557] [cursor=pointer]: Activa
+                    - button [ref=f25e559]:
+                      - generic [ref=f25e562]: Editar objetivo
+                  - button [ref=f25e563] [cursor=pointer]:
+                    - img "Mostrar panel" [ref=f25e564]: expand_less
+                - heading "directions Cómo llegar Campañas 0 de 5 campañas Acciones de conversión principales 2 Estado Completado sin errores Activa Editar configuración de objetivos" [level=2] [ref=f25e569]:
+                  - generic [ref=f25e572]:
+                    - generic [ref=f25e575]:
+                      - img [ref=f25e577]: directions
+                      - generic [ref=f25e578]: Cómo llegar
+                    - generic [ref=f25e579]:
+                      - generic [ref=f25e580]:
+                        - generic [ref=f25e581]: Campañas
+                        - generic [ref=f25e582]: 0 de 5
+                      - generic [ref=f25e583]:
+                        - generic [ref=f25e584]: Acciones de conversión principales
+                        - generic [ref=f25e585]: "2"
+                      - generic [ref=f25e586]:
+                        - generic [ref=f25e587]: Estado
+                        - generic [ref=f25e588]:
+                          - img [ref=f25e590]: check_circle
+                          - button [ref=f25e591]:
+                            - generic [ref=f25e592] [cursor=pointer]: Activa
+                    - button [ref=f25e594]:
+                      - generic [ref=f25e597]: Editar objetivo
+                  - button [ref=f25e598] [cursor=pointer]:
+                    - img "Mostrar panel" [ref=f25e599]: expand_less
+                - heading "Predeterminado de la cuenta download_for_offline Descarga Campañas 5 de 5 campañas Acciones de conversión principales 0 Estado Error Configuración errónea Editar configuración de objetivos" [level=2] [ref=f25e604]:
+                  - generic [ref=f25e607]:
+                    - generic [ref=f25e609]:
+                      - generic [ref=f25e610]: Predeterminado de la cuenta
+                      - generic [ref=f25e611]:
+                        - img [ref=f25e613]: download_for_offline
+                        - generic [ref=f25e614]: Descarga
+                    - generic [ref=f25e615]:
+                      - generic [ref=f25e616]:
+                        - generic [ref=f25e617]: Campañas
+                        - button [ref=f25e619] [cursor=pointer]: 5 de 5
+                      - generic [ref=f25e620]:
+                        - generic [ref=f25e621]: Acciones de conversión principales
+                        - generic [ref=f25e622]: "0"
+                      - generic [ref=f25e623]:
+                        - generic [ref=f25e624]: Estado
+                        - generic [ref=f25e625]:
+                          - img [ref=f25e627]: error_outline
+                          - button [ref=f25e628]:
+                            - generic [ref=f25e629] [cursor=pointer]: Configuración errónea
+                    - button [ref=f25e631]:
+                      - generic [ref=f25e634]: Editar objetivo
+                  - button [ref=f25e635] [cursor=pointer]:
+                    - img "Mostrar panel" [ref=f25e636]: expand_less
+                - heading "web_traffic Interacción Campañas 0 de 5 campañas Acciones de conversión principales 1 Estado Completado sin errores Activa Editar configuración de objetivos" [level=2] [ref=f25e641]:
+                  - generic [ref=f25e644]:
+                    - generic [ref=f25e647]:
+                      - img [ref=f25e649]: web_traffic
+                      - generic [ref=f25e650]: Interacción
+                    - generic [ref=f25e651]:
+                      - generic [ref=f25e652]:
+                        - generic [ref=f25e653]: Campañas
+                        - generic [ref=f25e654]: 0 de 5
+                      - generic [ref=f25e655]:
+                        - generic [ref=f25e656]: Acciones de conversión principales
+                        - generic [ref=f25e657]: "1"
+                      - generic [ref=f25e658]:
+                        - generic [ref=f25e659]: Estado
+                        - generic [ref=f25e660]:
+                          - img [ref=f25e662]: check_circle
+                          - button [ref=f25e663]:
+                            - generic [ref=f25e664] [cursor=pointer]: Activa
+                    - button [ref=f25e666]:
+                      - generic [ref=f25e669]: Editar objetivo
+                  - button [ref=f25e670] [cursor=pointer]:
+                    - img "Mostrar panel" [ref=f25e671]: expand_less
+                - heading "Predeterminado de la cuenta outbound Clic de salida Campañas 5 de 5 campañas Acciones de conversión principales 1 Estado Completado sin errores Activa Editar configuración de objetivos" [level=2] [ref=f25e676]:
+                  - generic [ref=f25e679]:
+                    - generic [ref=f25e681]:
+                      - generic [ref=f25e682]: Predeterminado de la cuenta
+                      - generic [ref=f25e683]:
+                        - img [ref=f25e685]: outbound
+                        - generic [ref=f25e686]: Clic de salida
+                    - generic [ref=f25e687]:
+                      - generic [ref=f25e688]:
+                        - generic [ref=f25e689]: Campañas
+                        - button [ref=f25e691] [cursor=pointer]: 5 de 5
+                      - generic [ref=f25e692]:
+                        - generic [ref=f25e693]: Acciones de conversión principales
+                        - generic [ref=f25e694]: "1"
+                      - generic [ref=f25e695]:
+                        - generic [ref=f25e696]: Estado
+                        - generic [ref=f25e697]:
+                          - img [ref=f25e699]: check_circle
+                          - button [ref=f25e700]:
+                            - generic [ref=f25e701] [cursor=pointer]: Activa
+                    - button [ref=f25e703]:
+                      - generic [ref=f25e706]: Editar objetivo
+                  - button [ref=f25e707] [cursor=pointer]:
+                    - img "Mostrar panel" [ref=f25e708]: expand_less
+                - heading "preview Vista de una página Campañas 0 de 5 campañas Acciones de conversión principales 1 Estado Completado sin errores Activa Editar configuración de objetivos" [level=2] [ref=f25e713]:
+                  - generic [ref=f25e716]:
+                    - generic [ref=f25e719]:
+                      - img [ref=f25e721]: preview
+                      - generic [ref=f25e722]: Vista de una página
+                    - generic [ref=f25e723]:
+                      - generic [ref=f25e724]:
+                        - generic [ref=f25e725]: Campañas
+                        - generic [ref=f25e726]: 0 de 5
+                      - generic [ref=f25e727]:
+                        - generic [ref=f25e728]: Acciones de conversión principales
+                        - generic [ref=f25e729]: "1"
+                      - generic [ref=f25e730]:
+                        - generic [ref=f25e731]: Estado
+                        - generic [ref=f25e732]:
+                          - img [ref=f25e734]: check_circle
+                          - button [ref=f25e735]:
+                            - generic [ref=f25e736] [cursor=pointer]: Activa
+                    - button [ref=f25e738]:
+                      - generic [ref=f25e741]: Editar objetivo
+                  - button [ref=f25e742] [cursor=pointer]:
+                    - img "Mostrar panel" [ref=f25e743]: expand_less
+                - group [ref=f25e746]:
+                  - heading [level=2] [ref=f25e747]:
+                    - button "Objetivos personalizados" [ref=f25e748] [cursor=pointer]:
+                      - img [ref=f25e750]: expand_more
+              - generic [ref=f25e753]: © Google, 2026.
+  - generic:
+    - dialog:
+      - generic:
+        - generic:
+          - heading [level=1]: Turn off ad blockers
+          - paragraph: Google Ads can't work when you're using an ad blocker. To use Google Ads, please turn off any ad blockers for now.
+  - generic:
+    - generic:
+      - generic:
+        - dialog "cuadro de diálogo"
+  - generic:
+    - generic:
+      - generic:
+        - dialog "cuadro de diálogo"

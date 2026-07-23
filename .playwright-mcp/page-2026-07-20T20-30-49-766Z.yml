@@ -1,0 +1,73 @@
+- generic [active] [ref=f6e1]:
+  - banner [ref=f6e2]:
+    - generic [ref=f6e3]:
+      - generic [ref=f6e4]:
+        - generic [ref=f6e5]: TrueTech
+        - generic [ref=f6e6]: Panel de Gestión
+      - navigation [ref=f6e7]:
+        - link "Inicio" [ref=f6e8] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/
+        - link "+ Nueva OI" [ref=f6e9] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/nueva-oi/
+        - link "+ Nueva OT" [ref=f6e10] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/nueva-ot/
+        - link "OI" [ref=f6e11] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/?filtro=oi
+        - link "OT" [ref=f6e12] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/?filtro=ot
+        - link "Equipos" [ref=f6e13] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/equipos/
+        - link "Clientes" [ref=f6e14] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/clientes/
+        - link "Técnicos" [ref=f6e15] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/tecnicos/
+        - link "Salir" [ref=f6e16] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/salir/
+  - main [ref=f6e17]:
+    - generic [ref=f6e18]:
+      - generic [ref=f6e19]:
+        - link "← Volver" [ref=f6e20] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/equipos/
+        - heading "Nuevo Equipo" [level=1] [ref=f6e21]
+      - generic [ref=f6e22]:
+        - generic [ref=f6e23]:
+          - generic [ref=f6e24]: Nombre del equipo *
+          - 'textbox "Ej: OTDR Grandway GS-401" [ref=f6e25]'
+        - generic [ref=f6e26]:
+          - generic [ref=f6e27]: Número de serie *
+          - textbox [ref=f6e28]
+          - paragraph [ref=f6e29]: Debe ser único en el sistema.
+        - generic [ref=f6e30]:
+          - generic [ref=f6e31]:
+            - generic [ref=f6e32]: Marca
+            - 'textbox "Ej: Grandway" [ref=f6e33]'
+          - generic [ref=f6e34]:
+            - generic [ref=f6e35]: Modelo
+            - 'textbox "Ej: GS-401" [ref=f6e36]'
+        - generic [ref=f6e37]:
+          - generic [ref=f6e38]: Tipo de equipo *
+          - combobox [ref=f6e39]:
+            - option "— Seleccionar —" [selected]
+            - option "OTDR"
+            - option "Medidor de potencia (Power Meter)"
+            - option "Fuente de luz"
+            - option "Empalmadora de fusión"
+            - option "Certificador de red"
+            - option "Otro"
+        - generic [ref=f6e40]:
+          - generic [ref=f6e41]: Cliente propietario
+          - combobox [ref=f6e42]:
+            - option "— Sin cliente asignado —" [selected]
+            - option "Empresa Test SA"
+            - option "Fibernet SpA"
+            - option "PROINTEL S.A."
+            - option "Telecom Chile Ltda."
+        - generic [ref=f6e43]:
+          - generic [ref=f6e44]: Fecha de ingreso al sistema
+          - textbox [ref=f6e45]
+        - generic [ref=f6e46]:
+          - button "Crear equipo" [ref=f6e47] [cursor=pointer]
+          - link "Cancelar" [ref=f6e48] [cursor=pointer]:
+            - /url: http://localhost:8088/panel/equipos/
+  - contentinfo [ref=f6e49]:
+    - paragraph [ref=f6e50]: © 2026 TrueTech SpA — Panel interno

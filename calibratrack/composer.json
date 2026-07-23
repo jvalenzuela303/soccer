@@ -1,0 +1,19 @@
+{
+    "_comment_php_requirement": "PHP ^7.4 requerido. endroid/qr-code ^3.0 soporta PHP ^7.1. La v4+ requiere PHP ^8.0 y NO es compatible con este servidor. chillerlan/php-qrcode ^4.3 fue descartada porque su dependencia php-settings-container 3.3.0 usa union types de PHP 8.0.",
+    "name": "truetech/calibratrack",
+    "description": "Plugin WordPress de trazabilidad y verificación pública de calibraciones de equipos de fibra óptica.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": "^7.4 || ^8.0",
+        "dompdf/dompdf": "^2.0",
+        "endroid/qr-code": "^3.0"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    },
+    "autoload": {
+        "psr-4": {}
+    }
+}

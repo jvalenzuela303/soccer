@@ -1,0 +1,98 @@
+- generic [active] [ref=f13e1]:
+  - banner [ref=f13e2]:
+    - generic [ref=f13e3]:
+      - generic [ref=f13e4]:
+        - generic [ref=f13e5]: TrueTech
+        - generic [ref=f13e6]: Panel Técnico
+      - navigation [ref=f13e7]:
+        - link "Inicio" [ref=f13e8] [cursor=pointer]:
+          - /url: http://localhost:8088/tecnico/
+        - link "+ Nuevo evento" [ref=f13e9] [cursor=pointer]:
+          - /url: http://localhost:8088/tecnico/nuevo-evento/
+        - link "Mis eventos" [ref=f13e10] [cursor=pointer]:
+          - /url: http://localhost:8088/tecnico/eventos/
+        - link "Equipos" [ref=f13e11] [cursor=pointer]:
+          - /url: http://localhost:8088/tecnico/equipos/
+        - link "Mi perfil" [ref=f13e12] [cursor=pointer]:
+          - /url: http://localhost:8088/tecnico/perfil/
+        - link "Salir" [ref=f13e13] [cursor=pointer]:
+          - /url: http://localhost:8088/tecnico/salir/
+  - main [ref=f13e14]:
+    - generic [ref=f13e15]:
+      - generic [ref=f13e16]:
+        - generic [ref=f13e17]:
+          - heading "Hola, admin" [level=1] [ref=f13e18]
+          - paragraph [ref=f13e19]: Sábado 11 de Julio de 2026
+        - link "+ Registrar nuevo evento" [ref=f13e20] [cursor=pointer]:
+          - /url: http://localhost:8088/tecnico/nuevo-evento/
+      - generic [ref=f13e21]:
+        - generic [ref=f13e22]:
+          - heading "Últimos eventos" [level=2] [ref=f13e23]
+          - link "Ver todos →" [ref=f13e24] [cursor=pointer]:
+            - /url: http://localhost:8088/tecnico/eventos/
+        - table [ref=f13e26]:
+          - rowgroup [ref=f13e27]:
+            - row [ref=f13e28]:
+              - columnheader "Fecha" [ref=f13e29]
+              - columnheader "N° OT" [ref=f13e30]
+              - columnheader "Equipo" [ref=f13e31]
+              - columnheader "Tipo" [ref=f13e32]
+              - columnheader "Estado" [ref=f13e33]
+              - columnheader [ref=f13e34]
+          - rowgroup [ref=f13e35]:
+            - row [ref=f13e36]:
+              - cell "11/07/2024" [ref=f13e37]
+              - cell "OT-2022-019" [ref=f13e38]
+              - cell "EXFO-OTDR-2022-006 EXFO" [ref=f13e39]
+              - cell "Calibración" [ref=f13e40]
+              - cell "Vencido" [ref=f13e41]
+              - cell [ref=f13e43]:
+                - link "Editar" [ref=f13e44] [cursor=pointer]:
+                  - /url: http://localhost:8088/tecnico/evento/51/
+            - row [ref=f13e45]:
+              - cell "01/07/2026" [ref=f13e46]
+              - cell "OT-2024-082" [ref=f13e47]
+              - cell "FLUKE-CERT-2024-004 Fluke Networks" [ref=f13e48]
+              - cell "Calibración" [ref=f13e49]
+              - cell "Vigente" [ref=f13e50]
+              - cell [ref=f13e52]:
+                - link "Editar" [ref=f13e53] [cursor=pointer]:
+                  - /url: http://localhost:8088/tecnico/evento/50/
+            - row [ref=f13e54]:
+              - cell "21/07/2024" [ref=f13e55]
+              - cell "OT-2023-041" [ref=f13e56]
+              - cell "FLUKE-CERT-2024-004 Fluke Networks" [ref=f13e57]
+              - cell "Mantenimiento" [ref=f13e58]
+              - cell "Vencido" [ref=f13e59]
+              - cell [ref=f13e61]:
+                - link "Editar" [ref=f13e62] [cursor=pointer]:
+                  - /url: http://localhost:8088/tecnico/evento/49/
+            - row [ref=f13e63]:
+              - cell "26/06/2025" [ref=f13e64]
+              - cell "OT-2023-058" [ref=f13e65]
+              - cell "FK-EMP-2023-003 Fujikura" [ref=f13e66]
+              - cell "Calibración" [ref=f13e67]
+              - cell "Vencido" [ref=f13e68]
+              - cell [ref=f13e70]:
+                - link "Editar" [ref=f13e71] [cursor=pointer]:
+                  - /url: http://localhost:8088/tecnico/evento/48/
+            - row [ref=f13e72]:
+              - cell "31/07/2025" [ref=f13e73]
+              - cell "OT-2024-097" [ref=f13e74]
+              - cell "EXFO-PM-2024-002 EXFO" [ref=f13e75]
+              - cell "Mantenimiento" [ref=f13e76]
+              - cell "Por vencer" [ref=f13e77]
+              - cell [ref=f13e79]:
+                - link "Editar" [ref=f13e80] [cursor=pointer]:
+                  - /url: http://localhost:8088/tecnico/evento/47/
+            - row [ref=f13e81]:
+              - cell "11/06/2026" [ref=f13e82]
+              - cell "OT-2024-096" [ref=f13e83]
+              - cell "GW-OTDR-2024-001 Grandway" [ref=f13e84]
+              - cell "Calibración" [ref=f13e85]
+              - cell "Vigente" [ref=f13e86]
+              - cell [ref=f13e88]:
+                - link "Editar" [ref=f13e89] [cursor=pointer]:
+                  - /url: http://localhost:8088/tecnico/evento/46/
+  - contentinfo [ref=f13e90]:
+    - paragraph [ref=f13e91]: © 2026 TrueTech SpA — Panel interno del técnico

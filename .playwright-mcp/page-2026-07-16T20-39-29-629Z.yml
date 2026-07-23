@@ -1,0 +1,69 @@
+- generic [active] [ref=f6e1]:
+  - banner [ref=f6e2]:
+    - generic [ref=f6e3]:
+      - generic [ref=f6e4]:
+        - generic [ref=f6e5]: TrueTech
+        - generic [ref=f6e6]: Panel de Gestión
+      - navigation [ref=f6e7]:
+        - link "Inicio" [ref=f6e8] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/
+        - link "+ Nueva OI" [ref=f6e9] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/nueva-oi/
+        - link "+ Nueva OT" [ref=f6e10] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/nueva-ot/
+        - link "OI" [ref=f6e11] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/?filtro=oi
+        - link "OT" [ref=f6e12] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/?filtro=ot
+        - link "Equipos" [ref=f6e13] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/equipos/
+        - link "Mi perfil" [ref=f6e14] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/perfil/
+        - link "Salir" [ref=f6e15] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/salir/
+  - main [ref=f6e16]:
+    - generic [ref=f6e17]:
+      - generic [ref=f6e18]:
+        - 'heading "Editar OI #166" [level=1] [ref=f6e19]'
+        - link "← Volver al panel" [ref=f6e20] [cursor=pointer]:
+          - /url: http://localhost:8088/panel/
+      - alert [ref=f6e21]: Orden de Ingreso guardada correctamente.
+      - generic [ref=f6e22]:
+        - generic [ref=f6e23]:
+          - generic [ref=f6e24]:
+            - generic [ref=f6e25]: Equipo
+            - combobox [ref=f6e26]:
+              - option "— Seleccionar equipo —"
+              - option "EXFO-OTDR-2022-006 — EXFO AXS-200"
+              - option "EXFO-PM-2024-002 — EXFO MAX-715B"
+              - option "FLUKE-CERT-2024-004 — Fluke Networks DSX2-8000"
+              - option "FK-EMP-2023-003 — Fujikura FSM-70S"
+              - option "GW-FUENTE-2023-005 — Grandway FLS-430"
+              - option "GW-OTDR-2024-001 — Grandway GS-401" [selected]
+          - generic [ref=f6e27]:
+            - generic [ref=f6e28]: Técnico responsable
+            - combobox [ref=f6e29]:
+              - option "— Seleccionar técnico —"
+              - option "admin"
+              - option "tecnico1" [selected]
+          - generic [ref=f6e30]:
+            - generic [ref=f6e31]:
+              - generic [ref=f6e32]: Tipo de servicio
+              - combobox [ref=f6e33]:
+                - option "— Seleccionar —"
+                - option "Calibración"
+                - option "Mantenimiento" [selected]
+            - generic [ref=f6e34]:
+              - generic [ref=f6e35]: Fecha de recepción
+              - textbox [ref=f6e36]: 2026-07-16
+          - generic [ref=f6e37]:
+            - generic [ref=f6e38]: Falla/defecto reportado por el cliente
+            - textbox [ref=f6e39]: Equipo presenta errores de medición en modo de onda corta. Cliente reporta lecturas inconsistentes.
+        - generic [ref=f6e40]:
+          - button "Actualizar OI" [ref=f6e41] [cursor=pointer]
+          - link "Cancelar" [ref=f6e42] [cursor=pointer]:
+            - /url: http://localhost:8088/panel/
+      - link "Crear OT desde esta OI" [ref=f6e44] [cursor=pointer]:
+        - /url: http://localhost:8088/panel/nueva-ot/?ct_oi_id=166
+  - contentinfo [ref=f6e45]:
+    - paragraph [ref=f6e46]: © 2026 TrueTech SpA — Panel interno

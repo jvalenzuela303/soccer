@@ -1,0 +1,2 @@
+[    1835ms] [LOG] JQMIGRATE: Migrate is installed, version 3.4.1 @ https://truehifi.cl/wp-admin/load-scripts.php?c=0&load%5Bchunk_0%5D=wp-hooks,jquery-core,jquery-migrate,utils,underscore&ver=6.8.5:6
+[    1978ms] [VERBOSE] [DOM] Multiple forms should be contained in their own form elements; break up complex forms into ones that represent a single action: (More info: https://goo.gl/9p2vKq) %o @ https://truehifi.cl/wp-admin/admin.php?page=wp-mail-smtp:0

@@ -1,0 +1,43 @@
+- generic [active] [ref=e1]:
+  - heading "Acceder" [level=1] [ref=e2]
+  - generic [ref=e3]:
+    - link "https://truehifi.cl" [ref=e4] [cursor=pointer]:
+      - /url: https://truehifi.cl
+    - generic [ref=e5]:
+      - paragraph [ref=e6]:
+        - generic [ref=e7]: Nombre de usuario o correo electrónico
+        - textbox "Nombre de usuario o correo electrónico" [ref=e8]
+      - generic [ref=e9]:
+        - generic [ref=e10]: Contraseña
+        - generic [ref=e11]:
+          - textbox "Contraseña" [ref=e13]
+          - button "Mostrar la contraseña" [ref=e14] [cursor=pointer]:
+            - generic [ref=e15]: 
+      - paragraph [ref=e16]:
+        - checkbox "Recuérdame" [ref=e17] [cursor=pointer]
+        - generic [ref=e18]: Recuérdame
+      - paragraph [ref=e19]:
+        - button "Acceder" [ref=e20] [cursor=pointer]
+    - paragraph [ref=e21]:
+      - link "Registro" [ref=e22] [cursor=pointer]:
+        - /url: https://truehifi.cl/wp-login.php?action=register
+      - text: "|"
+      - link "¿Has olvidado tu contraseña?" [ref=e23] [cursor=pointer]:
+        - /url: https://truehifi.cl/wp-login.php?action=lostpassword
+    - paragraph [ref=e24]:
+      - link "← Ir a True HiFi" [ref=e25] [cursor=pointer]:
+        - /url: https://truehifi.cl/
+    - link "Política de Privacidad" [ref=e27] [cursor=pointer]:
+      - /url: https://truehifi.cl/privacy-policy/
+    - generic [ref=e29]:
+      - generic [ref=e30]:
+        - generic [ref=e31]: 
+        - generic [ref=e32]: Idioma
+      - combobox "Idioma" [ref=e33] [cursor=pointer]:
+        - option "English (United States)"
+        - option "Español" [selected]
+      - button "Cambiar" [ref=e34] [cursor=pointer]
+  - generic [ref=e35]:
+    - text: "Funciona con:"
+    - link "LoginPress" [ref=e36] [cursor=pointer]:
+      - /url: https://wpbrigade.com

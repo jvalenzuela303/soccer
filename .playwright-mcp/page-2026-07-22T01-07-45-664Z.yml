@@ -1,0 +1,195 @@
+- generic [active] [ref=f68e1]:
+  - generic [ref=f68e21]:
+    - banner "Panel de navegación superior" [ref=f68e23]:
+      - status
+      - generic [ref=f68e24]:
+        - button [expanded] [ref=f68e25] [cursor=pointer]:
+          - img [ref=f68e28]: menu
+        - heading [level=1] [ref=f68e30]:
+          - button "Google Ads – Ir a la página de inicio" [ref=f68e31]
+      - generic [ref=f68e42]:
+        - button "Buscar" [ref=f68e45] [cursor=pointer]:
+          - generic [ref=f68e47]:
+            - img [ref=f68e48]: search
+            - text: Buscar
+        - generic [ref=f68e50]:
+          - button "Diseño" [ref=f68e53] [cursor=pointer]:
+            - generic [ref=f68e55]:
+              - img [ref=f68e56]: responsive_layout
+              - text: Diseño
+          - button "Actualizar" [ref=f68e60] [cursor=pointer]:
+            - generic [ref=f68e62]:
+              - img [ref=f68e63]: refresh
+              - text: Actualizar
+          - button "Abrir el panel de ayuda rápida" [ref=f68e66] [cursor=pointer]:
+            - generic [ref=f68e67]:
+              - text: Ayuda
+              - generic [ref=f68e68]:
+                - img [ref=f68e69]: help_outline
+                - text: Ayuda
+          - button "Notificaciones" [ref=f68e76] [cursor=pointer]:
+            - generic [ref=f68e78]:
+              - img [ref=f68e81]: notifications
+              - generic [ref=f68e83]: Notificaciones
+      - button "Cuenta de Google" [ref=f68e90] [cursor=pointer]:
+        - img "Cuenta de Google (jvalenzuela303@gmail.com)" [ref=f68e91]
+    - generic [ref=f68e93]:
+      - generic [ref=f68e98]:
+        - img [ref=f68e100]: report_problem
+        - generic [ref=f68e102]:
+          - status [ref=f68e103]:
+            - generic [ref=f68e104]: Revisa los objetivos de tu campaña - A partir del 17 de agosto del 2026, las campañas con objetivos de puja (por ejemplo, un objetivo de CPA o de ROAS) ofrecerán un rendimiento más uniforme cuando estén limitadas por el presupuesto, incluso después de ajustar el presupuesto. Revisa estas campañas para asegurarte de que los objetivos se ajusten a los tuyos. Los objetivos no se actualizarán automáticamente.
+          - generic [ref=f68e107]:
+            - button "Revisar campañas" [ref=f68e1842] [cursor=pointer]
+            - button "Ocultar" [ref=f68e1846] [cursor=pointer]
+      - generic [ref=f68e116]:
+        - generic [ref=f68e118]:
+          - generic [ref=f68e119]:
+            - generic [ref=f68e120]:
+              - button "Crear" [ref=f68e122] [cursor=pointer]
+              - generic [ref=f68e127]: Crear
+            - menu [ref=f68e128]:
+              - menu [ref=f68e129]:
+                - menuitem "Campañas" [ref=f68e132] [cursor=pointer]:
+                  - generic [ref=f68e133]:
+                    - img [ref=f68e135]: campaign
+                    - generic [ref=f68e136]: Campañas
+                - menuitem "Objetivos" [ref=f68e139] [cursor=pointer]:
+                  - generic [ref=f68e140]:
+                    - img [ref=f68e142]: rewarded_ads
+                    - generic [ref=f68e143]: Objetivos
+                - menuitem "Herramientas" [ref=f68e146] [cursor=pointer]:
+                  - generic [ref=f68e147]:
+                    - img [ref=f68e149]: construction
+                    - generic [ref=f68e150]: Herramientas
+                - menuitem "Facturación" [ref=f68e153] [cursor=pointer]:
+                  - generic [ref=f68e154]:
+                    - img [ref=f68e156]: credit_card
+                    - generic [ref=f68e157]: Facturación
+                - menuitem "Administrador" [ref=f68e160] [cursor=pointer]:
+                  - generic [ref=f68e161]:
+                    - img [ref=f68e163]: settings
+                    - generic [ref=f68e164]: Administrador
+          - navigation [ref=f68e165]:
+            - menu [ref=f68e166]:
+              - generic [ref=f68e167]:
+                - menuitem "Conversiones" [expanded] [ref=f68e170] [cursor=pointer]:
+                  - generic [ref=f68e171]:
+                    - generic [ref=f68e172]: Conversiones
+                    - img [ref=f68e175]: expand_more
+                - generic [ref=f68e176]:
+                  - menuitem "Resumen" [ref=f68e179] [cursor=pointer]
+                  - menuitem "Reglas de valor" [ref=f68e185] [cursor=pointer]
+                  - menuitem "Variables personalizadas" [ref=f68e191] [cursor=pointer]
+                  - menuitem "Configuración" [ref=f68e197] [cursor=pointer]
+                  - menuitem "Subidas" [ref=f68e203] [cursor=pointer]
+                - menuitem "Medición" [ref=f68e209] [cursor=pointer]:
+                  - generic [ref=f68e210]:
+                    - generic [ref=f68e211]: Medición
+                    - img [ref=f68e214]: expand_more
+        - generic [ref=f68e217]:
+          - generic [ref=f68e218]:
+            - generic [ref=f68e219]:
+              - generic [ref=f68e220]:
+                - generic [ref=f68e1849]:
+                  - link "Objetivos" [ref=f68e1850] [cursor=pointer]:
+                    - /url: /aw/conversions?ocid=352199970&authuser=0&__u=4291234064&__c=4148624530
+                  - img [ref=f68e1852]: chevron_right
+                - heading "Clic saliente (https://truetech.cl/tienda/)" [level=2] [ref=f68e1853]
+              - generic [ref=f68e225]:
+                - generic [ref=f68e227] [cursor=pointer]:
+                  - generic [ref=f68e873]: Personalizado
+                  - generic [ref=f68e230]:
+                    - button "24 jun – 21 jul de 2026 No aplicable" [ref=f68e232]:
+                      - generic [ref=f68e233]: 24 jun – 21 jul de 2026
+                      - img [ref=f68e235]: arrow_drop_down
+                    - generic [ref=f68e874]:
+                      - button "Anterior" [ref=f68e875]:
+                        - img [ref=f68e878]: chevron_left
+                      - button "Siguiente" [disabled]:
+                        - generic:
+                          - generic:
+                            - img: chevron_right
+                - button "Mostrar últimos 30 días" [ref=f68e880] [cursor=pointer]
+            - tablist [ref=f68e886]:
+              - tab "Detalles" [selected] [ref=f68e1854] [cursor=pointer]
+              - tab "Configuración" [ref=f68e1857] [cursor=pointer]
+          - main [ref=f68e262]:
+            - generic [ref=f68e264]:
+              - generic [ref=f68e1862]:
+                - generic [ref=f68e1865]:
+                  - region "Configuración" [ref=f68e1868]:
+                    - generic [ref=f68e1872]:
+                      - heading "Configuración" [level=2] [ref=f68e1873]
+                      - table "Configuración" [ref=f68e1875]:
+                        - row [ref=f68e1876]:
+                          - cell "Evento" [ref=f68e1877]
+                          - 'cell "Carga de la página: truetech.cl/tienda/" [ref=f68e1879]'
+                        - row [ref=f68e1882]:
+                          - cell "Nombre de la conversión" [ref=f68e1883]
+                          - cell "Clic saliente (https://truetech.cl/tienda/)" [ref=f68e1885]
+                        - row [ref=f68e1888]:
+                          - cell "Fecha de creación No se puede editar. Coloca el cursor sobre el elemento o pulsa Intro para que se muestre una descripción emergente." [ref=f68e1889]:
+                            - generic [ref=f68e1890]: Fecha de creación
+                            - button "No se puede editar. Coloca el cursor sobre el elemento o pulsa Intro para que se muestre una descripción emergente." [ref=f68e1892]: No editable
+                          - cell "16/12/2022" [ref=f68e1893]
+                        - row [ref=f68e1896]:
+                          - cell "Optimización de acciones" [ref=f68e1897]
+                          - cell "Clics de salida, Acción secundaria" [ref=f68e1899]
+                        - row [ref=f68e1902]:
+                          - cell "Valor" [ref=f68e1903]
+                          - cell "1 US$" [ref=f68e1905]
+                        - row [ref=f68e1908]:
+                          - cell "Fuente No se puede editar. Coloca el cursor sobre el elemento o pulsa Intro para que se muestre una descripción emergente." [ref=f68e1909]:
+                            - generic [ref=f68e1910]: Fuente
+                            - button "No se puede editar. Coloca el cursor sobre el elemento o pulsa Intro para que se muestre una descripción emergente." [ref=f68e1912]: No editable
+                          - cell "Sitio web" [ref=f68e1913]
+                        - row [ref=f68e1916]:
+                          - cell "Recuento" [ref=f68e1917]
+                          - cell "Todas las conversiones" [ref=f68e1919]
+                        - row [ref=f68e1922]:
+                          - cell "Ventana de conversión post-clic" [ref=f68e1923]
+                          - cell "30 días" [ref=f68e1925]
+                        - row [ref=f68e1928]:
+                          - cell "Ventana de conversión tras visualización interesada" [ref=f68e1929]
+                          - cell "3 días" [ref=f68e1931]
+                        - row [ref=f68e1934]:
+                          - cell "Ventana de conversión post-impresión" [ref=f68e1935]
+                          - cell "1 día" [ref=f68e1937]
+                        - row [ref=f68e1940]:
+                          - cell "Atribución" [ref=f68e1941]
+                          - cell "Basada en datos Recomendada Canales de pago de Google" [ref=f68e1943]:
+                            - generic [ref=f68e1946]:
+                              - text: Basada en datos
+                              - generic [ref=f68e1947]: Recomendada
+                            - generic [ref=f68e1948]: Canales de pago de Google
+                        - row [ref=f68e1950]:
+                          - cell "Conversiones mejoradas" [ref=f68e1951]
+                          - cell "Sin configurar" [ref=f68e1953]
+                  - button "Editar configuración" [ref=f68e1957]
+                - region [ref=f68e1965]:
+                  - generic [ref=f68e1968]:
+                    - generic [ref=f68e1969]:
+                      - generic [ref=f68e1970]: Fuentes de datos
+                      - generic [ref=f68e1971]: Evento
+                    - generic [ref=f68e1975]:
+                      - generic [ref=f68e1976]: Untitled tag
+                      - generic [ref=f68e1982]:
+                        - generic [ref=f68e1983]: Alguien visita una página que contiene "truetech.cl/tienda/"
+                        - button "Gestionar" [ref=f68e1987] [cursor=pointer]
+              - generic [ref=f68e275]: © Google, 2026.
+  - generic:
+    - dialog:
+      - generic:
+        - generic:
+          - heading [level=1]: Turn off ad blockers
+          - paragraph: Google Ads can't work when you're using an ad blocker. To use Google Ads, please turn off any ad blockers for now.
+  - generic:
+    - generic:
+      - generic:
+        - dialog "cuadro de diálogo"
+  - generic:
+    - generic:
+      - generic:
+        - dialog "cuadro de diálogo"
+    - text: warning_amber
