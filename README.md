@@ -52,3 +52,4 @@ docker-compose up -d
 ```
 
 Luego instalar el plugin desde `/wp-admin/plugins.php` subiendo el zip de la versión correspondiente.
+# soccer
