@@ -1427,10 +1427,19 @@ final class TournamentPage {
 		$away_players = self::get_roster( (int) $match['away_team_id'] );
 
 		$match['tournament_id'] = (int) $match['tournament_id'];
+
+		$tournament = $wpdb->get_row( // phpcs:ignore
+			$wpdb->prepare(
+				"SELECT registration_mode FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
+				(int) $match['tournament_id']
+			),
+			ARRAY_A
+		);
+
 		$page_title = sprintf( __( 'Partido: %s vs %s', 'soccertrack' ), $home_team['name'], $away_team['name'] );
 
 		self::render( 'partido', compact(
-			'match', 'home_team', 'away_team', 'home_players', 'away_players',
+			'match', 'tournament', 'home_team', 'away_team', 'home_players', 'away_players',
 			'referees', 'planilleros',
 			'notice_ref', 'error_ref',
 			'notice_plan', 'error_plan',
