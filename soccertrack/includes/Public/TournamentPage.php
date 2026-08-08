@@ -392,21 +392,23 @@ final class TournamentPage {
 				$match_time  = preg_match( '/^\d{1,2}:\d{2}$/', $raw_time ) ? $raw_time . ':00' : '19:00:00';
 				$reg_mode    = sanitize_key( $_POST['registration_mode'] ?? 'realtime' );
 				$reg_mode    = in_array( $reg_mode, [ 'realtime', 'deferred' ], true ) ? $reg_mode : 'realtime';
+				$release_days = max( -7, min( 30, (int) ( $_POST['fixture_release_days'] ?? 0 ) ) );
 
 				$wpdb->insert( // phpcs:ignore
 					"{$wpdb->prefix}ds_tournaments",
 					[
-						'name'              => $name,
-						'season'            => sanitize_text_field( $_POST['season'] ?? gmdate( 'Y' ) ),
-						'start_date'        => sanitize_text_field( $_POST['start_date'] ?? '' ) ?: null,
-						'end_date'          => sanitize_text_field( $_POST['end_date'] ?? '' ) ?: null,
-						'format'            => sanitize_text_field( $_POST['format'] ?? 'round_robin' ),
-						'status'            => 'draft',
-						'match_weekday'     => $match_weekday,
-						'match_time'        => $match_time,
-						'registration_mode' => $reg_mode,
+						'name'                 => $name,
+						'season'               => sanitize_text_field( $_POST['season'] ?? gmdate( 'Y' ) ),
+						'start_date'           => sanitize_text_field( $_POST['start_date'] ?? '' ) ?: null,
+						'end_date'             => sanitize_text_field( $_POST['end_date'] ?? '' ) ?: null,
+						'format'               => sanitize_text_field( $_POST['format'] ?? 'round_robin' ),
+						'status'               => 'draft',
+						'match_weekday'        => $match_weekday,
+						'match_time'           => $match_time,
+						'registration_mode'    => $reg_mode,
+						'fixture_release_days' => $release_days,
 					],
-					[ '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s' ]
+					[ '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d' ]
 				);
 				$notice = 'created';
 			}
@@ -931,6 +933,31 @@ final class TournamentPage {
 				[ '%d' ]
 			);
 			$notice = 'reg_mode_updated';
+
+			$tournament = $wpdb->get_row(
+				$wpdb->prepare( "SELECT * FROM {$wpdb->prefix}ds_tournaments WHERE id = %d", $id ),
+				ARRAY_A
+			);
+		}
+
+		// ── Actualizar días de liberación del fixture ─────────────────────
+		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_update_release_days'] ) ) {
+			check_admin_referer( 'st_update_release_days_' . $id );
+
+			if ( ! current_user_can( 'ds_manage_tournaments' ) ) {
+				wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), '', [ 'response' => 403 ] );
+			}
+
+			$release_days = max( -7, min( 30, (int) ( $_POST['fixture_release_days'] ?? 0 ) ) );
+
+			$wpdb->update( // phpcs:ignore
+				"{$wpdb->prefix}ds_tournaments",
+				[ 'fixture_release_days' => $release_days ],
+				[ 'id' => $id ],
+				[ '%d' ],
+				[ '%d' ]
+			);
+			$notice = 'release_days_updated';
 
 			$tournament = $wpdb->get_row(
 				$wpdb->prepare( "SELECT * FROM {$wpdb->prefix}ds_tournaments WHERE id = %d", $id ),

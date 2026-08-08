@@ -21,6 +21,9 @@
 <?php if ( ( $notice ?? '' ) === 'reg_mode_updated' ) : ?>
 	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Modo de registro actualizado.', 'soccertrack' ); ?></div>
 <?php endif; ?>
+<?php if ( ( $notice ?? '' ) === 'release_days_updated' ) : ?>
+	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Liberación de fixture actualizada.', 'soccertrack' ); ?></div>
+<?php endif; ?>
 <?php if ( ! empty( $error ?? '' ) ) : ?>
 	<div class="st-alert st-alert--error">⚠️ <?php echo esc_html( $error ); ?></div>
 <?php endif; ?>
@@ -163,6 +166,39 @@
 			</button>
 		</div>
 	</form>
+</div>
+
+<?php /* ── Liberación del fixture ──────────────────────────────────────── */ ?>
+<div class="st-card" style="margin-bottom:20px">
+	<div class="st-card-header">
+		<h2 class="st-card-title">📅 <?php esc_html_e( 'Liberación del fixture', 'soccertrack' ); ?></h2>
+	</div>
+	<form method="post" action="" class="st-form-inline" style="align-items:flex-end;gap:16px">
+		<?php wp_nonce_field( 'st_update_release_days_' . $tournament['id'] ); ?>
+		<input type="hidden" name="st_update_release_days" value="1">
+
+		<div class="st-field">
+			<label class="st-label"><?php esc_html_e( 'Días tras última fecha', 'soccertrack' ); ?></label>
+			<input
+				type="number"
+				name="fixture_release_days"
+				class="st-input"
+				value="<?php echo esc_attr( (string) (int) ( $tournament['fixture_release_days'] ?? 0 ) ); ?>"
+				min="-7"
+				max="30"
+				style="max-width:100px"
+			>
+		</div>
+
+		<div class="st-field" style="align-self:flex-end">
+			<button type="submit" class="st-btn st-btn--secondary st-btn--sm">
+				💾 <?php esc_html_e( 'Guardar', 'soccertrack' ); ?>
+			</button>
+		</div>
+	</form>
+	<p style="margin:8px 0 0;font-size:.8rem;color:#888">
+		<?php esc_html_e( '0 = todas las jornadas visibles de inmediato. 1 = la siguiente jornada se publica al día siguiente de terminada la anterior.', 'soccertrack' ); ?>
+	</p>
 </div>
 
 <?php /* ── Fixture ───────────────────────────────────────────────────── */ ?>

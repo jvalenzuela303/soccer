@@ -90,6 +90,25 @@
 			</span>
 		</div>
 
+		<div class="st-field">
+			<label for="st-release-days" class="st-label">
+				<?php esc_html_e( 'Días para liberar siguiente jornada', 'soccertrack' ); ?>
+			</label>
+			<input
+				type="number"
+				id="st-release-days"
+				name="fixture_release_days"
+				class="st-input"
+				value="0"
+				min="-7"
+				max="30"
+				style="max-width:100px"
+			>
+			<span style="font-size:.78rem;color:#888;display:block;margin-top:4px">
+				<?php esc_html_e( '0 = visible de inmediato. 1 = al día siguiente de terminada la jornada anterior.', 'soccertrack' ); ?>
+			</span>
+		</div>
+
 		<button type="submit" class="st-btn st-btn--primary">
 			<?php esc_html_e( '+ Crear torneo', 'soccertrack' ); ?>
 		</button>
