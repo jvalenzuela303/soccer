@@ -163,6 +163,41 @@ final class SpreadsheetImporter {
 			];
 		}
 
+		// ── Pre-cargar RUTs existentes en el torneo ──────────────────────────
+		// Una sola query antes del loop evita N SELECTs por jugador.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$rut_rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT p.rut_id, p.id
+				 FROM {$wpdb->prefix}ds_players p
+				 JOIN {$wpdb->prefix}ds_team_players tp ON tp.player_id = p.id
+				 JOIN {$wpdb->prefix}ds_teams t ON t.id = tp.team_id
+				 WHERE t.tournament_id = %d",
+				$tournament_id
+			),
+			ARRAY_A
+		) ?: [];
+		// $existing_ruts[ normalized_rut ] = player_id
+		$existing_ruts = [];
+		foreach ( $rut_rows as $r ) {
+			$existing_ruts[ $r['rut_id'] ] = (int) $r['id'];
+		}
+
+		// ── Pre-cargar inscripciones en este equipo ───────────────────────────
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$tp_rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT id, player_id FROM {$wpdb->prefix}ds_team_players WHERE team_id = %d",
+				$team_id
+			),
+			ARRAY_A
+		) ?: [];
+		// $enrolled_in_team[ player_id ] = team_players.id
+		$enrolled_in_team = [];
+		foreach ( $tp_rows as $r ) {
+			$enrolled_in_team[ (int) $r['player_id'] ] = (int) $r['id'];
+		}
+
 		// ── Leer jugadores (fila 11 en adelante) ─────────────────────────────
 		foreach ( $sheet->getRowIterator( 11 ) as $row ) {
 			$cells = $row->getCellIterator();
@@ -206,14 +241,8 @@ final class SpreadsheetImporter {
 
 			$normalized_rut = $this->validator->normalize_rut( $rut );
 
-			// Upsert jugador global por RUT.
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
-			$player_id = (int) $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT id FROM {$wpdb->prefix}ds_players WHERE rut_id = %s",
-					$normalized_rut
-				)
-			);
+			// Upsert jugador global por RUT — usar cache pre-cargado para evitar SELECT por fila.
+			$player_id = $existing_ruts[ $normalized_rut ] ?? 0;
 
 			if ( ! $player_id ) {
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery
@@ -230,6 +259,8 @@ final class SpreadsheetImporter {
 					[ '%s', '%s', '%s', '%s', '%s', '%s' ]
 				);
 				$player_id = (int) $wpdb->insert_id;
+				// Registrar en cache para posibles filas duplicadas en esta misma planilla.
+				$existing_ruts[ $normalized_rut ] = $player_id;
 			} else {
 				// Actualizar datos que pudieron cambiar.
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery
@@ -253,15 +284,8 @@ final class SpreadsheetImporter {
 				continue;
 			}
 
-			// Verificar si ya está en este equipo.
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
-			$already = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT id FROM {$wpdb->prefix}ds_team_players WHERE team_id = %d AND player_id = %d",
-					$team_id,
-					$player_id
-				)
-			);
+			// Verificar si ya está en este equipo — usar cache pre-cargado.
+			$already = $enrolled_in_team[ $player_id ] ?? null;
 
 			if ( $already ) {
 				// Ya inscrito: actualizar área/cargo y contar como "actualizado", no como omitido.
