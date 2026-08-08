@@ -96,6 +96,10 @@ final class PublicEndpoints {
 
 	/**
 	 * Fixture completo del torneo con nombre de equipos, recinto y cancha (caché 60 s).
+	 *
+	 * Cuando fixture_release_days > 0, sólo devuelve partidos de jornadas visibles:
+	 *  - Jornada 1: siempre visible.
+	 *  - Jornada N (N > 1): visible si max(match_datetime de jornada N-1) + fixture_release_days días <= hoy.
 	 */
 	public static function get_fixture( \WP_REST_Request $request ): \WP_REST_Response {
 		global $wpdb;
@@ -104,6 +108,61 @@ final class PublicEndpoints {
 		$key = self::cache_key( $tid, 'fixture' );
 		$cached = get_transient( $key );
 		if ( false !== $cached ) return rest_ensure_response( $cached );
+
+		// Cargar fixture_release_days del torneo.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$tournament = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT fixture_release_days FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
+				$tid
+			),
+			ARRAY_A
+		);
+
+		$release_days = (int) ( $tournament['fixture_release_days'] ?? 0 );
+
+		// Calcular jornadas visibles cuando el filtro está activo.
+		$round_filter = '';
+		if ( $release_days > 0 ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$visible_rounds = $wpdb->get_col(
+				$wpdb->prepare(
+					"SELECT round_number
+					 FROM {$wpdb->prefix}ds_matches
+					 WHERE tournament_id = %d
+					   AND round_number = 1
+					 UNION
+					 SELECT m.round_number
+					 FROM {$wpdb->prefix}ds_matches m
+					 WHERE m.tournament_id = %d
+					   AND m.round_number > 1
+					   AND EXISTS (
+					       SELECT 1
+					       FROM {$wpdb->prefix}ds_matches prev
+					       WHERE prev.tournament_id = %d
+					         AND prev.round_number = m.round_number - 1
+					       GROUP BY prev.tournament_id
+					       HAVING DATE_ADD( MAX(prev.match_datetime), INTERVAL %d DAY ) <= CURDATE()
+					   )
+					 GROUP BY m.round_number",
+					$tid,
+					$tid,
+					$tid,
+					$release_days
+				)
+			);
+
+			$visible_rounds = array_map( 'intval', $visible_rounds ?: [] );
+
+			if ( empty( $visible_rounds ) ) {
+				// Ninguna jornada visible aún — devolver array vacío.
+				set_transient( $key, [], self::CACHE_TTL );
+				return rest_ensure_response( [] );
+			}
+
+			$placeholders  = implode( ', ', array_fill( 0, count( $visible_rounds ), '%d' ) );
+			$round_filter  = $wpdb->prepare( " AND m.round_number IN ( {$placeholders} )", ...$visible_rounds ); // phpcs:ignore
+		}
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$rows = $wpdb->get_results(
@@ -127,7 +186,7 @@ final class PublicEndpoints {
 				 JOIN {$wpdb->prefix}ds_teams   at ON at.id = m.away_team_id
 				 JOIN {$wpdb->prefix}ds_venues  v  ON v.id  = m.venue_id
 				 LEFT JOIN {$wpdb->prefix}ds_courts c ON c.id = m.court_id
-				 WHERE m.tournament_id = %d
+				 WHERE m.tournament_id = %d{$round_filter}
 				 ORDER BY m.round_number ASC, m.match_datetime ASC",
 				$tid
 			),
@@ -321,7 +380,12 @@ final class PublicEndpoints {
 	}
 
 	/**
-	 * Sanciones disciplinarias del torneo (activas y cumplidas) (caché 60 s).
+	 * Tribunal disciplinario del torneo (caché 60 s).
+	 *
+	 * Devuelve un objeto con dos secciones:
+	 *  - pending_review: tarjetas ROJAS de la última fecha jugada,
+	 *    para que el tribunal decida la sanción. (Las amarillas no se muestran.)
+	 *  - sanctions: sanciones ya resueltas (activas y cumplidas).
 	 */
 	public static function get_tribunal( \WP_REST_Request $request ): \WP_REST_Response {
 		global $wpdb;
@@ -331,28 +395,80 @@ final class PublicEndpoints {
 		$cached = get_transient( $key );
 		if ( false !== $cached ) return rest_ensure_response( $cached );
 
-		// USE INDEX (idx_tournament_status) — lidera por tournament_id sin full-scan.
+		// ── Última fecha con partidos finalizados ─────────────────────────
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
-		$rows = $wpdb->get_results(
+		$last_round = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT MAX(round_number)
+				 FROM {$wpdb->prefix}ds_matches
+				 WHERE tournament_id = %d AND status = 'finished'",
+				$tid
+			)
+		);
+
+		// ── Casos pendientes: tarjetas de la última fecha ─────────────────
+		$pending = [];
+		if ( $last_round > 0 ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$pending = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT
+					    e.player_id,
+					    p.first_name,
+					    p.last_name,
+					    t.name        AS team_name,
+					    e.event_type,
+					    m.round_number,
+					    m.match_datetime
+					 FROM {$wpdb->prefix}ds_match_events e
+					 JOIN {$wpdb->prefix}ds_players p ON p.id = e.player_id
+					 JOIN {$wpdb->prefix}ds_teams   t ON t.id = e.team_id
+					 JOIN {$wpdb->prefix}ds_matches  m ON m.id = e.match_id
+					 WHERE e.tournament_id = %d
+					   AND m.round_number  = %d
+					   AND m.status        = 'finished'
+					   AND e.event_type = 'red_card'
+					 ORDER BY p.last_name ASC",
+					$tid,
+					$last_round
+				),
+				ARRAY_A
+			) ?: [];
+		}
+
+		// ── Sanciones resueltas (activas y cumplidas) ─────────────────────
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$sanctions = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT
 				    ds.id,
 				    p.first_name,
 				    p.last_name,
+				    MAX(t.name)       AS team_name,
 				    ds.reason,
 				    ds.ban_days_or_matches,
 				    ds.remaining_matches,
 				    ds.status
 				 FROM {$wpdb->prefix}ds_disciplinary_sanctions ds USE INDEX (idx_tournament_status)
-				 JOIN {$wpdb->prefix}ds_players p ON p.id = ds.player_id
+				 JOIN {$wpdb->prefix}ds_players p  ON p.id  = ds.player_id
+				 LEFT JOIN {$wpdb->prefix}ds_team_players tp ON tp.player_id = ds.player_id
+				 LEFT JOIN {$wpdb->prefix}ds_teams        t  ON t.id = tp.team_id
+				                                               AND t.tournament_id = %d
 				 WHERE ds.tournament_id = %d
+				 GROUP BY ds.id
 				 ORDER BY ds.status ASC, ds.id DESC",
+				$tid,
 				$tid
 			),
 			ARRAY_A
-		);
+		) ?: [];
 
-		$result = $rows ?: [];
+		$result = [
+			'last_round'     => $last_round,
+			'pending_review' => $pending,
+			'sanctions'      => $sanctions,
+		];
+
 		set_transient( $key, $result, self::CACHE_TTL );
 		return rest_ensure_response( $result );
 	}
