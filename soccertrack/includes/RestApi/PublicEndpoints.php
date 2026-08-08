@@ -142,7 +142,7 @@ final class PublicEndpoints {
 					       WHERE prev.tournament_id = %d
 					         AND prev.round_number = m.round_number - 1
 					       GROUP BY prev.tournament_id
-					       HAVING DATE_ADD( MAX(prev.match_datetime), INTERVAL %d DAY ) <= CURDATE()
+					       HAVING DATE_ADD( DATE( MAX(prev.match_datetime) ), INTERVAL %d DAY ) <= CURDATE()
 					   )
 					 GROUP BY m.round_number",
 					$tid,
