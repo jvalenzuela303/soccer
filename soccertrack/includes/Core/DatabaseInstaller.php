@@ -30,18 +30,19 @@ final class DatabaseInstaller {
 
 		// 1. Torneos.
 		dbDelta( "CREATE TABLE {$wpdb->prefix}ds_tournaments (
-			id            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-			name          VARCHAR(150)    NOT NULL,
-			season        VARCHAR(50)     NOT NULL,
-			start_date    DATE            NULL,
-			end_date      DATE            NULL,
-			format        ENUM('round_robin','round_robin_playoffs','group_stage','knockout') NOT NULL DEFAULT 'round_robin',
-			status        ENUM('draft','active','completed')           NOT NULL DEFAULT 'draft',
-			bases_pdf_url VARCHAR(255)    NULL,
-			match_weekday TINYINT(1)      NOT NULL DEFAULT 6,
-			match_time    TIME            NOT NULL DEFAULT '19:00:00',
-			created_at    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-			PRIMARY KEY   (id),
+			id                BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+			name              VARCHAR(150)    NOT NULL,
+			season            VARCHAR(50)     NOT NULL,
+			start_date        DATE            NULL,
+			end_date          DATE            NULL,
+			format            ENUM('round_robin','round_robin_playoffs','group_stage','knockout') NOT NULL DEFAULT 'round_robin',
+			status            ENUM('draft','active','completed')           NOT NULL DEFAULT 'draft',
+			bases_pdf_url     VARCHAR(255)    NULL,
+			match_weekday     TINYINT(1)      NOT NULL DEFAULT 6,
+			match_time        TIME            NOT NULL DEFAULT '19:00:00',
+			registration_mode ENUM('realtime','deferred') NOT NULL DEFAULT 'realtime',
+			created_at        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY       (id),
 			KEY idx_status (status)
 		) ENGINE=InnoDB {$c};" );
 
@@ -389,6 +390,16 @@ final class DatabaseInstaller {
 				"ALTER TABLE {$prefix}ds_tournaments
 				 ADD COLUMN match_weekday TINYINT(1) NOT NULL DEFAULT 6 AFTER bases_pdf_url,
 				 ADD COLUMN match_time    TIME       NOT NULL DEFAULT '19:00:00' AFTER match_weekday"
+			);
+		}
+
+		// v1.6.1 — ds_tournaments: modo de registro de partidos.
+		$has_reg_mode = $wpdb->get_var( "SHOW COLUMNS FROM {$prefix}ds_tournaments LIKE 'registration_mode'" ); // phpcs:ignore
+		if ( ! $has_reg_mode ) {
+			$wpdb->query( // phpcs:ignore
+				"ALTER TABLE {$prefix}ds_tournaments
+				 ADD COLUMN registration_mode ENUM('realtime','deferred') NOT NULL DEFAULT 'realtime'
+				 AFTER match_time"
 			);
 		}
 	}
