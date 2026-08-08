@@ -70,12 +70,6 @@
 				</button>
 			</li>
 			<li role="presentation">
-				<button class="st-tab-btn" role="tab" data-tab="stats"
-					id="st-tab-stats" aria-selected="false" aria-controls="st-panel-stats" tabindex="-1">
-					📈 <?php esc_html_e( 'Estadísticas', 'soccertrack' ); ?>
-				</button>
-			</li>
-			<li role="presentation">
 				<button class="st-tab-btn" role="tab" data-tab="tribunal"
 					id="st-tab-tribunal" aria-selected="false" aria-controls="st-panel-tribunal" tabindex="-1">
 					🟥 <?php esc_html_e( 'Tribunal', 'soccertrack' ); ?>
@@ -96,7 +90,6 @@
 	<section id="st-panel-fixture"   class="st-tab-panel" role="tabpanel" aria-labelledby="st-tab-fixture"   aria-hidden="true"></section>
 	<section id="st-panel-teams"     class="st-tab-panel" role="tabpanel" aria-labelledby="st-tab-teams"     aria-hidden="true"></section>
 	<section id="st-panel-scorers"   class="st-tab-panel" role="tabpanel" aria-labelledby="st-tab-scorers"   aria-hidden="true"></section>
-	<section id="st-panel-stats"     class="st-tab-panel" role="tabpanel" aria-labelledby="st-tab-stats"     aria-hidden="true"></section>
 	<section id="st-panel-tribunal"  class="st-tab-panel" role="tabpanel" aria-labelledby="st-tab-tribunal"  aria-hidden="true"></section>
 	<?php if ( ! empty( $tournament['bases_pdf_url'] ) ) : ?>
 	<section id="st-panel-bases"     class="st-tab-panel" role="tabpanel" aria-labelledby="st-tab-bases"     aria-hidden="true"></section>

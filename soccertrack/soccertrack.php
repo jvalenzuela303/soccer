@@ -3,7 +3,7 @@
  * Plugin Name:       SoccerTrack — Gestión Deportiva
  * Plugin URI:        https://neurolabs.cl/
  * Description:       Motor de gestión multi-torneos: fixture Round-Robin, tribunal disciplinario, planilla digital, portal público con pestañas.
- * Version:           1.4.1
+ * Version:           1.7.0
  * Requires at least: 7.0
  * Requires PHP:      8.2
  * Author:            Jvalenzuela
@@ -35,8 +35,8 @@ if ( version_compare( PHP_VERSION, '8.2', '<' ) ) {
 }
 
 // ── Constantes ────────────────────────────────────────────────────────────────
-define( 'SOCCERTRACK_VERSION',    '1.4.1' );
-define( 'SOCCERTRACK_DB_VERSION', '1.4.0' );
+define( 'SOCCERTRACK_VERSION',    '1.7.0' );
+define( 'SOCCERTRACK_DB_VERSION', '1.7.0' );
 define( 'SOCCERTRACK_FILE',       __FILE__ );
 define( 'SOCCERTRACK_DIR',        plugin_dir_path( __FILE__ ) );
 define( 'SOCCERTRACK_URL',        plugin_dir_url( __FILE__ ) );
@@ -64,6 +64,9 @@ function soccertrack_boot(): void {
 
 	// Migración de DB si la versión cambió.
 	\SportsLeague\Core\DatabaseInstaller::maybe_upgrade();
+
+	// Actualizar caps de roles existentes (idempotente — solo agrega lo que falta).
+	\SportsLeague\Core\RolesManager::update_roles();
 
 	// Menú de administración de WordPress.
 	\SportsLeague\Admin\AdminController::init();

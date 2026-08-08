@@ -149,6 +149,21 @@ body.st-public-body {
 .st-form-bubble--d { background: #888; }
 .st-form-bubble--l { background: #e74c3c; }
 
+/* ── Leyenda de forma ────────────────────────────────────────────── */
+.st-form-legend {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-top: 8px;
+	font-size: .75rem;
+	color: #666;
+	flex-wrap: wrap;
+}
+
+.st-form-legend .st-form-bubble {
+	margin-right: 4px;
+}
+
 /* ── Estadísticas: Leyenda de zonas ──────────────────────────────── */
 .st-zone-legend {
 	display: flex;
@@ -170,6 +185,79 @@ body.st-public-body {
 
 .st-zone-dot--playoff { background: var(--st-green-primary); }
 .st-zone-dot--danger  { background: #e74c3c; }
+
+/* ── Estadísticas: Gráficos de records ───────────────────────────── */
+.st-charts-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+	gap: 1.25rem;
+	margin-top: 1rem;
+}
+
+.st-chart-wrap {
+	background: #f8f9fa;
+	border-radius: 10px;
+	padding: 1rem 1.1rem;
+}
+
+.st-chart-title {
+	font-size: .82rem;
+	font-weight: 700;
+	color: var(--st-charcoal, #3C3A47);
+	margin: 0 0 .75rem;
+	display: flex;
+	align-items: center;
+	gap: .35rem;
+}
+
+.st-chart-hint {
+	font-size: .7rem;
+	font-weight: 400;
+	color: #999;
+	margin-left: .25rem;
+}
+
+.st-bar-row {
+	display: grid;
+	grid-template-columns: 110px 1fr 28px;
+	align-items: center;
+	gap: .45rem;
+	margin-bottom: .45rem;
+	font-size: .73rem;
+}
+
+.st-bar-label {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	color: var(--st-charcoal, #3C3A47);
+}
+
+.st-bar-track {
+	background: #e4e7ea;
+	border-radius: 4px;
+	height: 9px;
+	overflow: hidden;
+}
+
+.st-bar-fill {
+	height: 100%;
+	border-radius: 4px;
+	min-width: 4px;
+	transition: width .45s ease;
+}
+
+.st-bar-fill--attack { background: var(--st-green-primary, #3CBC20); }
+.st-bar-fill--wins   { background: var(--st-green-secondary, #6DB728); }
+.st-bar-fill--pts    { background: var(--st-green-light, #7CDA24); }
+.st-bar-fill--defense { background: #e67e22; }
+
+.st-bar-value {
+	font-weight: 700;
+	font-size: .72rem;
+	color: #555;
+	text-align: right;
+}
 
 /* ── Goleadores: Medallas top 3 ──────────────────────────────────── */
 .st-scorer--gold   { border-left: 4px solid #f1c40f; background: rgba(241,196,15,.06); }
@@ -303,12 +391,10 @@ body.st-public-body {
 	color: #666;
 }
 
-/* ── Responsive: leader cards y records en móvil ─────────────────── */
+/* ── Responsive: leader cards, records y charts en móvil ────────── */
 @media (max-width: 640px) {
 	.st-leader-cards { flex-direction: column; }
 	.st-records-grid { grid-template-columns: 1fr 1fr; }
-	.st-podium { gap: 6px; }
-	.st-podium-item { min-width: 90px; padding: 10px 10px 0; }
-	.st-podium-avatar { width: 36px; height: 36px; font-size: .9rem; }
-	.st-podium-name { font-size: .75rem; }
+	.st-charts-grid  { grid-template-columns: 1fr; }
+	.st-bar-row      { grid-template-columns: 90px 1fr 24px; }
 }

@@ -173,7 +173,7 @@
 
 				const formBubbles = ( r.form ?? [] ).map( result => {
 					const cls = result === 'W' ? 'w' : result === 'D' ? 'd' : 'l';
-					const lbl = result === 'W' ? 'W' : result === 'D' ? 'D' : 'L';
+					const lbl = result === 'W' ? 'V' : result === 'D' ? 'E' : 'D';
 					return `<span class="st-form-bubble st-form-bubble--${ cls }">${ lbl }</span>`;
 				} ).join( '' );
 
@@ -203,6 +203,51 @@
 				</div>`
 				: '';
 
+			// ── Bar charts (estadísticas) — usando datos de standings ya disponibles ──
+			let chartsHtml = '';
+			if ( activeRows.length ) {
+				const buildChart = ( chartRows, modifier ) => {
+					const max = Math.max( ...chartRows.map( r => r.val ), 1 );
+					return `<div class="st-chart">${ chartRows.map( r => {
+						const pct = Math.round( r.val / max * 100 );
+						return `
+						<div class="st-bar-row">
+							<span class="st-bar-label" title="${ escHtml( r.name ) }">${ escHtml( r.name ) }</span>
+							<div class="st-bar-track">
+								<div class="st-bar-fill st-bar-fill--${ modifier }" style="width:${ pct }%"></div>
+							</div>
+							<span class="st-bar-value">${ r.val }</span>
+						</div>`;
+					} ).join( '' ) }</div>`;
+				};
+
+				const byGF  = [ ...activeRows ].sort( ( a, b ) => b.gf  - a.gf  ).map( r => ( { name: r.name, val: r.gf  } ) );
+				const byGC  = [ ...activeRows ].sort( ( a, b ) => a.gc  - b.gc  ).map( r => ( { name: r.name, val: r.gc  } ) );
+				const byPG  = [ ...activeRows ].sort( ( a, b ) => b.pg  - a.pg  ).map( r => ( { name: r.name, val: r.pg  } ) );
+				const byPTS = [ ...activeRows ].sort( ( a, b ) => b.pts - a.pts ).map( r => ( { name: r.name, val: r.pts } ) );
+
+				chartsHtml = `
+				<h3 class="st-subsection-title" style="margin-top:2rem">${ escHtml( i18n.records_charts_title ?? 'Comparativa de equipos' ) }</h3>
+				<div class="st-charts-grid">
+					<div class="st-chart-wrap">
+						<h4 class="st-chart-title">⚽ ${ escHtml( i18n.goals_scored ?? 'Goles Anotados' ) }</h4>
+						${ buildChart( byGF, 'attack' ) }
+					</div>
+					<div class="st-chart-wrap">
+						<h4 class="st-chart-title">🛡 ${ escHtml( i18n.goals_conceded ?? 'Goles Concedidos' ) } <small class="st-chart-hint">${ escHtml( i18n.lower_is_better ?? 'menos es mejor' ) }</small></h4>
+						${ buildChart( byGC, 'defense' ) }
+					</div>
+					<div class="st-chart-wrap">
+						<h4 class="st-chart-title">🏆 ${ escHtml( i18n.wins ?? 'Victorias' ) }</h4>
+						${ buildChart( byPG, 'wins' ) }
+					</div>
+					<div class="st-chart-wrap">
+						<h4 class="st-chart-title">📊 ${ escHtml( i18n.pts ?? 'Puntos' ) }</h4>
+						${ buildChart( byPTS, 'pts' ) }
+					</div>
+				</div>`;
+			}
+
 			container.innerHTML = `
 				<h2 class="st-section-title">${ i18n.standings_title ?? 'Tabla de Posiciones' }</h2>
 				${ leaderCardsHtml }
@@ -227,7 +272,13 @@
 						<tbody>${ trs }</tbody>
 					</table>
 				</div>
-				${ zoneLegendHtml }`;
+				${ zoneLegendHtml }
+				<div class="st-form-legend">
+					<span class="st-form-bubble st-form-bubble--w">V</span> ${ escHtml( i18n.form_win ?? 'Victoria' ) }
+					<span class="st-form-bubble st-form-bubble--d">E</span> ${ escHtml( i18n.form_draw ?? 'Empate' ) }
+					<span class="st-form-bubble st-form-bubble--l">D</span> ${ escHtml( i18n.form_loss ?? 'Derrota' ) }
+				</div>
+				${ chartsHtml }`;
 		} catch ( err ) {
 			showError( container, `${ i18n.error_load ?? 'Error al cargar posiciones.' } (${ err.message })` );
 		}
@@ -489,44 +540,110 @@
 		showLoading( container );
 
 		try {
-			const sanctions = await apiFetch( `soccertrack/v1/public/tournament/${ TID }/tribunal` );
+			const data = await apiFetch( `soccertrack/v1/public/tournament/${ TID }/tribunal` );
 
-			if ( ! sanctions.length ) {
+			// Soporte para respuesta antigua (array plano) y nueva (objeto con secciones).
+			const isLegacy       = Array.isArray( data );
+			const lastRound      = isLegacy ? null : ( data.last_round ?? null );
+			const pendingReview  = isLegacy ? []   : ( data.pending_review ?? [] );
+			const sanctions      = isLegacy ? data  : ( data.sanctions ?? [] );
+
+			const hasContent = pendingReview.length || sanctions.length;
+			if ( ! hasContent ) {
 				return showEmpty( container, i18n.no_sanctions ?? 'No hay sanciones registradas.' );
 			}
 
-			const trs = sanctions.map( s => {
-				const cls  = s.status === 'active' ? 'st-sanction-status--active' : 'st-sanction-status--served';
-				const label = s.status === 'active'
-					? ( i18n.status_active ?? 'Activa' )
-					: ( i18n.status_served ?? 'Cumplida' );
+			// ── Sección 1: Casos última fecha ─────────────────────────────────
+			let pendingHtml = '';
+			if ( pendingReview.length ) {
+				const roundLabel = lastRound
+					? `${ i18n.round ?? 'Fecha' } ${ lastRound }`
+					: ( i18n.last_round ?? 'Última Fecha' );
 
-				return `
+				const cardIcon = ( type ) => type === 'red_card' ? '🟥' : '🟨';
+				const cardLabel = ( type ) => type === 'red_card'
+					? ( i18n.event_red_card    ?? 'Tarjeta Roja' )
+					: ( i18n.event_yellow_card ?? 'Tarjeta Amarilla' );
+
+				const pendingRows = pendingReview.map( p => `
 					<tr>
-						<td>${ escHtml( s.first_name ) } ${ escHtml( s.last_name ) }</td>
+						<td>${ cardIcon( p.event_type ) } <span class="st-card-label">${ escHtml( cardLabel( p.event_type ) ) }</span></td>
+						<td><strong>${ escHtml( p.first_name ) } ${ escHtml( p.last_name ) }</strong></td>
+						<td>${ escHtml( p.team_name ?? '—' ) }</td>
+						<td class="st-pending-status">
+							<span class="st-badge st-badge--pending">${ escHtml( i18n.pending_decision ?? 'Pendiente resolución' ) }</span>
+						</td>
+					</tr>` ).join( '' );
+
+				pendingHtml = `
+					<div class="st-tribunal-section st-tribunal-section--pending">
+						<h3 class="st-subsection-title">
+							${ escHtml( i18n.pending_review_title ?? 'Casos a Resolver' ) }
+							<span class="st-round-badge">${ escHtml( roundLabel ) }</span>
+						</h3>
+						<p class="st-tribunal-notice">${ escHtml( i18n.pending_review_notice ?? 'El tribunal revisará estos incidentes y determinará la sanción correspondiente.' ) }</p>
+						<div class="st-table-wrap">
+							<table class="st-table st-tribunal-pending-table" aria-label="${ escHtml( i18n.pending_review_title ?? 'Casos a Resolver' ) }">
+								<thead>
+									<tr>
+										<th>${ escHtml( i18n.incident ?? 'Incidente' ) }</th>
+										<th>${ escHtml( i18n.player   ?? 'Jugador' ) }</th>
+										<th>${ escHtml( i18n.team     ?? 'Equipo' ) }</th>
+										<th>${ escHtml( i18n.status   ?? 'Estado' ) }</th>
+									</tr>
+								</thead>
+								<tbody>${ pendingRows }</tbody>
+							</table>
+						</div>
+					</div>`;
+			}
+
+			// ── Sección 2: Sanciones resueltas ────────────────────────────────
+			let sanctionsHtml = '';
+			if ( sanctions.length ) {
+				const sanctionRows = sanctions.map( s => {
+					const cls   = s.status === 'active' ? 'st-sanction-status--active' : 'st-sanction-status--served';
+					const label = s.status === 'active'
+						? ( i18n.status_active ?? 'Activa' )
+						: ( i18n.status_served ?? 'Cumplida' );
+
+					return `
+					<tr>
+						<td><strong>${ escHtml( s.first_name ) } ${ escHtml( s.last_name ) }</strong></td>
+						<td style="font-size:.85rem;color:#888">${ escHtml( s.team_name ?? '—' ) }</td>
 						<td>${ escHtml( s.reason ) }</td>
 						<td style="text-align:center">${ s.ban_days_or_matches }</td>
 						<td style="text-align:center">${ s.remaining_matches }</td>
 						<td><span class="${ cls }">${ escHtml( label ) }</span></td>
 					</tr>`;
-			} ).join( '' );
+				} ).join( '' );
+
+				sanctionsHtml = `
+					<div class="st-tribunal-section st-tribunal-section--sanctions">
+						<h3 class="st-subsection-title">${ escHtml( i18n.sanctions_title ?? 'Sanciones Resueltas' ) }</h3>
+						<div class="st-table-wrap">
+							<table class="st-table" aria-label="${ escHtml( i18n.sanctions_title ?? 'Sanciones' ) }">
+								<thead>
+									<tr>
+										<th>${ escHtml( i18n.player    ?? 'Jugador' ) }</th>
+										<th>${ escHtml( i18n.team      ?? 'Equipo' ) }</th>
+										<th>${ escHtml( i18n.reason    ?? 'Motivo' ) }</th>
+										<th>${ escHtml( i18n.ban       ?? 'Fechas' ) }</th>
+										<th>${ escHtml( i18n.remaining ?? 'Restantes' ) }</th>
+										<th>${ escHtml( i18n.status    ?? 'Estado' ) }</th>
+									</tr>
+								</thead>
+								<tbody>${ sanctionRows }</tbody>
+							</table>
+						</div>
+					</div>`;
+			}
 
 			container.innerHTML = `
-				<h2 class="st-section-title">${ i18n.tribunal_title ?? 'Tribunal Disciplinario' }</h2>
-				<div class="st-table-wrap">
-					<table class="st-table" aria-label="${ i18n.tribunal_title ?? 'Tribunal Disciplinario' }">
-						<thead>
-							<tr>
-								<th>${ i18n.player ?? 'Jugador' }</th>
-								<th>${ i18n.reason ?? 'Motivo' }</th>
-								<th>${ i18n.ban ?? 'Fechas' }</th>
-								<th>${ i18n.remaining ?? 'Restantes' }</th>
-								<th>${ i18n.status ?? 'Estado' }</th>
-							</tr>
-						</thead>
-						<tbody>${ trs }</tbody>
-					</table>
-				</div>`;
+				<h2 class="st-section-title">${ escHtml( i18n.tribunal_title ?? 'Tribunal Disciplinario' ) }</h2>
+				${ pendingHtml }
+				${ sanctionsHtml }`;
+
 		} catch ( err ) {
 			showError( container, `${ i18n.error_load ?? 'Error al cargar el tribunal.' } (${ err.message })` );
 		}
@@ -535,12 +652,15 @@
 	async function renderStats( container ) {
 		showLoading( container );
 		try {
-			const data = await apiFetch( `soccertrack/v1/public/tournament/${ TID }/stats` );
+			const [ data, standings ] = await Promise.all( [
+				apiFetch( `soccertrack/v1/public/tournament/${ TID }/stats` ),
+				apiFetch( `soccertrack/v1/public/tournament/${ TID }/standings` ),
+			] );
 			const { records, top_scorers } = data;
 
 			const hasRecords = records && records.best_attack;
 
-			// ── Block 1: Records ────────────────────────────────────────────
+			// ── Block 1: Records cards ──────────────────────────────────────
 			let recordsHtml = '';
 			if ( hasRecords ) {
 				const cards = [
@@ -560,34 +680,50 @@
 					<div class="st-records-grid">${ cards }</div>`;
 			}
 
-			// ── Block 2: Podium (top 3) ─────────────────────────────────────
-			let podiumHtml = '';
-			if ( top_scorers && top_scorers.length ) {
-				const medals  = [ '🥇', '🥈', '🥉' ];
-				const top3    = top_scorers.slice( 0, 3 );
-				// Podium visual order: 2nd (left), 1st (center), 3rd (right)
-				const order   = top3.length >= 2 ? [ top3[1], top3[0], top3[2] ] : [ top3[0] ];
-				const heights = [ '160px', '200px', '120px' ];
-				const rankIdx = top3.length >= 2 ? [ 1, 0, 2 ] : [ 0 ];
+			// ── Block 2: Charts por equipo (reemplaza podio) ────────────────
+			let chartsHtml = '';
+			if ( standings && standings.length ) {
+				const buildChart = ( title, rows, modifier ) => {
+					const max = Math.max( ...rows.map( r => r.val ), 1 );
+					const bars = rows.map( r => {
+						const pct = Math.round( r.val / max * 100 );
+						return `
+						<div class="st-bar-row">
+							<span class="st-bar-label" title="${ escHtml( r.name ) }">${ escHtml( r.name ) }</span>
+							<div class="st-bar-track">
+								<div class="st-bar-fill st-bar-fill--${ modifier }" style="width:${ pct }%"></div>
+							</div>
+							<span class="st-bar-value">${ r.val }</span>
+						</div>`;
+					} ).join( '' );
+					return `<div class="st-chart">${ bars }</div>`;
+				};
 
-				const podiumItems = order.map( ( s, i ) => {
-					if ( ! s ) return '';
-					const ri    = rankIdx[ i ];
-					const medal = medals[ ri ] ?? '';
-					return `
-					<div class="st-podium-item st-podium-item--${ ri + 1 }" style="--podium-height:${ heights[i] }">
-						<div class="st-podium-medal">${ medal }</div>
-						<div class="st-podium-avatar">${ escHtml( ( s.first_name?.[0] ?? '?' ).toUpperCase() ) }</div>
-						<div class="st-podium-name">${ escHtml( s.first_name ) } ${ escHtml( s.last_name ) }</div>
-						<div class="st-podium-team">${ escHtml( s.team_name ) }</div>
-						<div class="st-podium-goals">${ s.goals } ⚽</div>
-						<div class="st-podium-gpm">${ s.goals_per_match } ${ escHtml( i18n.gpm_label ?? 'G/PJ' ) }</div>
+				const byGF  = [ ...standings ].sort( ( a, b ) => b.gf  - a.gf  ).map( r => ( { name: r.name, val: r.gf  } ) );
+				const byGC  = [ ...standings ].sort( ( a, b ) => a.gc  - b.gc  ).map( r => ( { name: r.name, val: r.gc  } ) );
+				const byPG  = [ ...standings ].sort( ( a, b ) => b.pg  - a.pg  ).map( r => ( { name: r.name, val: r.pg  } ) );
+				const byPTS = [ ...standings ].sort( ( a, b ) => b.pts - a.pts ).map( r => ( { name: r.name, val: r.pts } ) );
+
+				chartsHtml = `
+					<h3 class="st-subsection-title">${ escHtml( i18n.records_charts_title ?? 'Records del Torneo' ) }</h3>
+					<div class="st-charts-grid">
+						<div class="st-chart-wrap">
+							<h4 class="st-chart-title">⚽ ${ escHtml( i18n.goals_scored ?? 'Goles Anotados' ) }</h4>
+							${ buildChart( 'gf', byGF, 'attack' ) }
+						</div>
+						<div class="st-chart-wrap">
+							<h4 class="st-chart-title">🛡 ${ escHtml( i18n.goals_conceded ?? 'Goles Concedidos' ) } <small class="st-chart-hint">${ escHtml( i18n.lower_is_better ?? 'menos es mejor' ) }</small></h4>
+							${ buildChart( 'gc', byGC, 'defense' ) }
+						</div>
+						<div class="st-chart-wrap">
+							<h4 class="st-chart-title">🏆 ${ escHtml( i18n.wins ?? 'Victorias' ) }</h4>
+							${ buildChart( 'pg', byPG, 'wins' ) }
+						</div>
+						<div class="st-chart-wrap">
+							<h4 class="st-chart-title">📊 ${ escHtml( i18n.pts ?? 'Puntos' ) }</h4>
+							${ buildChart( 'pts', byPTS, 'pts' ) }
+						</div>
 					</div>`;
-				} ).join( '' );
-
-				podiumHtml = `
-					<h3 class="st-subsection-title">${ escHtml( i18n.podium_title ?? 'Podio de Goleadores' ) }</h3>
-					<div class="st-podium">${ podiumItems }</div>`;
 			}
 
 			// ── Block 3: Full scorer table ──────────────────────────────────
@@ -617,14 +753,14 @@
 					</div>`;
 			}
 
-			if ( ! hasRecords && ( ! top_scorers || ! top_scorers.length ) ) {
+			if ( ! hasRecords && ! ( standings && standings.length ) && ( ! top_scorers || ! top_scorers.length ) ) {
 				return showEmpty( container, i18n.no_stats ?? 'Aún no hay partidos finalizados.' );
 			}
 
 			container.innerHTML = `
 				<h2 class="st-section-title">${ escHtml( i18n.stats_title ?? 'Estadísticas del Torneo' ) }</h2>
 				${ recordsHtml }
-				${ podiumHtml }
+				${ chartsHtml }
 				${ scorerTableHtml }`;
 
 		} catch ( err ) {
@@ -643,7 +779,7 @@
 		scorers:   renderScorers,
 		tribunal:  renderTribunal,
 		bases:     renderBases,
-		stats:     renderStats,
+		stats:     renderStandings, // alias: ?tab=stats redirige a posiciones (tab unificado)
 	};
 
 	function activateTab( tabId ) {
