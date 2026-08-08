@@ -203,8 +203,6 @@
 	</script>
 </div>
 
-<?php /* Modo de registro deshabilitado — por defecto planilla física (deferred). */ ?>
-
 <?php /* ── Liberación del fixture ──────────────────────────────────────── */ ?>
 <div class="st-card" style="margin-bottom:20px">
 	<div class="st-card-header">
@@ -367,21 +365,7 @@
 				'final'       => '🏆 ' . __( 'Final', 'soccertrack' ),
 			];
 			?>
-			<?php $prev_round = -1; ?>
 			<?php foreach ( $matches as $m ) : ?>
-				<?php /* Agregar header de jornada con botón "Cargar acta" en modo deferred */ ?>
-				<?php if ( $prev_round !== (int) $m['round_number'] && ( $tournament['registration_mode'] ?? 'realtime' ) === 'deferred' ) : ?>
-					<?php $prev_round = (int) $m['round_number']; ?>
-					<tr>
-						<td colspan="10" style="background:#f0f7ff;padding:6px 12px">
-							<strong><?php printf( esc_html__( 'Jornada %d', 'soccertrack' ), (int) $m['round_number'] ); ?></strong>
-							<a href="<?php echo esc_url( home_url( '/panel/carga-fecha/?tournament_id=' . $tournament['id'] . '&round=' . (int) $m['round_number'] ) ); ?>"
-							   class="st-btn st-btn--sm st-btn--primary" style="margin-left:12px">
-								📋 <?php esc_html_e( 'Cargar acta de esta jornada', 'soccertrack' ); ?>
-							</a>
-						</td>
-					</tr>
-				<?php endif; ?>
 				<tr>
 					<td>
 						<?php
@@ -489,35 +473,30 @@
 						endif; ?>
 					</td>
 					<td>
-					<?php if ( ( $tournament['registration_mode'] ?? 'realtime' ) === 'realtime' ) : ?>
-						<?php /* Asignación de planillero — flujo existente */ ?>
-						<?php
-						$plan_id = (int) ( $m['planillero_user_id'] ?? 0 );
-						if ( $m['status'] !== 'finished' && ! empty( $planilleros ) ) :
-						?>
-						<form method="post" action="">
-							<?php wp_nonce_field( 'st_update_planillero_' . $tournament['id'] ); ?>
-							<input type="hidden" name="st_update_planillero" value="1">
-							<input type="hidden" name="match_id" value="<?php echo esc_attr( (string) $m['id'] ); ?>">
-							<select name="planillero_user_id" class="st-input st-fixture-planillero-select">
-								<option value="0"><?php esc_html_e( '— Ninguno —', 'soccertrack' ); ?></option>
-								<?php foreach ( $planilleros as $plan ) : ?>
-									<option value="<?php echo esc_attr( (string) $plan->ID ); ?>" <?php selected( $plan_id, (int) $plan->ID ); ?>>
-										<?php echo esc_html( $plan->display_name ); ?>
-									</option>
-								<?php endforeach; ?>
-							</select>
-							<button type="submit" class="st-btn st-btn--sm st-btn--secondary" title="<?php esc_attr_e( 'Guardar planillero', 'soccertrack' ); ?>">✔</button>
-						</form>
-						<?php elseif ( $m['status'] === 'finished' ) :
-							$plan_name = $plan_id ? ( get_user_by( 'id', $plan_id )?->display_name ?? '—' ) : '—';
-							echo esc_html( $plan_name );
-						else :
-							echo '—';
-						endif; ?>
-					<?php else : ?>
-						<span style="font-size:.78rem;color:#888">—</span>
-					<?php endif; ?>
+					<?php
+					$plan_id = (int) ( $m['planillero_user_id'] ?? 0 );
+					if ( $m['status'] !== 'finished' && ! empty( $planilleros ) ) :
+					?>
+					<form method="post" action="">
+						<?php wp_nonce_field( 'st_update_planillero_' . $tournament['id'] ); ?>
+						<input type="hidden" name="st_update_planillero" value="1">
+						<input type="hidden" name="match_id" value="<?php echo esc_attr( (string) $m['id'] ); ?>">
+						<select name="planillero_user_id" class="st-input st-fixture-planillero-select">
+							<option value="0"><?php esc_html_e( '— Ninguno —', 'soccertrack' ); ?></option>
+							<?php foreach ( $planilleros as $plan ) : ?>
+								<option value="<?php echo esc_attr( (string) $plan->ID ); ?>" <?php selected( $plan_id, (int) $plan->ID ); ?>>
+									<?php echo esc_html( $plan->display_name ); ?>
+								</option>
+							<?php endforeach; ?>
+						</select>
+						<button type="submit" class="st-btn st-btn--sm st-btn--secondary" title="<?php esc_attr_e( 'Guardar planillero', 'soccertrack' ); ?>">✔</button>
+					</form>
+					<?php elseif ( $m['status'] === 'finished' ) :
+						$plan_name = $plan_id ? ( get_user_by( 'id', $plan_id )?->display_name ?? '—' ) : '—';
+						echo esc_html( $plan_name );
+					else :
+						echo '—';
+					endif; ?>
 					</td>
 					<td>
 						<?php if ( $m['status'] !== 'finished' ) : ?>

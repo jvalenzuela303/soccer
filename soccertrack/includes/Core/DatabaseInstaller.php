@@ -402,8 +402,13 @@ final class DatabaseInstaller {
 		if ( ! $has_reg_mode ) {
 			$wpdb->query( // phpcs:ignore
 				"ALTER TABLE {$prefix}ds_tournaments
-				 ADD COLUMN registration_mode ENUM('realtime','deferred') NOT NULL DEFAULT 'deferred'
+				 ADD COLUMN registration_mode ENUM('realtime','deferred') NOT NULL DEFAULT 'realtime'
 				 AFTER match_time"
+			);
+		} else {
+			// v1.8.1 — migrar torneos en modo deferred a realtime (planilla física eliminada).
+			$wpdb->query( // phpcs:ignore
+				"UPDATE {$prefix}ds_tournaments SET registration_mode = 'realtime' WHERE registration_mode = 'deferred'"
 			);
 		}
 

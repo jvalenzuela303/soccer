@@ -39,7 +39,7 @@
 			</select>
 		</div>
 
-		<input type="hidden" name="registration_mode" value="deferred">
+		<input type="hidden" name="registration_mode" value="realtime">
 
 		<button type="submit" class="st-btn st-btn--primary">
 			<?php esc_html_e( '+ Crear torneo', 'soccertrack' ); ?>
