@@ -4,7 +4,7 @@
  *
  * Uso: wp eval-file soccertrack/dev-seed.php
  *
- * Crea árbitros, coordinadores y delegados de prueba.
+ * Crea árbitros y coordinadores de prueba.
  * NO ejecutar en producción.
  *
  * @package SoccerTrack
