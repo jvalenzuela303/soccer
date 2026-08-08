@@ -121,7 +121,7 @@ final class TournamentPage {
 
 		// Verificar que el usuario tiene al menos un rol del plugin.
 		if ( ! self::user_has_panel_access() ) {
-			wp_die( esc_html__( 'No tienes permisos para acceder al panel de SoccerTrack.', 'soccertrack' ), 403 );
+			wp_die( esc_html__( 'No tienes permisos para acceder al panel de SoccerTrack.', 'soccertrack' ), '', [ 'response' => 403 ] );
 		}
 
 		match ( $vista ) {
@@ -148,7 +148,7 @@ final class TournamentPage {
 		global $wpdb;
 
 		if ( ! current_user_can( 'ds_manage_tournaments' ) ) {
-			wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), 403 );
+			wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), '', [ 'response' => 403 ] );
 		}
 
 		$notice = '';
@@ -219,7 +219,7 @@ final class TournamentPage {
 		$venue = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}ds_venues WHERE id = %d", $id ), ARRAY_A ); // phpcs:ignore
 
 		if ( ! $venue ) {
-			wp_die( esc_html__( 'Recinto no encontrado.', 'soccertrack' ), 404 );
+			wp_die( esc_html__( 'Recinto no encontrado.', 'soccertrack' ), '', [ 'response' => 404 ] );
 		}
 
 		$notice = '';
@@ -357,7 +357,7 @@ final class TournamentPage {
 		global $wpdb;
 
 		if ( ! current_user_can( 'ds_manage_tournaments' ) ) {
-			wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), 403 );
+			wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), '', [ 'response' => 403 ] );
 		}
 
 		// Cambiar estado del torneo.
@@ -440,7 +440,7 @@ final class TournamentPage {
 		);
 
 		if ( ! $tournament ) {
-			wp_die( esc_html__( 'Torneo no encontrado.', 'soccertrack' ), 404 );
+			wp_die( esc_html__( 'Torneo no encontrado.', 'soccertrack' ), '', [ 'response' => 404 ] );
 		}
 
 		// ── Cambiar estado de un partido ─────────────────────────────────
@@ -559,7 +559,7 @@ final class TournamentPage {
 			check_admin_referer( 'st_update_referee_' . $id );
 
 			if ( ! current_user_can( 'ds_manage_tournaments' ) ) {
-				wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), 403 );
+				wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), '', [ 'response' => 403 ] );
 			}
 
 			$match_id   = absint( $_POST['match_id'] ?? 0 );
@@ -640,7 +640,7 @@ final class TournamentPage {
 			check_admin_referer( 'st_update_planillero_' . $id );
 
 			if ( ! current_user_can( 'ds_manage_tournaments' ) ) {
-				wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), 403 );
+				wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), '', [ 'response' => 403 ] );
 			}
 
 			$match_id      = absint( $_POST['match_id'] ?? 0 );
@@ -858,7 +858,7 @@ final class TournamentPage {
 			check_admin_referer( 'st_auto_assign_' . $id );
 
 			if ( ! current_user_can( 'ds_manage_tournaments' ) ) {
-				wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), 403 );
+				wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), '', [ 'response' => 403 ] );
 			}
 
 			$notice = 'auto_assigned';
@@ -888,7 +888,7 @@ final class TournamentPage {
 			check_admin_referer( 'st_update_schedule_' . $id );
 
 			if ( ! current_user_can( 'ds_manage_tournaments' ) ) {
-				wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), 403 );
+				wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), '', [ 'response' => 403 ] );
 			}
 
 			$raw_weekday   = absint( $_POST['match_weekday'] ?? 6 );
@@ -917,7 +917,7 @@ final class TournamentPage {
 			check_admin_referer( 'st_update_reg_mode_' . $id );
 
 			if ( ! current_user_can( 'ds_manage_tournaments' ) ) {
-				wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), 403 );
+				wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), '', [ 'response' => 403 ] );
 			}
 
 			$reg_mode = sanitize_key( $_POST['registration_mode'] ?? 'realtime' );
@@ -1102,7 +1102,7 @@ final class TournamentPage {
 		);
 
 		if ( ! $team ) {
-			wp_die( esc_html__( 'Equipo no encontrado.', 'soccertrack' ), 404 );
+			wp_die( esc_html__( 'Equipo no encontrado.', 'soccertrack' ), '', [ 'response' => 404 ] );
 		}
 
 		$notice = '';
@@ -1292,7 +1292,7 @@ final class TournamentPage {
 		);
 
 		if ( ! $match ) {
-			wp_die( esc_html__( 'Partido no encontrado.', 'soccertrack' ), 404 );
+			wp_die( esc_html__( 'Partido no encontrado.', 'soccertrack' ), '', [ 'response' => 404 ] );
 		}
 
 		$notice_ref  = '';
@@ -1305,7 +1305,7 @@ final class TournamentPage {
 			check_admin_referer( 'st_save_referee_' . $id );
 
 			if ( ! current_user_can( 'ds_manage_tournaments' ) ) {
-				wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), 403 );
+				wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), '', [ 'response' => 403 ] );
 			}
 
 			$referee_id = absint( $_POST['referee_user_id'] ?? 0 );
@@ -1351,7 +1351,7 @@ final class TournamentPage {
 			check_admin_referer( 'st_save_planillero_' . $id );
 
 			if ( ! current_user_can( 'ds_manage_tournaments' ) ) {
-				wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), 403 );
+				wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), '', [ 'response' => 403 ] );
 			}
 
 			$planillero_id = absint( $_POST['planillero_user_id'] ?? 0 );
@@ -1451,7 +1451,7 @@ final class TournamentPage {
 		global $wpdb;
 
 		if ( ! current_user_can( 'ds_load_excel' ) ) {
-			wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), 403 );
+			wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), '', [ 'response' => 403 ] );
 		}
 
 		$tournament_id = absint( $_GET['tournament_id'] ?? 0 );
@@ -1477,7 +1477,7 @@ final class TournamentPage {
 		global $wpdb;
 
 		if ( ! current_user_can( 'ds_manage_discipline' ) ) {
-			wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), 403 );
+			wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), '', [ 'response' => 403 ] );
 		}
 
 		$tournament_id   = absint( $_GET['tournament_id'] ?? 0 );
@@ -1994,7 +1994,7 @@ final class TournamentPage {
 
 	private static function view_usuarios(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), 403 );
+			wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), '', [ 'response' => 403 ] );
 		}
 
 		$notice            = '';

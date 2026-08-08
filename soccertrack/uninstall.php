@@ -27,6 +27,7 @@ global $wpdb;
 
 // Orden inverso de dependencias (respeta FK lógicas).
 $tables = [
+	'ds_match_events',
 	'ds_disciplinary_sanctions',
 	'ds_team_players',
 	'ds_matches',
@@ -47,7 +48,7 @@ delete_option( 'soccertrack_db_version' );
 delete_option( 'soccertrack_settings' );
 
 // Eliminar roles personalizados.
-foreach ( [ 'ds_coordinador', 'ds_arbitro' ] as $role_slug ) {
+foreach ( [ 'ds_coordinador', 'ds_arbitro', 'ds_planillero' ] as $role_slug ) {
 	remove_role( $role_slug );
 }
 
@@ -61,8 +62,10 @@ if ( $admin_role ) {
 		'ds_generate_fixture',
 		'ds_manage_discipline',
 		'ds_view_admin_panel',
-		'ds_enter_match_result',
 		'ds_view_match_sheet',
+		'ds_enter_match_incidents',
+		'ds_edit_incidents',
+		'ds_close_match',
 	] as $cap ) {
 		$admin_role->remove_cap( $cap );
 	}
