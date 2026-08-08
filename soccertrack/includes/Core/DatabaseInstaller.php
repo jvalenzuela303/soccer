@@ -108,6 +108,7 @@ final class DatabaseInstaller {
 		// idx_tournament_phase_status agregado: cubre filtros por fase (play-offs).
 		// idx_venue agregado: cubre JOINs y subqueries con ds_venues.
 		// planillero_user_id: asignado en v1.5.0 (incluido aquí para dbDelta en fresh install).
+		// referee_name, planillero_name: nombres de árbitro y planillero en modo deferred (v1.7.0).
 		dbDelta( "CREATE TABLE {$wpdb->prefix}ds_matches (
 			id                  BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 			tournament_id       BIGINT UNSIGNED NOT NULL,
@@ -118,6 +119,8 @@ final class DatabaseInstaller {
 			court_id            BIGINT UNSIGNED NOT NULL DEFAULT 0,
 			referee_user_id     BIGINT UNSIGNED NULL,
 			planillero_user_id  BIGINT UNSIGNED NULL,
+			referee_name        VARCHAR(120)    NULL,
+			planillero_name     VARCHAR(120)    NULL,
 			match_datetime      DATETIME        NOT NULL,
 			home_score          INT UNSIGNED    NOT NULL DEFAULT 0,
 			away_score          INT UNSIGNED    NOT NULL DEFAULT 0,
@@ -400,6 +403,16 @@ final class DatabaseInstaller {
 				"ALTER TABLE {$prefix}ds_tournaments
 				 ADD COLUMN registration_mode ENUM('realtime','deferred') NOT NULL DEFAULT 'realtime'
 				 AFTER match_time"
+			);
+		}
+
+		// v1.7.0 — ds_matches: nombres de árbitro y planillero (modo deferred).
+		$has_ref_name = $wpdb->get_var( "SHOW COLUMNS FROM {$prefix}ds_matches LIKE 'referee_name'" ); // phpcs:ignore
+		if ( ! $has_ref_name ) {
+			$wpdb->query( // phpcs:ignore
+				"ALTER TABLE {$prefix}ds_matches
+				 ADD COLUMN referee_name    VARCHAR(120) NULL AFTER planillero_user_id,
+				 ADD COLUMN planillero_name VARCHAR(120) NULL AFTER referee_name"
 			);
 		}
 	}
