@@ -982,6 +982,8 @@ final class TournamentPage {
 		$assigned_ref_slots  = []; // referee_user_id  => int[] timestamps
 		$assigned_plan_slots = []; // planillero_user_id => int[] timestamps
 
+		// Los partidos finished/suspended no bloquean reasignación (intencional:
+		// un partido suspendido no debe impedir usar al árbitro en otra fecha).
 		$existing_assignments = $wpdb->get_results( // phpcs:ignore
 			$wpdb->prepare(
 				"SELECT referee_user_id, planillero_user_id, match_datetime
