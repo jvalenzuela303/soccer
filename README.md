@@ -1,49 +1,60 @@
-# CalibraTrack — Plugin de WordPress
+# SoccerTrack — Plugin de WordPress
 
-Plugin de trazabilidad y verificación pública de calibraciones y mantenciones de equipos de fibra óptica para **TrueTech SpA**.
+Plugin de gestión y seguimiento de torneos de fútbol corporativos para **torneoscorporativos.cl**.
 
 ## ¿Qué hace?
 
-Reemplaza el flujo manual en Word para registrar y certificar servicios técnicos sobre equipos como OTDR, power meters, fuentes de luz, empalmadoras de fusión y certificadores de red.
+Permite registrar torneos, equipos, jugadores y partidos; calcula tabla de posiciones en tiempo real; y expone shortcodes y una REST API para mostrar fixtures y resultados en el sitio público.
 
 ### Flujo principal
 
-1. **Admin crea Orden de Ingreso (OI)** → el técnico recibe notificación por correo
-2. **Admin crea Orden de Trabajo (OT)** vinculada a la OI → el cliente recibe notificación
-3. **Técnico realiza el servicio** y marca la OT como "Listo para revisión" → el admin recibe alerta
-4. **Admin marca la OT como "Completado"** → se genera automáticamente el certificado PDF y se envía al cliente con evidencia fotográfica adjunta
-
-### Verificación pública
-
-Cualquier tercero puede ingresar a `/verificar/{serie}/` en el sitio web para consultar el historial de calibraciones de un equipo y descargar el certificado PDF, sin necesidad de cuenta.
+1. **Coordinador carga equipos y nóminas** vía CSV/Excel
+2. **Coordinador genera el fixture** Round Robin con resolución de conflictos de cancha
+3. **Árbitro registra incidentes en vivo** (goles, tarjetas, sustituciones) desde la planilla digital
+4. **Al cerrar el acta**, se recalcula automáticamente la tabla de posiciones
+5. **El público consulta** fixture, posiciones, estadísticas y resoluciones del Tribunal vía portal responsive
 
 ## Funcionalidades
 
-- Gestión de clientes y equipos desde el panel de WordPress (`/wp-admin/`)
-- Panel frontend para técnicos y administradores (`/panel/`)
-- Roles diferenciados: administrador y técnico (sin acceso a precios ni a registros de otros técnicos)
-- Generación automática de certificados PDF al completar una OT
-- Notificaciones por correo en cada etapa del flujo (OI → OT → revisión → completado)
-- Impresión de OI y OT desde el listado del panel
-- Página pública de verificación por número de serie
-- Liquidación de pagos a técnicos con estado de pago y número de factura
-- Recordatorios automáticos de próximo control para equipos en mantenimiento
+- Gestión de torneos, equipos, jugadores y partidos desde `/wp-admin/`
+- Carga masiva de equipos y nóminas desde Excel/CSV
+- Generador de fixture Round Robin con anti-colisión de canchas
+- Planilla digital para árbitros: goles, tarjetas, incidentes por minuto
+- Bloqueo automático de jugadores suspendidos en el fixture
+- Tabla de posiciones en tiempo real con caché optimizado
+- Tribunal de Disciplina con boletines descargables
+- Portal público responsive con pestañas: Equipos, Posiciones, Fixture, Tribunal, Estadísticas, Bases
+- REST API pública para integración con el sitio
 
 ## Stack técnico
 
-- **WordPress 6.8.5** + PHP 7.4.33
-- **MariaDB 10.6** (hosting compartido cPanel/CloudLinux)
-- Librerías: FPDF (PDF), endroid/qr-code (QR), PHPMailer (SMTP)
-- Entorno local: Docker (ver `docker-compose.yml`)
+- **WordPress 7.0.2** + **PHP 8.2**
+- **MariaDB 10.6+** (hosting compartido cPanel/CloudLinux)
+- Enums nativos PHP 8.1, `dbDelta()` para migraciones
 
-## Versiones
+## Roles
 
-| Versión | Descripción |
-|---------|-------------|
-| 1.1.0   | Impresión de OI y OT desde el panel principal |
-| 1.0.9   | Adjuntos en certificado: fotos + docs + QR |
-| 1.0.8   | Liquidación técnicos, notificación OI al cliente |
-| 1.0.7   | Flujo OI→OT, notificaciones por correo, descarga pública de certificado |
+| Rol | Responsabilidad |
+|-----|-----------------|
+| **Administrador** | Instalación, configuración global, asignación de credenciales |
+| **Coordinador** (`ds_coordinador`) | Carga masiva, fixture, Tribunal de Disciplina |
+| **Árbitro** (`ds_arbitro`) | Planilla digital, registro de incidentes en vivo |
+| **Delegado de Club** (`ds_delegado`) | Panel de club, consulta de sanciones, descarga de reglamentos |
+| **Público / Jugador** | Portal responsive de solo lectura |
+
+## REST API
+
+```
+GET /wp-json/soccertrack/v1/torneo/{id}/tabla
+GET /wp-json/soccertrack/v1/torneo/{id}/partidos?fase=xxx
+```
+
+## Shortcodes
+
+```
+[soccertrack_tabla torneo_id="123" grupo="A"]
+[soccertrack_fixture torneo_id="123" fase="fase_grupos"]
+```
 
 ## Instalación local
 
@@ -51,6 +62,4 @@ Cualquier tercero puede ingresar a `/verificar/{serie}/` en el sitio web para co
 docker-compose up -d
 ```
 
-Luego instalar el plugin desde `/wp-admin/plugins.php` subiendo el zip de la versión correspondiente.
-# soccer
-# soccer
+Luego instalar el plugin desde `/wp-admin/plugins.php` subiendo el zip correspondiente.
