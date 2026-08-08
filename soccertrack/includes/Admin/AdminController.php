@@ -93,14 +93,18 @@ final class AdminController {
 	public static function page_dashboard(): void {
 		global $wpdb;
 
-		$stats = [
-			'tournaments' => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ds_tournaments" ), // phpcs:ignore
-			'teams'       => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ds_teams" ),       // phpcs:ignore
-			'players'     => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ds_players" ),     // phpcs:ignore
-			'matches'     => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches" ),     // phpcs:ignore
-			'finished'    => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches WHERE status = 'finished'" ), // phpcs:ignore
-			'sanctions'   => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ds_disciplinary_sanctions WHERE status = 'active'" ), // phpcs:ignore
-		];
+		$stats = get_transient( 'st_admin_dashboard_stats' );
+		if ( false === $stats ) {
+			$stats = [
+				'tournaments' => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ds_tournaments" ), // phpcs:ignore
+				'teams'       => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ds_teams" ),       // phpcs:ignore
+				'players'     => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ds_players" ),     // phpcs:ignore
+				'matches'     => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches" ),     // phpcs:ignore
+				'finished'    => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches WHERE status = 'finished'" ), // phpcs:ignore
+				'sanctions'   => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ds_disciplinary_sanctions WHERE status = 'active'" ), // phpcs:ignore
+			];
+			set_transient( 'st_admin_dashboard_stats', $stats, 60 );
+		}
 
 		// Últimos torneos.
 		$tournaments = $wpdb->get_results( // phpcs:ignore

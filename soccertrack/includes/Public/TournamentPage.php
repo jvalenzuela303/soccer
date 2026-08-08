@@ -336,14 +336,18 @@ final class TournamentPage {
 	private static function view_dashboard(): void {
 		global $wpdb;
 
-		$stats = [
-			'tournaments' => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ds_tournaments" ), // phpcs:ignore
-			'teams'       => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ds_teams" ),       // phpcs:ignore
-			// Inscripciones reales (ds_team_players) — un jugador puede estar en varios equipos.
-			'players'     => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ds_team_players" ), // phpcs:ignore
-			'matches'     => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches WHERE status = 'finished'" ), // phpcs:ignore
-			'sanctions'   => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ds_disciplinary_sanctions WHERE status = 'active'" ), // phpcs:ignore
-		];
+		$stats = get_transient( 'st_dashboard_stats' );
+		if ( false === $stats ) {
+			$stats = [
+				'tournaments' => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ds_tournaments" ), // phpcs:ignore
+				'teams'       => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ds_teams" ),       // phpcs:ignore
+				// Inscripciones reales (ds_team_players) — un jugador puede estar en varios equipos.
+				'players'     => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ds_team_players" ), // phpcs:ignore
+				'matches'     => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches WHERE status = 'finished'" ), // phpcs:ignore
+				'sanctions'   => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ds_disciplinary_sanctions WHERE status = 'active'" ), // phpcs:ignore
+			];
+			set_transient( 'st_dashboard_stats', $stats, 60 );
+		}
 
 		$tournaments = $wpdb->get_results( // phpcs:ignore
 			"SELECT id, name, status, start_date FROM {$wpdb->prefix}ds_tournaments ORDER BY id DESC LIMIT 6",
