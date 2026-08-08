@@ -135,15 +135,41 @@
 			</div>
 		</div>
 
+		<?php
+		$start_hm      = substr( (string) ( $tournament['match_time'] ?? '19:00:00' ), 0, 5 );
+		$duration_min  = max( 30, (int) ( $tournament['match_duration'] ?? 60 ) );
+		[ $sh, $sm ]   = array_map( 'intval', explode( ':', $start_hm ) );
+		$end_total_min = $sh * 60 + $sm + $duration_min;
+		$end_hm        = sprintf( '%02d:%02d', intdiv( $end_total_min, 60 ) % 24, $end_total_min % 60 );
+		?>
+
 		<div class="st-field">
 			<label class="st-label"><?php esc_html_e( 'Hora inicio', 'soccertrack' ); ?></label>
 			<input
 				type="time"
 				name="match_time"
 				class="st-input"
-				value="<?php echo esc_attr( substr( (string) ( $tournament['match_time'] ?? '19:00:00' ), 0, 5 ) ); ?>"
+				value="<?php echo esc_attr( $start_hm ); ?>"
 				style="max-width:120px"
 			>
+		</div>
+
+		<div class="st-field">
+			<label class="st-label"><?php esc_html_e( 'Duración (min)', 'soccertrack' ); ?></label>
+			<input
+				type="number"
+				name="match_duration"
+				class="st-input"
+				value="<?php echo esc_attr( (string) $duration_min ); ?>"
+				min="30"
+				max="180"
+				step="5"
+				style="max-width:90px"
+			>
+			<span style="font-size:.85rem;color:#555;align-self:center">
+				→ <?php esc_html_e( 'Término:', 'soccertrack' ); ?>
+				<strong id="st-match-end-time"><?php echo esc_html( $end_hm ); ?></strong>
+			</span>
 		</div>
 
 		<div class="st-field" style="align-self:flex-end">
@@ -155,6 +181,26 @@
 	<p style="margin:8px 0 0;font-size:.8rem;color:#888">
 		<?php esc_html_e( 'Este horario se usa al generar el fixture. Los partidos ya generados conservan su fecha individual.', 'soccertrack' ); ?>
 	</p>
+	<script>
+	(function () {
+		const timeInput = document.querySelector( '[name="match_time"]' );
+		const durInput  = document.querySelector( '[name="match_duration"]' );
+		const endLabel  = document.getElementById( 'st-match-end-time' );
+		if ( ! timeInput || ! durInput || ! endLabel ) return;
+
+		function updateEnd() {
+			const [ h, m ] = timeInput.value.split( ':' ).map( Number );
+			const dur      = Math.max( 30, parseInt( durInput.value, 10 ) || 60 );
+			const total    = h * 60 + m + dur;
+			const eh       = String( Math.floor( total / 60 ) % 24 ).padStart( 2, '0' );
+			const em       = String( total % 60 ).padStart( 2, '0' );
+			endLabel.textContent = eh + ':' + em;
+		}
+
+		timeInput.addEventListener( 'input', updateEnd );
+		durInput.addEventListener( 'input', updateEnd );
+	} )();
+	</script>
 </div>
 
 <?php /* Modo de registro deshabilitado — por defecto planilla física (deferred). */ ?>

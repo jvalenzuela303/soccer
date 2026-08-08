@@ -542,7 +542,7 @@ final class AdminEndpoints {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$tournament = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT id, match_weekday, match_weekdays, match_time FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
+				"SELECT id, match_weekday, match_weekdays, match_time, match_duration FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
 				$tournament_id
 			),
 			ARRAY_A
@@ -1144,7 +1144,7 @@ final class AdminEndpoints {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$tournament = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT id, match_weekday, match_weekdays, match_time FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
+				"SELECT id, match_weekday, match_weekdays, match_time, match_duration FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
 				$tid
 			),
 			ARRAY_A
@@ -1183,7 +1183,7 @@ final class AdminEndpoints {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$tournament = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT id, match_weekday, match_weekdays, match_time FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
+				"SELECT id, match_weekday, match_weekdays, match_time, match_duration FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
 				$tid
 			),
 			ARRAY_A

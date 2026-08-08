@@ -447,6 +447,16 @@ final class DatabaseInstaller {
 			);
 		}
 
+		// v1.8.0 — ds_tournaments: duración de partido en minutos (determina franja horaria).
+		$has_duration = $wpdb->get_var( "SHOW COLUMNS FROM {$prefix}ds_tournaments LIKE 'match_duration'" ); // phpcs:ignore
+		if ( ! $has_duration ) {
+			$wpdb->query( // phpcs:ignore
+				"ALTER TABLE {$prefix}ds_tournaments
+				 ADD COLUMN match_duration TINYINT UNSIGNED NOT NULL DEFAULT 60
+				 AFTER match_time"
+			);
+		}
+
 		// v1.8.0 — ds_tournament_venues: recintos asignados a cada torneo.
 		$has_tv = $wpdb->get_var( "SHOW TABLES LIKE '{$prefix}ds_tournament_venues'" ); // phpcs:ignore
 		if ( ! $has_tv ) {

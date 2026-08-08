@@ -806,8 +806,9 @@ final class TournamentPage {
 			}
 			$match_weekdays_json = wp_json_encode( array_values( $match_weekdays ) );
 
-			$raw_time   = sanitize_text_field( $_POST['match_time'] ?? '19:00' );
-			$match_time = preg_match( '/^\d{1,2}:\d{2}$/', $raw_time ) ? $raw_time . ':00' : '19:00:00';
+			$raw_time      = sanitize_text_field( $_POST['match_time'] ?? '19:00' );
+			$match_time    = preg_match( '/^\d{1,2}:\d{2}$/', $raw_time ) ? $raw_time . ':00' : '19:00:00';
+			$match_duration = max( 30, min( 180, (int) ( $_POST['match_duration'] ?? 60 ) ) );
 
 			$wpdb->update( // phpcs:ignore
 				"{$wpdb->prefix}ds_tournaments",
@@ -815,9 +816,10 @@ final class TournamentPage {
 					'match_weekday'  => $match_weekdays[0], // mantener columna legada.
 					'match_weekdays' => $match_weekdays_json,
 					'match_time'     => $match_time,
+					'match_duration' => $match_duration,
 				],
 				[ 'id' => $id ],
-				[ '%d', '%s', '%s' ],
+				[ '%d', '%s', '%s', '%d' ],
 				[ '%d' ]
 			);
 			$notice = 'schedule_updated';

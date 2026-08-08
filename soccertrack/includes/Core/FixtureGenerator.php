@@ -27,17 +27,19 @@ final class FixtureGenerator {
 	 * los partidos de la misma ronda queden siempre en orden cronológico correcto
 	 * independientemente del día actual.
 	 *
-	 * @param int[]  $weekdays     Días activos ordenados lunes-primero, ej. [1,3,5].
-	 *                             Convención date('w'): 0=domingo … 6=sábado.
-	 * @param string $time         Hora en formato 'H:i:s', ej. '19:00:00'.
-	 * @param int    $hour_offset  Horas a sumar (para varios partidos el mismo día).
-	 * @param int    $round_index  Índice de ronda 0-based (round_number - 1).
+	 * @param int[]  $weekdays         Días activos ordenados lunes-primero, ej. [1,3,5].
+	 *                                 Convención date('w'): 0=domingo … 6=sábado.
+	 * @param string $time             Hora de inicio en formato 'H:i:s', ej. '19:00:00'.
+	 * @param int    $batch_offset     Número de franjas a desplazar (0 = primer partido del día).
+	 * @param int    $round_index      Índice de ronda 0-based (round_number - 1).
+	 * @param int    $duration_minutes Duración de cada partido en minutos (determina el espaciado).
 	 */
 	private function next_match_datetime(
 		array  $weekdays,
 		string $time,
-		int    $hour_offset = 0,
-		int    $round_index = 0
+		int    $batch_offset    = 0,
+		int    $round_index     = 0,
+		int    $duration_minutes = 60
 	): string {
 		$day_names = [
 			0 => 'sunday', 1 => 'monday', 2 => 'tuesday', 3 => 'wednesday',
@@ -73,10 +75,23 @@ final class FixtureGenerator {
 			$base = $base->modify( "+{$day_offset} days" );
 		}
 
+		// Calcular la hora usando minutos para respetar duración real (p.ej. 90 min).
 		[ $h, $m, $s ] = array_map( 'intval', explode( ':', $time . ':00' ) );
-		$base = $base->setTime( $h + $hour_offset, $m, $s );
+		$start_minutes  = $h * 60 + $m + $batch_offset * $duration_minutes;
+		$base           = $base->setTime(
+			intdiv( $start_minutes, 60 ) % 24,
+			$start_minutes % 60,
+			$s
+		);
 
 		return $base->format( 'Y-m-d H:i:s' );
+	}
+
+	/**
+	 * Devuelve la duración del partido en minutos (mínimo 30, máximo 180).
+	 */
+	private function duration_from_tournament( array $tournament ): int {
+		return max( 30, min( 180, (int) ( $tournament['match_duration'] ?? 60 ) ) );
 	}
 
 	/**
@@ -127,6 +142,7 @@ final class FixtureGenerator {
 		$tournament_id = (int) $tournament['id'];
 		$weekdays      = $this->weekdays_from_tournament( $tournament );
 		$time          = (string) ( $tournament['match_time'] ?? '19:00:00' );
+		$duration      = $this->duration_from_tournament( $tournament );
 
 		// 1. Verificar que todos los partidos regulares estén finalizados.
 		$pending = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
@@ -167,8 +183,8 @@ final class FixtureGenerator {
 		$rank3 = (int) $standings[2]['team_id'];
 		$rank4 = (int) $standings[3]['team_id'];
 
-		$dt_sf1 = $this->next_match_datetime( $weekdays, $time, 0 );
-		$dt_sf2 = $this->next_match_datetime( $weekdays, $time, 1 );
+		$dt_sf1 = $this->next_match_datetime( $weekdays, $time, 0, 0, $duration );
+		$dt_sf2 = $this->next_match_datetime( $weekdays, $time, 1, 0, $duration );
 
 		$ids = [];
 
@@ -220,6 +236,7 @@ final class FixtureGenerator {
 		$tournament_id = (int) $tournament['id'];
 		$weekdays      = $this->weekdays_from_tournament( $tournament );
 		$time          = (string) ( $tournament['match_time'] ?? '19:00:00' );
+		$duration      = $this->duration_from_tournament( $tournament );
 
 		// 1. Leer semi-finales finalizadas.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
@@ -264,8 +281,8 @@ final class FixtureGenerator {
 		$sf1 = $resolve( $semis[0] );
 		$sf2 = $resolve( $semis[1] );
 
-		$dt_3rd   = $this->next_match_datetime( $weekdays, $time, 0 );
-		$dt_final = $this->next_match_datetime( $weekdays, $time, 1 );
+		$dt_3rd   = $this->next_match_datetime( $weekdays, $time, 0, 0, $duration );
+		$dt_final = $this->next_match_datetime( $weekdays, $time, 1, 0, $duration );
 
 		$ids = [];
 
@@ -312,6 +329,7 @@ final class FixtureGenerator {
 		$tournament_id = (int) $tournament['id'];
 		$weekdays      = $this->weekdays_from_tournament( $tournament );
 		$time          = (string) ( $tournament['match_time'] ?? '19:00:00' );
+		$duration      = $this->duration_from_tournament( $tournament );
 		$num_courts    = $this->count_courts( $venue_id );
 
 		$n     = count( $team_ids );
@@ -348,7 +366,7 @@ final class FixtureGenerator {
 
 			$match_ids = array_merge(
 				$match_ids,
-				$this->insert_round( $tournament_id, $round, $pairs, $venue_id, $weekdays, $time, $num_courts )
+				$this->insert_round( $tournament_id, $round, $pairs, $venue_id, $weekdays, $time, $num_courts, $duration )
 			);
 
 			// Rotación circular: fijo el primer elemento, rotar el resto.
@@ -379,9 +397,10 @@ final class FixtureGenerator {
 	 * @param  int                             $round
 	 * @param  array<array{home:int,away:int}> $pairs
 	 * @param  int                             $venue_id
-	 * @param  int[]                           $weekdays   Días activos ordenados lunes-primero.
-	 * @param  string                          $time       Hora de inicio, formato 'H:i:s'.
-	 * @param  int                             $num_courts Canchas disponibles (partidos simultáneos por franja).
+	 * @param  int[]                           $weekdays         Días activos ordenados lunes-primero.
+	 * @param  string                          $time             Hora de inicio, formato 'H:i:s'.
+	 * @param  int                             $num_courts       Canchas disponibles (partidos simultáneos por franja).
+	 * @param  int                             $duration_minutes Duración de cada partido en minutos.
 	 * @return int[]
 	 */
 	private function insert_round(
@@ -391,7 +410,8 @@ final class FixtureGenerator {
 		int    $venue_id,
 		array  $weekdays,
 		string $time,
-		int    $num_courts = 1
+		int    $num_courts       = 1,
+		int    $duration_minutes = 60
 	): array {
 		global $wpdb;
 		$ids = [];
@@ -406,7 +426,7 @@ final class FixtureGenerator {
 			// para que los equipos que antes jugaban primero ahora jueguen después.
 			$rotated_batch = ( $base_batch + ( $round - 1 ) ) % $num_batches;
 
-			$dt = $this->next_match_datetime( $weekdays, $time, $rotated_batch, $round - 1 );
+			$dt = $this->next_match_datetime( $weekdays, $time, $rotated_batch, $round - 1, $duration_minutes );
 
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$wpdb->insert(
