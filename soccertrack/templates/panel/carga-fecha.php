@@ -2,8 +2,8 @@
 /**
  * Carga de acta para el coordinador — modo planilla física.
  *
- * Variables: $tournament, $round, $matches_data, $page_title
- * $matches_data: array de {match, home_players, away_players}
+ * Variables: $tournament, $round, $matches, $page_title
+ * $matches: array de partidos de la jornada
  */
 defined( 'ABSPATH' ) || exit;
 ?>
@@ -25,25 +25,11 @@ defined( 'ABSPATH' ) || exit;
     <p class="st-empty-msg"><?php esc_html_e( 'No hay partidos en esta jornada.', 'soccertrack' ); ?></p>
 <?php else : ?>
 
-<?php foreach ( $matches_data as $idx => $item ) :
-    $match        = $item['match'];
-    $home_players = $item['home_players'];
-    $away_players = $item['away_players'];
-    $match_id     = (int) $match['id'];
-    $is_finished  = $match['status'] === 'finished';
-    $config_id    = 'ms_config_' . $match_id;
-
-    $map_player = static function ( array $p, int $team_id ): array {
-        return [
-            'id'           => (int) $p['id'],
-            'name'         => $p['first_name'] . ' ' . $p['last_name'],
-            'dorsal'       => (int) $p['dorsal'],
-            'is_suspended' => (bool) $p['is_suspended'],
-            'team_id'      => $team_id,
-        ];
-    };
+<?php foreach ( $matches as $idx => $match ) :
+    $match_id    = (int) $match['id'];
+    $is_finished = $match['status'] === 'finished';
 ?>
-<div class="st-card" style="margin-bottom:24px;<?php echo $is_finished ? 'opacity:.8' : ''; ?>">
+<div class="st-card" style="margin-bottom:24px;<?php echo esc_attr( $is_finished ? 'opacity:.8' : '' ); ?>">
     <div class="st-card-header">
         <h2 class="st-card-title">
             <?php echo esc_html( $match['home_team_name'] . ' vs ' . $match['away_team_name'] ); ?>

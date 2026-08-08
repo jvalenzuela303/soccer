@@ -1789,7 +1789,7 @@ final class TournamentPage {
 		global $wpdb;
 
 		if ( ! current_user_can( 'ds_manage_tournaments' ) ) {
-			wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), 403 );
+			wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), '', [ 'response' => 403 ] );
 		}
 
 		$tournament_id = absint( $_GET['tournament_id'] ?? 0 );
@@ -1806,7 +1806,7 @@ final class TournamentPage {
 		);
 
 		if ( ! $tournament || ( $tournament['registration_mode'] ?? 'realtime' ) !== 'deferred' ) {
-			wp_die( esc_html__( 'Esta vista solo está disponible para torneos en modo planilla física.', 'soccertrack' ), 403 );
+			wp_die( esc_html__( 'Esta vista solo está disponible para torneos en modo planilla física.', 'soccertrack' ), '', [ 'response' => 403 ] );
 		}
 
 		// Cargar todos los partidos de la jornada.
@@ -1830,40 +1830,8 @@ final class TournamentPage {
 			ARRAY_A
 		) ?: [];
 
-		// Para cada partido, cargar plantillas de jugadores.
-		$matches_data = [];
-		foreach ( $matches as $match ) {
-			$home_players = $wpdb->get_results( // phpcs:ignore
-				$wpdb->prepare(
-					"SELECT p.id, p.first_name, p.last_name, tp.dorsal, tp.is_suspended
-					 FROM {$wpdb->prefix}ds_team_players tp
-					 JOIN {$wpdb->prefix}ds_players p ON p.id = tp.player_id
-					 WHERE tp.team_id = %d ORDER BY tp.dorsal ASC",
-					(int) $match['home_team_id']
-				),
-				ARRAY_A
-			) ?: [];
-
-			$away_players = $wpdb->get_results( // phpcs:ignore
-				$wpdb->prepare(
-					"SELECT p.id, p.first_name, p.last_name, tp.dorsal, tp.is_suspended
-					 FROM {$wpdb->prefix}ds_team_players tp
-					 JOIN {$wpdb->prefix}ds_players p ON p.id = tp.player_id
-					 WHERE tp.team_id = %d ORDER BY tp.dorsal ASC",
-					(int) $match['away_team_id']
-				),
-				ARRAY_A
-			) ?: [];
-
-			$matches_data[] = [
-				'match'        => $match,
-				'home_players' => $home_players,
-				'away_players' => $away_players,
-			];
-		}
-
 		$page_title = sprintf( __( 'Carga de Acta — Jornada %d', 'soccertrack' ), $round );
-		self::render( 'carga-fecha', compact( 'tournament', 'round', 'matches_data', 'page_title' ) );
+		self::render( 'carga-fecha', compact( 'tournament', 'round', 'matches', 'page_title' ) );
 	}
 
 	/* ------------------------------------------------------------------ */
