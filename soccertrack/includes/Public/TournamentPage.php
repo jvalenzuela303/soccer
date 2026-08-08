@@ -63,6 +63,7 @@ final class TournamentPage {
 		add_rewrite_rule( '^panel/recinto/([0-9]+)/?$',  "index.php?{$qv}=1&{$qvv}=recinto&{$qvi}=\$matches[1]", 'top' );
 		add_rewrite_rule( '^panel/mis-partidos/?$',      "index.php?{$qv}=1&{$qvv}=mis-partidos",                'top' );
 		add_rewrite_rule( '^panel/usuarios/?$',          "index.php?{$qv}=1&{$qvv}=usuarios",           'top' );
+		add_rewrite_rule( '^panel/carga-fecha/?$',       "index.php?{$qv}=1&{$qvv}=carga-fecha",        'top' );
 		add_rewrite_rule( '^panel/?$',                   "index.php?{$qv}=1&{$qvv}=dashboard",          'top' );
 
 		// ── Público ──────────────────────────────────────────────────────
@@ -134,6 +135,7 @@ final class TournamentPage {
 			'recinto'       => self::view_recinto( $id ),
 			'mis-partidos'  => self::view_mis_partidos(),
 			'usuarios'      => self::view_usuarios(),
+			'carga-fecha'   => self::view_carga_fecha(),
 			default         => self::view_dashboard(),
 		};
 	}
@@ -1781,6 +1783,87 @@ final class TournamentPage {
 
 		$page_title = __( 'Tribunal Disciplinario', 'soccertrack' );
 		self::render( 'tribunal', compact( 'tournaments', 'sanctions', 'tournament_id', 'round_number', 'available_rounds', 'round_events', 'teams_with_players', 'available_teams', 'team_filter', 'notice', 'error', 'form_player_id', 'form_reason', 'form_matches', 'player_history', 'page_title' ) );
+	}
+
+	private static function view_carga_fecha(): void {
+		global $wpdb;
+
+		if ( ! current_user_can( 'ds_manage_tournaments' ) ) {
+			wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), 403 );
+		}
+
+		$tournament_id = absint( $_GET['tournament_id'] ?? 0 );
+		$round         = absint( $_GET['round'] ?? 0 );
+
+		if ( ! $tournament_id || ! $round ) {
+			wp_safe_redirect( home_url( '/panel/torneos/' ) );
+			exit;
+		}
+
+		$tournament = $wpdb->get_row( // phpcs:ignore
+			$wpdb->prepare( "SELECT * FROM {$wpdb->prefix}ds_tournaments WHERE id = %d", $tournament_id ),
+			ARRAY_A
+		);
+
+		if ( ! $tournament || ( $tournament['registration_mode'] ?? 'realtime' ) !== 'deferred' ) {
+			wp_die( esc_html__( 'Esta vista solo está disponible para torneos en modo planilla física.', 'soccertrack' ), 403 );
+		}
+
+		// Cargar todos los partidos de la jornada.
+		$matches = $wpdb->get_results( // phpcs:ignore
+			$wpdb->prepare(
+				"SELECT m.*,
+				        th.name AS home_team_name,
+				        ta.name AS away_team_name,
+				        v.name  AS venue_name,
+				        c.court_name
+				 FROM {$wpdb->prefix}ds_matches m
+				 JOIN {$wpdb->prefix}ds_teams th ON th.id = m.home_team_id
+				 JOIN {$wpdb->prefix}ds_teams ta ON ta.id = m.away_team_id
+				 LEFT JOIN {$wpdb->prefix}ds_venues v ON v.id = m.venue_id
+				 LEFT JOIN {$wpdb->prefix}ds_courts c ON c.id = m.court_id
+				 WHERE m.tournament_id = %d AND m.round_number = %d
+				 ORDER BY m.match_datetime ASC",
+				$tournament_id,
+				$round
+			),
+			ARRAY_A
+		) ?: [];
+
+		// Para cada partido, cargar plantillas de jugadores.
+		$matches_data = [];
+		foreach ( $matches as $match ) {
+			$home_players = $wpdb->get_results( // phpcs:ignore
+				$wpdb->prepare(
+					"SELECT p.id, p.first_name, p.last_name, tp.dorsal, tp.is_suspended
+					 FROM {$wpdb->prefix}ds_team_players tp
+					 JOIN {$wpdb->prefix}ds_players p ON p.id = tp.player_id
+					 WHERE tp.team_id = %d ORDER BY tp.dorsal ASC",
+					(int) $match['home_team_id']
+				),
+				ARRAY_A
+			) ?: [];
+
+			$away_players = $wpdb->get_results( // phpcs:ignore
+				$wpdb->prepare(
+					"SELECT p.id, p.first_name, p.last_name, tp.dorsal, tp.is_suspended
+					 FROM {$wpdb->prefix}ds_team_players tp
+					 JOIN {$wpdb->prefix}ds_players p ON p.id = tp.player_id
+					 WHERE tp.team_id = %d ORDER BY tp.dorsal ASC",
+					(int) $match['away_team_id']
+				),
+				ARRAY_A
+			) ?: [];
+
+			$matches_data[] = [
+				'match'        => $match,
+				'home_players' => $home_players,
+				'away_players' => $away_players,
+			];
+		}
+
+		$page_title = sprintf( __( 'Carga de Acta — Jornada %d', 'soccertrack' ), $round );
+		self::render( 'carga-fecha', compact( 'tournament', 'round', 'matches_data', 'page_title' ) );
 	}
 
 	/* ------------------------------------------------------------------ */
