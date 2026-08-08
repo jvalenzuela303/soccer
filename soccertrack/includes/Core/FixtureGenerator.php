@@ -385,17 +385,28 @@ final class FixtureGenerator {
 
 		$count = count( $court_ids );
 
-		foreach ( $match_ids as $i => $match_id ) {
-			$court_id = (int) $court_ids[ $i % $count ];
+		// Bulk UPDATE: one query instead of one per match.
+		$case_clauses = [];
+		$case_params  = [];
+		$in_ids       = [];
 
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
-			$wpdb->update(
-				"{$wpdb->prefix}ds_matches",
-				[ 'court_id' => $court_id ],
-				[ 'id'       => $match_id ],
-				[ '%d' ],
-				[ '%d' ]
-			);
+		foreach ( $match_ids as $i => $match_id ) {
+			$court_id       = (int) $court_ids[ $i % $count ];
+			$case_clauses[] = 'WHEN %d THEN %d';
+			$case_params[]  = (int) $match_id;
+			$case_params[]  = $court_id;
+			$in_ids[]       = (int) $match_id;
 		}
+
+		$case_sql = implode( ' ', $case_clauses );
+		$in_sql   = implode( ', ', array_fill( 0, count( $in_ids ), '%d' ) );
+		$params   = array_merge( $case_params, $in_ids );
+
+		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				"UPDATE {$wpdb->prefix}ds_matches SET court_id = CASE id {$case_sql} END WHERE id IN ({$in_sql})",
+				...$params
+			)
+		);
 	}
 }
