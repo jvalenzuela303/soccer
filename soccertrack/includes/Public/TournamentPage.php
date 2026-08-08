@@ -196,10 +196,10 @@ final class TournamentPage {
 		}
 
 		$venues = $wpdb->get_results( // phpcs:ignore
-			"SELECT v.*, COUNT(c.id) AS court_count,
-			        (SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches m WHERE m.venue_id = v.id) AS match_count
+			"SELECT v.*, COUNT(DISTINCT c.id) AS court_count, COUNT(DISTINCT m.id) AS match_count
 			 FROM {$wpdb->prefix}ds_venues v
-			 LEFT JOIN {$wpdb->prefix}ds_courts c ON c.venue_id = v.id
+			 LEFT JOIN {$wpdb->prefix}ds_courts  c ON c.venue_id = v.id
+			 LEFT JOIN {$wpdb->prefix}ds_matches m ON m.venue_id = v.id
 			 GROUP BY v.id ORDER BY v.id DESC",
 			ARRAY_A
 		);
