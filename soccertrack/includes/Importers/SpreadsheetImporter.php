@@ -345,6 +345,15 @@ final class SpreadsheetImporter {
 	/**
 	 * Importa equipos desde un archivo CSV/XLSX al torneo indicado.
 	 *
+	 * Formato esperado (fila 1 = cabecera ignorada):
+	 *   A: Nombre del equipo
+	 *   B: Ciudad (opcional)
+	 *   C: Colores (opcional)
+	 *   D: Director Técnico (opcional)
+	 *   E: Delegado Nombre (opcional)
+	 *   F: Delegado Correo (opcional)
+	 *   G: Delegado Celular (opcional)
+	 *
 	 * @param  string $file_path    Ruta absoluta al archivo subido (tmp_name).
 	 * @param  int    $tournament_id ID del torneo destino.
 	 * @return array{imported: int, skipped: int, errors: string[]}
@@ -365,7 +374,7 @@ final class SpreadsheetImporter {
 				$data[] = (string) $cell->getValue();
 			}
 
-			[ $name, $city, $colors, $dt_name ] = array_pad( $data, 4, '' );
+			[ $name, $city, $colors, $dt_name, $del_nombre, $del_correo, $del_celular ] = array_pad( $data, 7, '' );
 			$name = trim( $name );
 
 			if ( empty( $name ) ) {
@@ -387,14 +396,33 @@ final class SpreadsheetImporter {
 				continue;
 			}
 
+			// Preparar datos de inserción con campos de delegado condicionales.
+			$del_correo_clean = sanitize_email( $del_correo );
+
+			$insert_data    = [
+				'tournament_id' => $tournament_id,
+				'name'          => sanitize_text_field( $name ),
+			];
+			$insert_formats = [ '%d', '%s' ];
+
+			if ( '' !== trim( $del_nombre ) ) {
+				$insert_data['delegado_nombre'] = sanitize_text_field( $del_nombre );
+				$insert_formats[]               = '%s';
+			}
+			if ( '' !== $del_correo_clean ) {
+				$insert_data['delegado_correo'] = $del_correo_clean;
+				$insert_formats[]               = '%s';
+			}
+			if ( '' !== trim( $del_celular ) ) {
+				$insert_data['delegado_celular'] = sanitize_text_field( $del_celular );
+				$insert_formats[]                = '%s';
+			}
+
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$wpdb->insert(
 				"{$wpdb->prefix}ds_teams",
-				[
-					'tournament_id' => $tournament_id,
-					'name'          => sanitize_text_field( $name ),
-				],
-				[ '%d', '%s' ]
+				$insert_data,
+				$insert_formats
 			);
 
 			if ( $wpdb->last_error ) {
