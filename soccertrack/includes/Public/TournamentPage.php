@@ -882,6 +882,10 @@ final class TournamentPage {
 		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_update_schedule'] ) ) {
 			check_admin_referer( 'st_update_schedule_' . $id );
 
+			if ( ! current_user_can( 'ds_manage_tournaments' ) ) {
+				wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), 403 );
+			}
+
 			$raw_weekday   = absint( $_POST['match_weekday'] ?? 6 );
 			$match_weekday = ( $raw_weekday >= 0 && $raw_weekday <= 6 ) ? $raw_weekday : 6;
 			$raw_time      = sanitize_text_field( $_POST['match_time'] ?? '19:00' );

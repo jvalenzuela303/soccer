@@ -231,7 +231,7 @@
 						if ( $m['status'] === 'finished' ) {
 							echo esc_html( $m['home_score'] . ' — ' . $m['away_score'] );
 						} else {
-							echo 'vs';
+							esc_html_e( 'vs', 'soccertrack' );
 						}
 						?>
 					</td>
@@ -284,7 +284,7 @@
 									</option>
 								<?php endforeach; ?>
 							</select>
-							<button type="submit" class="st-btn st-btn--sm st-btn--secondary" title="Guardar">✔</button>
+							<button type="submit" class="st-btn st-btn--sm st-btn--secondary" title="<?php esc_attr_e( 'Guardar', 'soccertrack' ); ?>">✔</button>
 						</form>
 						<?php else :
 							$cname = '—';
