@@ -40,7 +40,7 @@ final class DatabaseInstaller {
 			bases_pdf_url       VARCHAR(255)    NULL,
 			match_weekday       TINYINT(1)      NOT NULL DEFAULT 6,
 			match_time          TIME            NOT NULL DEFAULT '19:00:00',
-			registration_mode   ENUM('realtime','deferred') NOT NULL DEFAULT 'realtime',
+			registration_mode   ENUM('realtime','deferred') NOT NULL DEFAULT 'deferred',
 			fixture_release_days TINYINT(1)     NOT NULL DEFAULT 0,
 			created_at          DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY       (id),
@@ -402,7 +402,7 @@ final class DatabaseInstaller {
 		if ( ! $has_reg_mode ) {
 			$wpdb->query( // phpcs:ignore
 				"ALTER TABLE {$prefix}ds_tournaments
-				 ADD COLUMN registration_mode ENUM('realtime','deferred') NOT NULL DEFAULT 'realtime'
+				 ADD COLUMN registration_mode ENUM('realtime','deferred') NOT NULL DEFAULT 'deferred'
 				 AFTER match_time"
 			);
 		}

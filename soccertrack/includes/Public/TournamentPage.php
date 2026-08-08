@@ -395,8 +395,8 @@ final class TournamentPage {
 				$match_weekday = ( $raw_weekday >= 0 && $raw_weekday <= 6 ) ? $raw_weekday : 6;
 				$raw_time    = sanitize_text_field( $_POST['match_time'] ?? '19:00' );
 				$match_time  = preg_match( '/^\d{1,2}:\d{2}$/', $raw_time ) ? $raw_time . ':00' : '19:00:00';
-				$reg_mode    = sanitize_key( $_POST['registration_mode'] ?? 'realtime' );
-				$reg_mode    = in_array( $reg_mode, [ 'realtime', 'deferred' ], true ) ? $reg_mode : 'realtime';
+				$reg_mode    = sanitize_key( $_POST['registration_mode'] ?? 'deferred' );
+				$reg_mode    = in_array( $reg_mode, [ 'realtime', 'deferred' ], true ) ? $reg_mode : 'deferred';
 				$release_days = max( -7, min( 30, (int) ( $_POST['fixture_release_days'] ?? 0 ) ) );
 
 				$wpdb->insert( // phpcs:ignore
@@ -826,8 +826,8 @@ final class TournamentPage {
 				wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), '', [ 'response' => 403 ] );
 			}
 
-			$reg_mode = sanitize_key( $_POST['registration_mode'] ?? 'realtime' );
-			$reg_mode = in_array( $reg_mode, [ 'realtime', 'deferred' ], true ) ? $reg_mode : 'realtime';
+			$reg_mode = sanitize_key( $_POST['registration_mode'] ?? 'deferred' );
+			$reg_mode = in_array( $reg_mode, [ 'realtime', 'deferred' ], true ) ? $reg_mode : 'deferred';
 
 			$wpdb->update( // phpcs:ignore
 				"{$wpdb->prefix}ds_tournaments",

@@ -137,36 +137,7 @@
 	</p>
 </div>
 
-<?php /* ── Modo de registro de partidos ─────────────────────────────── */ ?>
-<div class="st-card" style="margin-bottom:20px">
-	<div class="st-card-header">
-		<h2 class="st-card-title">
-			<?php echo $tournament['registration_mode'] === 'deferred' ? '📋' : '⚡'; ?>
-			<?php esc_html_e( 'Modo de registro', 'soccertrack' ); ?>
-		</h2>
-	</div>
-	<form method="post" action="" class="st-form-inline" style="align-items:flex-end;gap:16px">
-		<?php wp_nonce_field( 'st_update_reg_mode_' . $tournament['id'] ); ?>
-		<input type="hidden" name="st_update_reg_mode" value="1">
-
-		<div class="st-field">
-			<label class="st-label"><?php esc_html_e( 'Modo actual', 'soccertrack' ); ?></label>
-			<select name="registration_mode" class="st-input">
-				<option value="realtime" <?php selected( $tournament['registration_mode'] ?? 'realtime', 'realtime' ); ?>>
-					⚡ <?php esc_html_e( 'Tiempo real (planillero)', 'soccertrack' ); ?>
-				</option>
-				<option value="deferred" <?php selected( $tournament['registration_mode'] ?? 'realtime', 'deferred' ); ?>>
-					📋 <?php esc_html_e( 'Planilla física (coordinador)', 'soccertrack' ); ?>
-				</option>
-			</select>
-		</div>
-		<div class="st-field" style="align-self:flex-end">
-			<button type="submit" class="st-btn st-btn--secondary st-btn--sm">
-				💾 <?php esc_html_e( 'Guardar', 'soccertrack' ); ?>
-			</button>
-		</div>
-	</form>
-</div>
+<?php /* Modo de registro deshabilitado — por defecto planilla física (deferred). */ ?>
 
 <?php /* ── Liberación del fixture ──────────────────────────────────────── */ ?>
 <div class="st-card" style="margin-bottom:20px">
