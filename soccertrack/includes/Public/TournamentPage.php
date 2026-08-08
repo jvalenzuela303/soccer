@@ -1718,8 +1718,8 @@ final class TournamentPage {
 				$round_team_params = [ $team_filter ];
 			}
 
-			$round_events = $wpdb->get_results( // phpcs:ignore
-				$wpdb->prepare(
+			$round_events = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				$wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 					"SELECT e.event_type, e.minute,
 					        p.first_name, p.last_name, t.name AS team_name,
 					        ht.name AS home_team, at.name AS away_team,
