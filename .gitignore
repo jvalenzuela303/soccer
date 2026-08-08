@@ -21,6 +21,9 @@ calibratrack/uploads/
 tests/
 plugins/
 
+# Composer
+soccertrack/vendor/
+
 # Releases y binarios
 *.zip
 
