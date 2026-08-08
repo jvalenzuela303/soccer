@@ -540,23 +540,6 @@ final class TournamentPage {
 			ARRAY_A
 		);
 
-		$matches = $wpdb->get_results( // phpcs:ignore
-			$wpdb->prepare(
-				"SELECT m.id, m.round_number, m.home_team_id, m.away_team_id, m.venue_id, m.court_id,
-				        m.referee_user_id, m.planillero_user_id, m.match_datetime, m.home_score, m.away_score, m.status,
-				        COALESCE(m.phase, 'regular') AS phase,
-				        ht.name AS home_team, at.name AS away_team
-				 FROM {$wpdb->prefix}ds_matches m
-				 JOIN {$wpdb->prefix}ds_teams ht ON ht.id = m.home_team_id
-				 JOIN {$wpdb->prefix}ds_teams at ON at.id = m.away_team_id
-				 WHERE m.tournament_id = %d
-				 ORDER BY m.round_number ASC, m.match_datetime ASC
-				 LIMIT 200",
-				$id
-			),
-			ARRAY_A
-		);
-
 		// ── Asignar / reasignar árbitro desde el fixture ─────────────────────
 		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_update_referee'] ) ) {
 			check_admin_referer( 'st_update_referee_' . $id );
@@ -618,22 +601,6 @@ final class TournamentPage {
 						[ '%d' ]
 					);
 					$notice = 'referee_updated';
-					$matches = $wpdb->get_results( // phpcs:ignore
-						$wpdb->prepare(
-							"SELECT m.id, m.round_number, m.home_team_id, m.away_team_id, m.venue_id, m.court_id,
-							        m.referee_user_id, m.planillero_user_id, m.match_datetime, m.home_score, m.away_score, m.status,
-							        COALESCE(m.phase, 'regular') AS phase,
-							        ht.name AS home_team, at.name AS away_team
-							 FROM {$wpdb->prefix}ds_matches m
-							 JOIN {$wpdb->prefix}ds_teams ht ON ht.id = m.home_team_id
-							 JOIN {$wpdb->prefix}ds_teams at ON at.id = m.away_team_id
-							 WHERE m.tournament_id = %d
-							 ORDER BY m.round_number ASC, m.match_datetime ASC
-							 LIMIT 200",
-							$id
-						),
-						ARRAY_A
-					);
 				}
 			}
 		}
@@ -698,22 +665,6 @@ final class TournamentPage {
 						[ '%d' ]
 					);
 					$notice  = 'planillero_updated';
-					$matches = $wpdb->get_results( // phpcs:ignore
-						$wpdb->prepare(
-							"SELECT m.id, m.round_number, m.home_team_id, m.away_team_id, m.venue_id, m.court_id,
-							        m.referee_user_id, m.planillero_user_id, m.match_datetime, m.home_score, m.away_score, m.status,
-							        COALESCE(m.phase, 'regular') AS phase,
-							        ht.name AS home_team, at.name AS away_team
-							 FROM {$wpdb->prefix}ds_matches m
-							 JOIN {$wpdb->prefix}ds_teams ht ON ht.id = m.home_team_id
-							 JOIN {$wpdb->prefix}ds_teams at ON at.id = m.away_team_id
-							 WHERE m.tournament_id = %d
-							 ORDER BY m.round_number ASC, m.match_datetime ASC
-							 LIMIT 200",
-							$id
-						),
-						ARRAY_A
-					);
 				}
 			}
 		}
@@ -754,23 +705,6 @@ final class TournamentPage {
 				} else {
 					$wpdb->update( "{$wpdb->prefix}ds_matches", [ 'court_id' => $new_court ], [ 'id' => $match_id ], [ '%d' ], [ '%d' ] ); // phpcs:ignore
 					$notice = 'court_updated';
-					// Refrescar $matches para que la tabla muestre el dato actualizado.
-					$matches = $wpdb->get_results( // phpcs:ignore
-						$wpdb->prepare(
-							"SELECT m.id, m.round_number, m.home_team_id, m.away_team_id, m.venue_id, m.court_id,
-							        m.referee_user_id, m.planillero_user_id, m.match_datetime, m.home_score, m.away_score, m.status,
-							        COALESCE(m.phase, 'regular') AS phase,
-							        ht.name AS home_team, at.name AS away_team
-							 FROM {$wpdb->prefix}ds_matches m
-							 JOIN {$wpdb->prefix}ds_teams ht ON ht.id = m.home_team_id
-							 JOIN {$wpdb->prefix}ds_teams at ON at.id = m.away_team_id
-							 WHERE m.tournament_id = %d
-							 ORDER BY m.round_number ASC, m.match_datetime ASC
-							 LIMIT 200",
-							$id
-						),
-						ARRAY_A
-					);
 				}
 			}
 		}
@@ -834,23 +768,6 @@ final class TournamentPage {
 							[ '%d' ]
 						);
 						$notice = 'datetime_updated';
-						// Refrescar $matches.
-						$matches = $wpdb->get_results( // phpcs:ignore
-							$wpdb->prepare(
-								"SELECT m.id, m.round_number, m.home_team_id, m.away_team_id, m.venue_id, m.court_id,
-								        m.referee_user_id, m.planillero_user_id, m.match_datetime, m.home_score, m.away_score, m.status,
-								        COALESCE(m.phase, 'regular') AS phase,
-								        ht.name AS home_team, at.name AS away_team
-								 FROM {$wpdb->prefix}ds_matches m
-								 JOIN {$wpdb->prefix}ds_teams ht ON ht.id = m.home_team_id
-								 JOIN {$wpdb->prefix}ds_teams at ON at.id = m.away_team_id
-								 WHERE m.tournament_id = %d
-								 ORDER BY m.round_number ASC, m.match_datetime ASC
-								 LIMIT 200",
-								$id
-							),
-							ARRAY_A
-						);
 					}
 				}
 			}
@@ -866,24 +783,6 @@ final class TournamentPage {
 
 			$notice = 'auto_assigned';
 			self::auto_assign_officials( $id );
-
-			// Refrescar $matches tras asignación.
-			$matches = $wpdb->get_results( // phpcs:ignore
-				$wpdb->prepare(
-					"SELECT m.id, m.round_number, m.home_team_id, m.away_team_id, m.venue_id, m.court_id,
-					        m.referee_user_id, m.planillero_user_id, m.match_datetime, m.home_score, m.away_score, m.status,
-					        COALESCE(m.phase, 'regular') AS phase,
-					        ht.name AS home_team, at.name AS away_team
-					 FROM {$wpdb->prefix}ds_matches m
-					 JOIN {$wpdb->prefix}ds_teams ht ON ht.id = m.home_team_id
-					 JOIN {$wpdb->prefix}ds_teams at ON at.id = m.away_team_id
-					 WHERE m.tournament_id = %d
-					 ORDER BY m.round_number ASC, m.match_datetime ASC
-					 LIMIT 200",
-					$id
-				),
-				ARRAY_A
-			);
 		}
 
 		// ── Actualizar parámetros de horario del torneo ──────────────────
@@ -968,6 +867,23 @@ final class TournamentPage {
 
 		$venues = $wpdb->get_results( // phpcs:ignore
 			"SELECT id, name FROM {$wpdb->prefix}ds_venues ORDER BY name ASC",
+			ARRAY_A
+		);
+
+		$matches = $wpdb->get_results( // phpcs:ignore
+			$wpdb->prepare(
+				"SELECT m.id, m.round_number, m.home_team_id, m.away_team_id, m.venue_id, m.court_id,
+				        m.referee_user_id, m.planillero_user_id, m.match_datetime, m.home_score, m.away_score, m.status,
+				        COALESCE(m.phase, 'regular') AS phase,
+				        ht.name AS home_team, at.name AS away_team
+				 FROM {$wpdb->prefix}ds_matches m
+				 JOIN {$wpdb->prefix}ds_teams ht ON ht.id = m.home_team_id
+				 JOIN {$wpdb->prefix}ds_teams at ON at.id = m.away_team_id
+				 WHERE m.tournament_id = %d
+				 ORDER BY m.round_number ASC, m.match_datetime ASC
+				 LIMIT 200",
+				$id
+			),
 			ARRAY_A
 		);
 
