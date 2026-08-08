@@ -2,8 +2,9 @@
 /**
  * Carga de acta para el coordinador — modo planilla física.
  *
- * Variables: $tournament, $round, $matches, $page_title
+ * Variables: $tournament, $round, $matches, $events_by_match, $page_title
  * $matches: array de partidos de la jornada
+ * $events_by_match: array keyed by match_id con los eventos pre-cargados (evita N+1)
  */
 defined( 'ABSPATH' ) || exit;
 ?>
@@ -65,20 +66,7 @@ defined( 'ABSPATH' ) || exit;
     </p>
     <?php else : ?>
     <?php /* Resumen de eventos del partido cerrado */ ?>
-    <?php
-    global $wpdb;
-    $events = $wpdb->get_results( // phpcs:ignore
-        $wpdb->prepare(
-            "SELECT e.event_type, e.minute, p.first_name, p.last_name, t.name AS team_name
-             FROM {$wpdb->prefix}ds_match_events e
-             JOIN {$wpdb->prefix}ds_players p ON p.id = e.player_id
-             JOIN {$wpdb->prefix}ds_teams t ON t.id = e.team_id
-             WHERE e.match_id = %d ORDER BY e.minute ASC",
-            $match_id
-        ),
-        ARRAY_A
-    ) ?: [];
-    ?>
+    <?php $events = $events_by_match[ $match_id ] ?? []; ?>
     <?php if ( ! empty( $events ) ) : ?>
     <div class="st-table-wrap" style="margin-top:8px">
         <table class="st-table st-table--compact">
