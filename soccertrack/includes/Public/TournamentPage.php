@@ -973,18 +973,23 @@ final class TournamentPage {
 
 		$courts_by_venue = [];
 		if ( ! empty( $matches ) ) {
-			$venue_ids = array_unique( array_column( $matches, 'venue_id' ) );
-			foreach ( $venue_ids as $vid ) {
-				if ( ! $vid ) {
-					continue;
-				}
-				$courts_by_venue[ (int) $vid ] = $wpdb->get_results( // phpcs:ignore
-					$wpdb->prepare(
-						"SELECT id, court_name FROM {$wpdb->prefix}ds_courts WHERE venue_id = %d ORDER BY id ASC",
-						$vid
+			$venue_ids = array_values( array_filter( array_unique( array_map( 'intval', array_column( $matches, 'venue_id' ) ) ) ) );
+			if ( ! empty( $venue_ids ) ) {
+				$placeholders = implode( ', ', array_fill( 0, count( $venue_ids ), '%d' ) );
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.NotPrepared
+				$court_rows = $wpdb->get_results(
+					$wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+						"SELECT id, venue_id, court_name FROM {$wpdb->prefix}ds_courts WHERE venue_id IN ({$placeholders}) ORDER BY venue_id ASC, id ASC",
+						...$venue_ids
 					),
 					ARRAY_A
 				);
+				foreach ( $court_rows as $row ) {
+					$courts_by_venue[ (int) $row['venue_id'] ][] = [
+						'id'         => $row['id'],
+						'court_name' => $row['court_name'],
+					];
+				}
 			}
 		}
 
