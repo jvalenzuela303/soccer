@@ -132,8 +132,8 @@ final class DatabaseInstaller {
 			KEY idx_fixture_order           (tournament_id, round_number, match_datetime),
 			KEY idx_tournament_phase_status (tournament_id, phase, status),
 			KEY idx_venue                   (venue_id),
-			KEY idx_court_datetime          (court_id, match_datetime),
-			KEY idx_referee_datetime        (referee_user_id, match_datetime),
+			KEY idx_court_datetime          (court_id, status, match_datetime),
+			KEY idx_referee_datetime        (referee_user_id, status, match_datetime),
 			KEY idx_planillero_datetime     (planillero_user_id, match_datetime),
 			KEY idx_home_team               (home_team_id),
 			KEY idx_away_team               (away_team_id),
@@ -424,6 +424,26 @@ final class DatabaseInstaller {
 				"ALTER TABLE {$prefix}ds_matches
 				 ADD COLUMN referee_name    VARCHAR(120) NULL AFTER planillero_user_id,
 				 ADD COLUMN planillero_name VARCHAR(120) NULL AFTER referee_name"
+			);
+		}
+
+		// v1.7.2 — ds_matches: añadir status a idx_court_datetime para evitar post-filter en anti-colisión.
+		$court_dt_cols = $wpdb->get_var( "SHOW INDEX FROM {$prefix}ds_matches WHERE Key_name = 'idx_court_datetime' AND Column_name = 'status'" ); // phpcs:ignore
+		if ( ! $court_dt_cols ) {
+			$wpdb->query( // phpcs:ignore
+				"ALTER TABLE {$prefix}ds_matches
+				 DROP INDEX IF EXISTS idx_court_datetime,
+				 ADD KEY idx_court_datetime (court_id, status, match_datetime)"
+			);
+		}
+
+		// v1.7.2 — ds_matches: añadir status a idx_referee_datetime.
+		$ref_dt_cols = $wpdb->get_var( "SHOW INDEX FROM {$prefix}ds_matches WHERE Key_name = 'idx_referee_datetime' AND Column_name = 'status'" ); // phpcs:ignore
+		if ( ! $ref_dt_cols ) {
+			$wpdb->query( // phpcs:ignore
+				"ALTER TABLE {$prefix}ds_matches
+				 DROP INDEX IF EXISTS idx_referee_datetime,
+				 ADD KEY idx_referee_datetime (referee_user_id, status, match_datetime)"
 			);
 		}
 	}
