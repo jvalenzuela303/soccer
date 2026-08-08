@@ -1399,6 +1399,41 @@ final class TournamentPage {
 			}
 		}
 
+		// ── Guardar nombres de árbitro y planillero (modo deferred) ──────────
+		$notice_staff = '';
+		$error_staff  = '';
+		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_save_staff_names'] ) ) {
+			check_admin_referer( 'st_save_staff_names_' . $id );
+
+			if ( ! current_user_can( 'ds_manage_tournaments' ) ) {
+				wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), '', [ 'response' => 403 ] );
+			}
+
+			$ref_name  = sanitize_text_field( $_POST['referee_name']    ?? '' );
+			$plan_name = sanitize_text_field( $_POST['planillero_name'] ?? '' );
+
+			$wpdb->update( // phpcs:ignore
+				"{$wpdb->prefix}ds_matches",
+				[ 'referee_name' => $ref_name ?: null, 'planillero_name' => $plan_name ?: null ],
+				[ 'id' => $id ],
+				[ '%s', '%s' ],
+				[ '%d' ]
+			);
+			$notice_staff = 'staff_saved';
+
+			$match = $wpdb->get_row( // phpcs:ignore
+				$wpdb->prepare(
+					"SELECT m.*, v.name AS venue, c.court_name
+					 FROM {$wpdb->prefix}ds_matches m
+					 LEFT JOIN {$wpdb->prefix}ds_venues v ON v.id = m.venue_id
+					 LEFT JOIN {$wpdb->prefix}ds_courts c ON c.id = m.court_id
+					 WHERE m.id = %d",
+					$id
+				),
+				ARRAY_A
+			);
+		}
+
 		$referees = get_users( [
 			'role__in' => [ 'ds_arbitro', 'administrator' ],
 			'orderby'  => 'display_name',
@@ -1443,6 +1478,7 @@ final class TournamentPage {
 			'referees', 'planilleros',
 			'notice_ref', 'error_ref',
 			'notice_plan', 'error_plan',
+			'notice_staff', 'error_staff',
 			'can_edit', 'page_title'
 		) );
 	}
