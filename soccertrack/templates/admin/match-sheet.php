@@ -187,7 +187,7 @@ function st_player_option( array $player ): string {
 		<p style="margin-bottom:12px">📋 <strong><?php esc_html_e( 'Planillero:', 'soccertrack' ); ?></strong> <?php echo esc_html( $plan_name ); ?></p>
 	<?php endif; ?>
 
-	<?php if ( ( $tournament['registration_mode'] ?? 'realtime' ) === 'deferred' ) : ?>
+	<?php if ( ( $tournament['registration_mode'] ?? 'realtime' ) === 'deferred' && current_user_can( 'ds_manage_tournaments' ) ) : ?>
 	<div class="st-card" style="margin-bottom:16px">
 		<div class="st-card-header">
 			<h2 class="st-card-title">👥 <?php esc_html_e( 'Personal del partido', 'soccertrack' ); ?></h2>

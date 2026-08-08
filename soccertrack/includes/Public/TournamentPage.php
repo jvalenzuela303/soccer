@@ -1412,14 +1412,18 @@ final class TournamentPage {
 			$ref_name  = sanitize_text_field( $_POST['referee_name']    ?? '' );
 			$plan_name = sanitize_text_field( $_POST['planillero_name'] ?? '' );
 
-			$wpdb->update( // phpcs:ignore
+			$updated = $wpdb->update( // phpcs:ignore
 				"{$wpdb->prefix}ds_matches",
 				[ 'referee_name' => $ref_name ?: null, 'planillero_name' => $plan_name ?: null ],
 				[ 'id' => $id ],
 				[ '%s', '%s' ],
 				[ '%d' ]
 			);
-			$notice_staff = 'staff_saved';
+			if ( false === $updated ) {
+				$error_staff = __( 'Error al guardar los nombres.', 'soccertrack' );
+			} else {
+				$notice_staff = 'staff_saved';
+			}
 
 			$match = $wpdb->get_row( // phpcs:ignore
 				$wpdb->prepare(
