@@ -878,6 +878,31 @@ final class TournamentPage {
 			);
 		}
 
+		// ── Actualizar parámetros de horario del torneo ──────────────────
+		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_update_schedule'] ) ) {
+			check_admin_referer( 'st_update_schedule_' . $id );
+
+			$raw_weekday   = absint( $_POST['match_weekday'] ?? 6 );
+			$match_weekday = ( $raw_weekday >= 0 && $raw_weekday <= 6 ) ? $raw_weekday : 6;
+			$raw_time      = sanitize_text_field( $_POST['match_time'] ?? '19:00' );
+			$match_time    = preg_match( '/^\d{1,2}:\d{2}$/', $raw_time ) ? $raw_time . ':00' : '19:00:00';
+
+			$wpdb->update( // phpcs:ignore
+				"{$wpdb->prefix}ds_tournaments",
+				[ 'match_weekday' => $match_weekday, 'match_time' => $match_time ],
+				[ 'id' => $id ],
+				[ '%d', '%s' ],
+				[ '%d' ]
+			);
+			$notice = 'schedule_updated';
+
+			// Refrescar datos del torneo.
+			$tournament = $wpdb->get_row(
+				$wpdb->prepare( "SELECT * FROM {$wpdb->prefix}ds_tournaments WHERE id = %d", $id ),
+				ARRAY_A
+			);
+		}
+
 		$venues = $wpdb->get_results( // phpcs:ignore
 			"SELECT id, name FROM {$wpdb->prefix}ds_venues ORDER BY name ASC",
 			ARRAY_A
