@@ -113,6 +113,19 @@ defined( 'ABSPATH' ) || exit;
     <?php else : ?>
         <p style="font-size:.82rem;color:#888;margin-top:8px"><?php esc_html_e( 'Sin eventos registrados.', 'soccertrack' ); ?></p>
     <?php endif; ?>
+    <?php if ( $match['referee_name'] || $match['planillero_name'] ) : ?>
+    <p style="font-size:.78rem;color:#666;margin-top:8px">
+        <?php if ( $match['referee_name'] ) : ?>
+            ⚖️ <?php echo esc_html( $match['referee_name'] ); ?>
+            <?php if ( $match['planillero_name'] ) : ?>
+                &nbsp;·&nbsp;
+            <?php endif; ?>
+        <?php endif; ?>
+        <?php if ( $match['planillero_name'] ) : ?>
+            📋 <?php echo esc_html( $match['planillero_name'] ); ?>
+        <?php endif; ?>
+    </p>
+    <?php endif; ?>
     <?php endif; ?>
 </div>
 <?php endforeach; ?>
