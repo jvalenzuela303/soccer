@@ -322,6 +322,7 @@ final class TournamentPage {
 				 LEFT JOIN {$wpdb->prefix}ds_venues  v ON v.id  = m.venue_id
 				 LEFT JOIN {$wpdb->prefix}ds_courts  c ON c.id  = m.court_id
 				 WHERE m.status != 'finished'
+				   AND tr.status = 'active'
 				 ORDER BY m.match_datetime ASC, m.round_number ASC
 				 LIMIT 50",
 				ARRAY_A
