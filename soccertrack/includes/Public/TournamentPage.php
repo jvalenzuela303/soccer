@@ -384,17 +384,24 @@ final class TournamentPage {
 			$name = sanitize_text_field( $_POST['name'] ?? '' );
 
 			if ( $name ) {
+				$raw_weekday = absint( $_POST['match_weekday'] ?? 6 );
+				$match_weekday = ( $raw_weekday >= 0 && $raw_weekday <= 6 ) ? $raw_weekday : 6;
+				$raw_time    = sanitize_text_field( $_POST['match_time'] ?? '19:00' );
+				$match_time  = preg_match( '/^\d{1,2}:\d{2}$/', $raw_time ) ? $raw_time . ':00' : '19:00:00';
+
 				$wpdb->insert( // phpcs:ignore
 					"{$wpdb->prefix}ds_tournaments",
 					[
-						'name'       => $name,
-						'season'     => sanitize_text_field( $_POST['season'] ?? gmdate( 'Y' ) ),
-						'start_date' => sanitize_text_field( $_POST['start_date'] ?? '' ) ?: null,
-						'end_date'   => sanitize_text_field( $_POST['end_date'] ?? '' ) ?: null,
-						'format'     => sanitize_text_field( $_POST['format'] ?? 'round_robin' ),
-						'status'     => 'draft',
+						'name'          => $name,
+						'season'        => sanitize_text_field( $_POST['season'] ?? gmdate( 'Y' ) ),
+						'start_date'    => sanitize_text_field( $_POST['start_date'] ?? '' ) ?: null,
+						'end_date'      => sanitize_text_field( $_POST['end_date'] ?? '' ) ?: null,
+						'format'        => sanitize_text_field( $_POST['format'] ?? 'round_robin' ),
+						'status'        => 'draft',
+						'match_weekday' => $match_weekday,
+						'match_time'    => $match_time,
 					],
-					[ '%s', '%s', '%s', '%s', '%s', '%s' ]
+					[ '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s' ]
 				);
 				$notice = 'created';
 			}
