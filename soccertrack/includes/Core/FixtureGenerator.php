@@ -20,35 +20,90 @@ namespace SportsLeague\Core;
 final class FixtureGenerator {
 
 	/**
-	 * Calcula la fecha del próximo día de la semana dado a partir de hoy.
+	 * Calcula la fecha de un partido dado un ciclo de días de la semana.
 	 *
-	 * @param int    $weekday      0=domingo … 6=sábado (convención date('w')).
+	 * Ancla al primer día del ciclo ("next {primer_día}") y avanza semanas completas
+	 * más el desplazamiento en días dentro de la misma semana. Esto garantiza que
+	 * los partidos de la misma ronda queden siempre en orden cronológico correcto
+	 * independientemente del día actual.
+	 *
+	 * @param int[]  $weekdays     Días activos ordenados lunes-primero, ej. [1,3,5].
+	 *                             Convención date('w'): 0=domingo … 6=sábado.
 	 * @param string $time         Hora en formato 'H:i:s', ej. '19:00:00'.
-	 * @param int    $hour_offset  Horas a sumar (para partidos del mismo día).
-	 * @param int    $week_offset  Semanas a sumar (0=primera disponible).
+	 * @param int    $hour_offset  Horas a sumar (para varios partidos el mismo día).
+	 * @param int    $round_index  Índice de ronda 0-based (round_number - 1).
 	 */
 	private function next_match_datetime(
-		int    $weekday,
+		array  $weekdays,
 		string $time,
 		int    $hour_offset = 0,
-		int    $week_offset = 0
+		int    $round_index = 0
 	): string {
 		$day_names = [
 			0 => 'sunday', 1 => 'monday', 2 => 'tuesday', 3 => 'wednesday',
 			4 => 'thursday', 5 => 'friday', 6 => 'saturday',
 		];
 
-		$day_name = $day_names[ $weekday ] ?? 'saturday';
-		$base     = new \DateTimeImmutable( "next {$day_name}" );
+		if ( empty( $weekdays ) ) {
+			$weekdays = [ 6 ]; // default: sábado.
+		}
 
-		if ( $week_offset > 0 ) {
-			$base = $base->modify( "+{$week_offset} weeks" );
+		$count        = count( $weekdays );
+		$day_in_cycle = $round_index % $count;
+		$week_num     = intdiv( $round_index, $count );
+
+		$first_day  = $weekdays[0];
+		$target_day = $weekdays[ $day_in_cycle ];
+
+		// Ancla al primer día del ciclo para garantizar orden dentro de la semana.
+		$first_day_name = $day_names[ $first_day ] ?? 'saturday';
+		$base           = new \DateTimeImmutable( "next {$first_day_name}" );
+
+		if ( $week_num > 0 ) {
+			$base = $base->modify( "+{$week_num} weeks" );
+		}
+
+		// Desplazamiento en días desde el primer día del ciclo hasta el día objetivo
+		// usando orden lunes-primero: (d + 6) % 7 → lun=0 … dom=6.
+		$first_pos  = ( $first_day + 6 ) % 7;
+		$target_pos = ( $target_day + 6 ) % 7;
+		$day_offset = ( $target_pos - $first_pos + 7 ) % 7;
+
+		if ( $day_offset > 0 ) {
+			$base = $base->modify( "+{$day_offset} days" );
 		}
 
 		[ $h, $m, $s ] = array_map( 'intval', explode( ':', $time . ':00' ) );
 		$base = $base->setTime( $h + $hour_offset, $m, $s );
 
 		return $base->format( 'Y-m-d H:i:s' );
+	}
+
+	/**
+	 * Decodifica match_weekdays desde el array del torneo.
+	 *
+	 * @param  array $tournament
+	 * @return int[]  Días ordenados lunes-primero, nunca vacío.
+	 */
+	private function weekdays_from_tournament( array $tournament ): array {
+		$raw = $tournament['match_weekdays'] ?? null;
+
+		if ( is_string( $raw ) && $raw !== '' ) {
+			$decoded = json_decode( $raw, true );
+			if ( is_array( $decoded ) && ! empty( $decoded ) ) {
+				$days = array_unique( array_map( 'intval', $decoded ) );
+				$days = array_values( array_filter( $days, fn( int $d ) => $d >= 0 && $d <= 6 ) );
+				if ( ! empty( $days ) ) {
+					// Orden lunes-primero.
+					usort( $days, fn( int $a, int $b ) => ( ( $a + 6 ) % 7 ) - ( ( $b + 6 ) % 7 ) );
+					return $days;
+				}
+			}
+		}
+
+		// Fallback: columna legada match_weekday.
+		$legacy = isset( $tournament['match_weekday'] ) ? (int) $tournament['match_weekday'] : 6;
+		return [ $legacy ];
 	}
 
 	/**
@@ -70,7 +125,7 @@ final class FixtureGenerator {
 		global $wpdb;
 
 		$tournament_id = (int) $tournament['id'];
-		$weekday       = (int) ( $tournament['match_weekday'] ?? 6 );
+		$weekdays      = $this->weekdays_from_tournament( $tournament );
 		$time          = (string) ( $tournament['match_time'] ?? '19:00:00' );
 
 		// 1. Verificar que todos los partidos regulares estén finalizados.
@@ -112,8 +167,8 @@ final class FixtureGenerator {
 		$rank3 = (int) $standings[2]['team_id'];
 		$rank4 = (int) $standings[3]['team_id'];
 
-		$dt_sf1 = $this->next_match_datetime( $weekday, $time, 0 );
-		$dt_sf2 = $this->next_match_datetime( $weekday, $time, 1 );
+		$dt_sf1 = $this->next_match_datetime( $weekdays, $time, 0 );
+		$dt_sf2 = $this->next_match_datetime( $weekdays, $time, 1 );
 
 		$ids = [];
 
@@ -163,7 +218,7 @@ final class FixtureGenerator {
 		global $wpdb;
 
 		$tournament_id = (int) $tournament['id'];
-		$weekday       = (int) ( $tournament['match_weekday'] ?? 6 );
+		$weekdays      = $this->weekdays_from_tournament( $tournament );
 		$time          = (string) ( $tournament['match_time'] ?? '19:00:00' );
 
 		// 1. Leer semi-finales finalizadas.
@@ -209,8 +264,8 @@ final class FixtureGenerator {
 		$sf1 = $resolve( $semis[0] );
 		$sf2 = $resolve( $semis[1] );
 
-		$dt_3rd   = $this->next_match_datetime( $weekday, $time, 0 );
-		$dt_final = $this->next_match_datetime( $weekday, $time, 1 );
+		$dt_3rd   = $this->next_match_datetime( $weekdays, $time, 0 );
+		$dt_final = $this->next_match_datetime( $weekdays, $time, 1 );
 
 		$ids = [];
 
@@ -255,8 +310,9 @@ final class FixtureGenerator {
 	 */
 	public function generate( array $tournament, array $team_ids, int $venue_id ): array {
 		$tournament_id = (int) $tournament['id'];
-		$weekday       = (int) ( $tournament['match_weekday'] ?? 6 );
+		$weekdays      = $this->weekdays_from_tournament( $tournament );
 		$time          = (string) ( $tournament['match_time'] ?? '19:00:00' );
+		$num_courts    = $this->count_courts( $venue_id );
 
 		$n     = count( $team_ids );
 		$teams = $team_ids;
@@ -292,7 +348,7 @@ final class FixtureGenerator {
 
 			$match_ids = array_merge(
 				$match_ids,
-				$this->insert_round( $tournament_id, $round, $pairs, $venue_id, $weekday, $time )
+				$this->insert_round( $tournament_id, $round, $pairs, $venue_id, $weekdays, $time, $num_courts )
 			);
 
 			// Rotación circular: fijo el primer elemento, rotar el resto.
@@ -311,12 +367,21 @@ final class FixtureGenerator {
 	/**
 	 * Inserta una jornada de partidos en la base de datos.
 	 *
+	 * Lógica de franjas horarias:
+	 *  - Los partidos se agrupan en tandas del tamaño del número de canchas.
+	 *    Todos los partidos de una misma tanda son simultáneos (+0h, +0h, …).
+	 *  - La tanda base de cada partido se rota por `(round - 1) % num_batches`
+	 *    para que los equipos no siempre jueguen en el mismo horario.
+	 *  - Las canchas se asignan en assign_courts() por orden de inserción,
+	 *    garantizando que los partidos de la misma tanda caigan en canchas distintas.
+	 *
 	 * @param  int                             $tournament_id
 	 * @param  int                             $round
 	 * @param  array<array{home:int,away:int}> $pairs
 	 * @param  int                             $venue_id
-	 * @param  int                             $weekday  0=domingo … 6=sábado.
-	 * @param  string                          $time     Hora en formato 'H:i:s'.
+	 * @param  int[]                           $weekdays   Días activos ordenados lunes-primero.
+	 * @param  string                          $time       Hora de inicio, formato 'H:i:s'.
+	 * @param  int                             $num_courts Canchas disponibles (partidos simultáneos por franja).
 	 * @return int[]
 	 */
 	private function insert_round(
@@ -324,16 +389,24 @@ final class FixtureGenerator {
 		int    $round,
 		array  $pairs,
 		int    $venue_id,
-		int    $weekday,
-		string $time
+		array  $weekdays,
+		string $time,
+		int    $num_courts = 1
 	): array {
 		global $wpdb;
 		$ids = [];
 
+		$n_pairs     = count( $pairs );
+		$num_batches = max( 1, (int) ceil( $n_pairs / $num_courts ) );
+
 		foreach ( $pairs as $idx => $pair ) {
-			// Fecha basada en el weekday y time del torneo, desplazada por jornada y por slot.
-			// Cada jornada (round) ocupa una semana. Cada partido del mismo día: +1 hora.
-			$dt = $this->next_match_datetime( $weekday, $time, $idx, $round - 1 );
+			// Tanda base según el índice del partido dentro de la jornada.
+			$base_batch    = (int) floor( $idx / $num_courts );
+			// Rotación: desplazar la tanda por el número de jornada (0-based)
+			// para que los equipos que antes jugaban primero ahora jueguen después.
+			$rotated_batch = ( $base_batch + ( $round - 1 ) ) % $num_batches;
+
+			$dt = $this->next_match_datetime( $weekdays, $time, $rotated_batch, $round - 1 );
 
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$wpdb->insert(
@@ -357,6 +430,20 @@ final class FixtureGenerator {
 		}
 
 		return $ids;
+	}
+
+	/**
+	 * Devuelve el número de canchas activas de un recinto (mínimo 1).
+	 */
+	private function count_courts( int $venue_id ): int {
+		global $wpdb;
+		$count = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$wpdb->prefix}ds_courts WHERE venue_id = %d",
+				$venue_id
+			)
+		);
+		return max( 1, $count );
 	}
 
 	/**

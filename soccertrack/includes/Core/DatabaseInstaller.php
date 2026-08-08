@@ -446,6 +446,21 @@ final class DatabaseInstaller {
 				 ADD KEY idx_referee_datetime (referee_user_id, status, match_datetime)"
 			);
 		}
+
+		// v1.8.0 — ds_tournaments: soporte para múltiples días de partido por semana.
+		$has_weekdays = $wpdb->get_var( "SHOW COLUMNS FROM {$prefix}ds_tournaments LIKE 'match_weekdays'" ); // phpcs:ignore
+		if ( ! $has_weekdays ) {
+			$wpdb->query( // phpcs:ignore
+				"ALTER TABLE {$prefix}ds_tournaments
+				 ADD COLUMN match_weekdays VARCHAR(50) NOT NULL DEFAULT '[6]'
+				 AFTER match_weekday"
+			);
+			// Migrar el día único existente a array JSON.
+			$wpdb->query( // phpcs:ignore
+				"UPDATE {$prefix}ds_tournaments
+				 SET match_weekdays = CONCAT('[', CAST(match_weekday AS CHAR), ']')"
+			);
+		}
 	}
 
 	/**

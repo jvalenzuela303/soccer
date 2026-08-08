@@ -93,26 +93,43 @@
 		<input type="hidden" name="st_update_schedule" value="1">
 
 		<?php
+		// Días en orden lunes-domingo (0=dom al final para mostrar lun-dom).
 		$day_labels = [
-			0 => __( 'Domingo', 'soccertrack' ),
 			1 => __( 'Lunes', 'soccertrack' ),
 			2 => __( 'Martes', 'soccertrack' ),
 			3 => __( 'Miércoles', 'soccertrack' ),
 			4 => __( 'Jueves', 'soccertrack' ),
 			5 => __( 'Viernes', 'soccertrack' ),
 			6 => __( 'Sábado', 'soccertrack' ),
+			0 => __( 'Domingo', 'soccertrack' ),
 		];
+
+		$saved_days_raw = $tournament['match_weekdays'] ?? null;
+		$saved_days     = [];
+		if ( is_string( $saved_days_raw ) && $saved_days_raw !== '' ) {
+			$decoded    = json_decode( $saved_days_raw, true );
+			$saved_days = is_array( $decoded ) ? array_map( 'intval', $decoded ) : [];
+		}
+		if ( empty( $saved_days ) ) {
+			$saved_days = [ (int) ( $tournament['match_weekday'] ?? 6 ) ];
+		}
 		?>
 
 		<div class="st-field">
-			<label class="st-label"><?php esc_html_e( 'Día', 'soccertrack' ); ?></label>
-			<select name="match_weekday" class="st-input">
+			<label class="st-label"><?php esc_html_e( 'Días de partido', 'soccertrack' ); ?></label>
+			<div style="display:flex;gap:12px;flex-wrap:wrap;padding-top:4px">
 				<?php foreach ( $day_labels as $val => $label ) : ?>
-					<option value="<?php echo esc_attr( (string) $val ); ?>" <?php selected( (int) ( $tournament['match_weekday'] ?? 6 ), $val ); ?>>
+					<label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:.9rem">
+						<input
+							type="checkbox"
+							name="match_weekdays[]"
+							value="<?php echo esc_attr( (string) $val ); ?>"
+							<?php checked( in_array( $val, $saved_days, true ) ); ?>
+						>
 						<?php echo esc_html( $label ); ?>
-					</option>
+					</label>
 				<?php endforeach; ?>
-			</select>
+			</div>
 		</div>
 
 		<div class="st-field">

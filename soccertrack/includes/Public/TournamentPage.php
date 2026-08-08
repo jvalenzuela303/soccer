@@ -797,16 +797,34 @@ final class TournamentPage {
 				wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), '', [ 'response' => 403 ] );
 			}
 
-			$raw_weekday   = absint( $_POST['match_weekday'] ?? 6 );
-			$match_weekday = ( $raw_weekday >= 0 && $raw_weekday <= 6 ) ? $raw_weekday : 6;
-			$raw_time      = sanitize_text_field( $_POST['match_time'] ?? '19:00' );
-			$match_time    = preg_match( '/^\d{1,2}:\d{2}$/', $raw_time ) ? $raw_time . ':00' : '19:00:00';
+			$raw_weekdays   = isset( $_POST['match_weekdays'] ) && is_array( $_POST['match_weekdays'] )
+				? $_POST['match_weekdays']  // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+				: [];
+			$match_weekdays = array_unique(
+				array_filter(
+					array_map( 'intval', $raw_weekdays ),
+					fn( int $d ) => $d >= 0 && $d <= 6
+				)
+			);
+			// Orden lunes-primero para que el fixture avance correctamente.
+			usort( $match_weekdays, fn( int $a, int $b ) => ( ( $a + 6 ) % 7 ) - ( ( $b + 6 ) % 7 ) );
+			if ( empty( $match_weekdays ) ) {
+				$match_weekdays = [ 6 ]; // default: sábado.
+			}
+			$match_weekdays_json = wp_json_encode( array_values( $match_weekdays ) );
+
+			$raw_time   = sanitize_text_field( $_POST['match_time'] ?? '19:00' );
+			$match_time = preg_match( '/^\d{1,2}:\d{2}$/', $raw_time ) ? $raw_time . ':00' : '19:00:00';
 
 			$wpdb->update( // phpcs:ignore
 				"{$wpdb->prefix}ds_tournaments",
-				[ 'match_weekday' => $match_weekday, 'match_time' => $match_time ],
+				[
+					'match_weekday'  => $match_weekdays[0], // mantener columna legada.
+					'match_weekdays' => $match_weekdays_json,
+					'match_time'     => $match_time,
+				],
 				[ 'id' => $id ],
-				[ '%d', '%s' ],
+				[ '%d', '%s', '%s' ],
 				[ '%d' ]
 			);
 			$notice = 'schedule_updated';
