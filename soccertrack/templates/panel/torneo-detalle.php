@@ -18,6 +18,9 @@
 <?php if ( ( $notice ?? '' ) === 'schedule_updated' ) : ?>
 	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Horario del torneo actualizado.', 'soccertrack' ); ?></div>
 <?php endif; ?>
+<?php if ( ( $notice ?? '' ) === 'reg_mode_updated' ) : ?>
+	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Modo de registro actualizado.', 'soccertrack' ); ?></div>
+<?php endif; ?>
 <?php if ( ! empty( $error ?? '' ) ) : ?>
 	<div class="st-alert st-alert--error">⚠️ <?php echo esc_html( $error ); ?></div>
 <?php endif; ?>
@@ -131,6 +134,37 @@
 	</p>
 </div>
 
+<?php /* ── Modo de registro de partidos ─────────────────────────────── */ ?>
+<div class="st-card" style="margin-bottom:20px">
+	<div class="st-card-header">
+		<h2 class="st-card-title">
+			<?php echo $tournament['registration_mode'] === 'deferred' ? '📋' : '⚡'; ?>
+			<?php esc_html_e( 'Modo de registro', 'soccertrack' ); ?>
+		</h2>
+	</div>
+	<form method="post" action="" class="st-form-inline" style="align-items:flex-end;gap:16px">
+		<?php wp_nonce_field( 'st_update_reg_mode_' . $tournament['id'] ); ?>
+		<input type="hidden" name="st_update_reg_mode" value="1">
+
+		<div class="st-field">
+			<label class="st-label"><?php esc_html_e( 'Modo actual', 'soccertrack' ); ?></label>
+			<select name="registration_mode" class="st-input">
+				<option value="realtime" <?php selected( $tournament['registration_mode'] ?? 'realtime', 'realtime' ); ?>>
+					⚡ <?php esc_html_e( 'Tiempo real (planillero)', 'soccertrack' ); ?>
+				</option>
+				<option value="deferred" <?php selected( $tournament['registration_mode'] ?? 'realtime', 'deferred' ); ?>>
+					📋 <?php esc_html_e( 'Planilla física (coordinador)', 'soccertrack' ); ?>
+				</option>
+			</select>
+		</div>
+		<div class="st-field" style="align-self:flex-end">
+			<button type="submit" class="st-btn st-btn--secondary st-btn--sm">
+				💾 <?php esc_html_e( 'Guardar', 'soccertrack' ); ?>
+			</button>
+		</div>
+	</form>
+</div>
+
 <?php /* ── Fixture ───────────────────────────────────────────────────── */ ?>
 <div class="st-card">
 	<div class="st-card-header">
@@ -213,7 +247,21 @@
 				'final'       => '🏆 ' . __( 'Final', 'soccertrack' ),
 			];
 			?>
+			<?php $prev_round = -1; ?>
 			<?php foreach ( $matches as $m ) : ?>
+				<?php /* Agregar header de jornada con botón "Cargar acta" en modo deferred */ ?>
+				<?php if ( $prev_round !== (int) $m['round_number'] && ( $tournament['registration_mode'] ?? 'realtime' ) === 'deferred' ) : ?>
+					<?php $prev_round = (int) $m['round_number']; ?>
+					<tr>
+						<td colspan="10" style="background:#f0f7ff;padding:6px 12px">
+							<strong><?php printf( esc_html__( 'Jornada %d', 'soccertrack' ), (int) $m['round_number'] ); ?></strong>
+							<a href="<?php echo esc_url( home_url( '/panel/carga-fecha/?tournament_id=' . $tournament['id'] . '&round=' . (int) $m['round_number'] ) ); ?>"
+							   class="st-btn st-btn--sm st-btn--primary" style="margin-left:12px">
+								📋 <?php esc_html_e( 'Cargar acta de esta jornada', 'soccertrack' ); ?>
+							</a>
+						</td>
+					</tr>
+				<?php endif; ?>
 				<tr>
 					<td>
 						<?php
@@ -321,6 +369,8 @@
 						endif; ?>
 					</td>
 					<td>
+					<?php if ( ( $tournament['registration_mode'] ?? 'realtime' ) === 'realtime' ) : ?>
+						<?php /* Asignación de planillero — flujo existente */ ?>
 						<?php
 						$plan_id = (int) ( $m['planillero_user_id'] ?? 0 );
 						if ( $m['status'] !== 'finished' && ! empty( $planilleros ) ) :
@@ -345,6 +395,9 @@
 						else :
 							echo '—';
 						endif; ?>
+					<?php else : ?>
+						<span style="font-size:.78rem;color:#888">—</span>
+					<?php endif; ?>
 					</td>
 					<td>
 						<?php if ( $m['status'] !== 'finished' ) : ?>

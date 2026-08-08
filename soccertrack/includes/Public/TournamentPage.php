@@ -910,6 +910,32 @@ final class TournamentPage {
 			);
 		}
 
+		// ── Actualizar modo de registro ───────────────────────────────────
+		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_update_reg_mode'] ) ) {
+			check_admin_referer( 'st_update_reg_mode_' . $id );
+
+			if ( ! current_user_can( 'ds_manage_tournaments' ) ) {
+				wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), 403 );
+			}
+
+			$reg_mode = sanitize_key( $_POST['registration_mode'] ?? 'realtime' );
+			$reg_mode = in_array( $reg_mode, [ 'realtime', 'deferred' ], true ) ? $reg_mode : 'realtime';
+
+			$wpdb->update( // phpcs:ignore
+				"{$wpdb->prefix}ds_tournaments",
+				[ 'registration_mode' => $reg_mode ],
+				[ 'id' => $id ],
+				[ '%s' ],
+				[ '%d' ]
+			);
+			$notice = 'reg_mode_updated';
+
+			$tournament = $wpdb->get_row(
+				$wpdb->prepare( "SELECT * FROM {$wpdb->prefix}ds_tournaments WHERE id = %d", $id ),
+				ARRAY_A
+			);
+		}
+
 		$venues = $wpdb->get_results( // phpcs:ignore
 			"SELECT id, name FROM {$wpdb->prefix}ds_venues ORDER BY name ASC",
 			ARRAY_A
