@@ -978,23 +978,51 @@ final class TournamentPage {
 			'ID'
 		);
 
+		// Pre-cargar asignaciones actuales para detectar conflictos en PHP (evita N+1).
+		$assigned_ref_slots  = []; // referee_user_id  => int[] timestamps
+		$assigned_plan_slots = []; // planillero_user_id => int[] timestamps
+
+		$existing_assignments = $wpdb->get_results( // phpcs:ignore
+			$wpdb->prepare(
+				"SELECT referee_user_id, planillero_user_id, match_datetime
+				 FROM {$wpdb->prefix}ds_matches
+				 WHERE tournament_id = %d
+				   AND status NOT IN ('finished', 'suspended')
+				   AND ( referee_user_id IS NOT NULL OR planillero_user_id IS NOT NULL )",
+				$tournament_id
+			),
+			ARRAY_A
+		) ?: [];
+
+		foreach ( $existing_assignments as $row ) {
+			$ts = strtotime( $row['match_datetime'] );
+			if ( $row['referee_user_id'] ) {
+				$assigned_ref_slots[ (int) $row['referee_user_id'] ][] = $ts;
+			}
+			if ( $row['planillero_user_id'] ) {
+				$assigned_plan_slots[ (int) $row['planillero_user_id'] ][] = $ts;
+			}
+		}
+
+		$ninety       = 90 * 60;
+		$has_conflict = static function ( array $slots, int $ts ) use ( $ninety ): bool {
+			foreach ( $slots as $slot_ts ) {
+				if ( abs( $ts - $slot_ts ) < $ninety ) {
+					return true;
+				}
+			}
+			return false;
+		};
+
 		foreach ( $matches as &$match ) {
 			$dt       = $match['match_datetime'];
 			$match_id = (int) $match['id'];
+			$ts       = strtotime( $dt );
 
 			// ── Asignar árbitro si falta ──────────────────────────────────
 			if ( ! $match['referee_user_id'] && ! empty( $referee_ids ) ) {
 				foreach ( $referee_ids as $rid ) {
-					$conflict = (int) $wpdb->get_var( // phpcs:ignore
-						$wpdb->prepare(
-							"SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches
-							 WHERE referee_user_id = %d AND id != %d
-							   AND match_datetime BETWEEN DATE_SUB(%s, INTERVAL 90 MINUTE)
-							                         AND DATE_ADD(%s, INTERVAL 90 MINUTE)",
-							$rid, $match_id, $dt, $dt
-						)
-					);
-					if ( $conflict === 0 ) {
+					if ( ! $has_conflict( $assigned_ref_slots[ (int) $rid ] ?? [], $ts ) ) {
 						$wpdb->update( // phpcs:ignore
 							"{$wpdb->prefix}ds_matches",
 							[ 'referee_user_id' => $rid ],
@@ -1002,7 +1030,8 @@ final class TournamentPage {
 							[ '%d' ],
 							[ '%d' ]
 						);
-						$match['referee_user_id'] = $rid;
+						$match['referee_user_id']            = $rid;
+						$assigned_ref_slots[ (int) $rid ][] = $ts;
 						break;
 					}
 				}
@@ -1015,16 +1044,7 @@ final class TournamentPage {
 					if ( $pid === $assigned_ref ) {
 						continue; // No puede ser el mismo que el árbitro.
 					}
-					$conflict = (int) $wpdb->get_var( // phpcs:ignore
-						$wpdb->prepare(
-							"SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches
-							 WHERE planillero_user_id = %d AND id != %d
-							   AND match_datetime BETWEEN DATE_SUB(%s, INTERVAL 90 MINUTE)
-							                         AND DATE_ADD(%s, INTERVAL 90 MINUTE)",
-							$pid, $match_id, $dt, $dt
-						)
-					);
-					if ( $conflict === 0 ) {
+					if ( ! $has_conflict( $assigned_plan_slots[ (int) $pid ] ?? [], $ts ) ) {
 						$wpdb->update( // phpcs:ignore
 							"{$wpdb->prefix}ds_matches",
 							[ 'planillero_user_id' => $pid ],
@@ -1032,7 +1052,8 @@ final class TournamentPage {
 							[ '%d' ],
 							[ '%d' ]
 						);
-						$match['planillero_user_id'] = $pid;
+						$match['planillero_user_id']          = $pid;
+						$assigned_plan_slots[ (int) $pid ][] = $ts;
 						break;
 					}
 				}
@@ -1842,7 +1863,33 @@ final class TournamentPage {
 		) ?: [];
 
 		$page_title = sprintf( __( 'Carga de Acta — Jornada %d', 'soccertrack' ), $round );
-		self::render( 'carga-fecha', compact( 'tournament', 'round', 'matches', 'page_title' ) );
+
+		// Pre-cargar eventos de partidos cerrados para evitar N+1 en el template.
+		$events_by_match = [];
+		$finished_ids    = array_column(
+			array_filter( $matches, fn( $m ) => $m['status'] === 'finished' ),
+			'id'
+		);
+		if ( ! empty( $finished_ids ) ) {
+			$placeholders = implode( ', ', array_fill( 0, count( $finished_ids ), '%d' ) );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.NotPrepared
+			$all_events = $wpdb->get_results(
+				$wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					"SELECT e.match_id, e.event_type, e.minute, p.first_name, p.last_name, t.name AS team_name
+					 FROM {$wpdb->prefix}ds_match_events e
+					 JOIN {$wpdb->prefix}ds_players p ON p.id = e.player_id
+					 JOIN {$wpdb->prefix}ds_teams t ON t.id = e.team_id
+					 WHERE e.match_id IN ({$placeholders}) ORDER BY e.match_id ASC, e.minute ASC",
+					...$finished_ids
+				),
+				ARRAY_A
+			) ?: [];
+			foreach ( $all_events as $ev ) {
+				$events_by_match[ (int) $ev['match_id'] ][] = $ev;
+			}
+		}
+
+		self::render( 'carga-fecha', compact( 'tournament', 'round', 'matches', 'events_by_match', 'page_title' ) );
 	}
 
 	/* ------------------------------------------------------------------ */
