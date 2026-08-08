@@ -352,6 +352,7 @@ final class SpreadsheetImporter {
 					$wpdb->last_error
 				);
 			} else {
+				$enrolled_in_team[ $player_id ] = (int) $wpdb->insert_id;
 				$imported++;
 			}
 		}
