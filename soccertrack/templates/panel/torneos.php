@@ -73,6 +73,23 @@
 			</span>
 		</div>
 
+		<div class="st-field">
+			<label for="st-registration-mode" class="st-label">
+				<?php esc_html_e( 'Modo de registro de partidos', 'soccertrack' ); ?>
+			</label>
+			<select id="st-registration-mode" name="registration_mode" class="st-input">
+				<option value="realtime">
+					⚡ <?php esc_html_e( 'Tiempo real (planillero en vivo)', 'soccertrack' ); ?>
+				</option>
+				<option value="deferred">
+					📋 <?php esc_html_e( 'Planilla física (coordinador carga después)', 'soccertrack' ); ?>
+				</option>
+			</select>
+			<span style="font-size:.78rem;color:#888;display:block;margin-top:4px">
+				<?php esc_html_e( 'Puede cambiarse después desde el detalle del torneo.', 'soccertrack' ); ?>
+			</span>
+		</div>
+
 		<button type="submit" class="st-btn st-btn--primary">
 			<?php esc_html_e( '+ Crear torneo', 'soccertrack' ); ?>
 		</button>
