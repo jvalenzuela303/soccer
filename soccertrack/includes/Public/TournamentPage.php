@@ -1729,6 +1729,13 @@ final class TournamentPage {
 				];
 			}
 			$teams_with_players = array_values( $indexed );
+
+			// Si hay filtro de equipo, limitar el selector de sanción al equipo seleccionado.
+			if ( $team_filter ) {
+				$teams_with_players = array_values(
+					array_filter( $teams_with_players, fn( $g ) => $g['team']['id'] === $team_filter )
+				);
+			}
 		}
 
 		$available_teams = array_map( fn( $g ) => $g['team'], $teams_with_players );
