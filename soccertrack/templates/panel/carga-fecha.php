@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
     <?php esc_html_e( 'Ingresa los resultados y eventos de cada partido según la planilla física. Una vez cerrado un partido no se pueden agregar más eventos.', 'soccertrack' ); ?>
 </div>
 
-<?php if ( empty( $matches_data ) ) : ?>
+<?php if ( empty( $matches ) ) : ?>
     <p class="st-empty-msg"><?php esc_html_e( 'No hay partidos en esta jornada.', 'soccertrack' ); ?></p>
 <?php else : ?>
 
