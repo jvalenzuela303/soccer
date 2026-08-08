@@ -1711,6 +1711,13 @@ final class TournamentPage {
 		// Incidentes de tarjetas de la fecha seleccionada (para revisión del tribunal).
 		$round_events = [];
 		if ( $tournament_id && $round_number ) {
+			$round_team_sql    = '';
+			$round_team_params = [];
+			if ( $team_filter ) {
+				$round_team_sql    = ' AND e.team_id = %d';
+				$round_team_params = [ $team_filter ];
+			}
+
 			$round_events = $wpdb->get_results( // phpcs:ignore
 				$wpdb->prepare(
 					"SELECT e.event_type, e.minute,
@@ -1727,9 +1734,11 @@ final class TournamentPage {
 					   AND m.round_number  = %d
 					   AND m.status        = 'finished'
 					   AND e.event_type IN ('red_card', 'yellow_card')
+					   {$round_team_sql}
 					 ORDER BY e.event_type DESC, p.last_name ASC",
 					$tournament_id,
-					$round_number
+					$round_number,
+					...$round_team_params
 				),
 				ARRAY_A
 			) ?: [];

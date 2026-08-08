@@ -444,20 +444,16 @@ final class PublicEndpoints {
 				    ds.id,
 				    p.first_name,
 				    p.last_name,
-				    MAX(t.name)       AS team_name,
+				    t.name            AS team_name,
 				    ds.reason,
 				    ds.ban_days_or_matches,
 				    ds.remaining_matches,
 				    ds.status
 				 FROM {$wpdb->prefix}ds_disciplinary_sanctions ds USE INDEX (idx_tournament_status)
 				 JOIN {$wpdb->prefix}ds_players p  ON p.id  = ds.player_id
-				 LEFT JOIN {$wpdb->prefix}ds_team_players tp ON tp.player_id = ds.player_id
-				 LEFT JOIN {$wpdb->prefix}ds_teams        t  ON t.id = tp.team_id
-				                                               AND t.tournament_id = %d
+				 LEFT JOIN {$wpdb->prefix}ds_teams t ON t.id = ds.team_id
 				 WHERE ds.tournament_id = %d
-				 GROUP BY ds.id
 				 ORDER BY ds.status ASC, ds.id DESC",
-				$tid,
 				$tid
 			),
 			ARRAY_A
