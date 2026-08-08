@@ -880,9 +880,49 @@ final class TournamentPage {
 			);
 		}
 
+		// ── Actualizar recintos del torneo ───────────────────────────────────
+		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_update_venues'] ) ) {
+			check_admin_referer( 'st_update_venues_' . $id );
+
+			if ( ! current_user_can( 'ds_manage_tournaments' ) ) {
+				wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), '', [ 'response' => 403 ] );
+			}
+
+			$raw_venue_ids   = isset( $_POST['tournament_venue_ids'] ) && is_array( $_POST['tournament_venue_ids'] )
+				? $_POST['tournament_venue_ids']  // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+				: [];
+			$new_venue_ids = array_unique( array_filter( array_map( 'absint', $raw_venue_ids ) ) );
+
+			// Reemplazar asociaciones: borrar las actuales e insertar las nuevas.
+			$wpdb->delete( // phpcs:ignore
+				"{$wpdb->prefix}ds_tournament_venues",
+				[ 'tournament_id' => $id ],
+				[ '%d' ]
+			);
+			foreach ( $new_venue_ids as $vid ) {
+				$wpdb->insert( // phpcs:ignore
+					"{$wpdb->prefix}ds_tournament_venues",
+					[ 'tournament_id' => $id, 'venue_id' => $vid ],
+					[ '%d', '%d' ]
+				);
+			}
+			$notice = 'venues_updated';
+		}
+
 		$venues = $wpdb->get_results( // phpcs:ignore
 			"SELECT id, name FROM {$wpdb->prefix}ds_venues ORDER BY name ASC",
 			ARRAY_A
+		);
+
+		// IDs de recintos configurados para este torneo.
+		$tournament_venue_ids = array_map(
+			'intval',
+			$wpdb->get_col( // phpcs:ignore
+				$wpdb->prepare(
+					"SELECT venue_id FROM {$wpdb->prefix}ds_tournament_venues WHERE tournament_id = %d",
+					$id
+				)
+			)
 		);
 
 		$matches = $wpdb->get_results( // phpcs:ignore
@@ -951,7 +991,7 @@ final class TournamentPage {
 
 		$playoffs_status = compact( 'is_playoffs_format', 'all_regular_done', 'has_semifinals', 'both_sf_done', 'has_finals' );
 
-		self::render( 'torneo-detalle', compact( 'tournament', 'teams', 'matches', 'notice', 'error', 'venues', 'courts_by_venue', 'referees', 'planilleros', 'page_title', 'playoffs_status' ) );
+		self::render( 'torneo-detalle', compact( 'tournament', 'teams', 'matches', 'notice', 'error', 'venues', 'tournament_venue_ids', 'courts_by_venue', 'referees', 'planilleros', 'page_title', 'playoffs_status' ) );
 	}
 
 	/**

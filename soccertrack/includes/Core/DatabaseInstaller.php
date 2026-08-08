@@ -447,6 +447,19 @@ final class DatabaseInstaller {
 			);
 		}
 
+		// v1.8.0 — ds_tournament_venues: recintos asignados a cada torneo.
+		$has_tv = $wpdb->get_var( "SHOW TABLES LIKE '{$prefix}ds_tournament_venues'" ); // phpcs:ignore
+		if ( ! $has_tv ) {
+			$wpdb->query( // phpcs:ignore
+				"CREATE TABLE {$prefix}ds_tournament_venues (
+					tournament_id BIGINT UNSIGNED NOT NULL,
+					venue_id      BIGINT UNSIGNED NOT NULL,
+					PRIMARY KEY (tournament_id, venue_id),
+					KEY idx_tv_venue (venue_id)
+				) ENGINE=InnoDB {$c}"
+			);
+		}
+
 		// v1.8.0 — ds_tournaments: soporte para múltiples días de partido por semana.
 		$has_weekdays = $wpdb->get_var( "SHOW COLUMNS FROM {$prefix}ds_tournaments LIKE 'match_weekdays'" ); // phpcs:ignore
 		if ( ! $has_weekdays ) {

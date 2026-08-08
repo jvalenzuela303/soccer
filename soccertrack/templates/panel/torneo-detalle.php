@@ -24,6 +24,9 @@
 <?php if ( ( $notice ?? '' ) === 'release_days_updated' ) : ?>
 	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Liberación de fixture actualizada.', 'soccertrack' ); ?></div>
 <?php endif; ?>
+<?php if ( ( $notice ?? '' ) === 'venues_updated' ) : ?>
+	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Recintos del torneo actualizados.', 'soccertrack' ); ?></div>
+<?php endif; ?>
 <?php if ( ! empty( $error ?? '' ) ) : ?>
 	<div class="st-alert st-alert--error">⚠️ <?php echo esc_html( $error ); ?></div>
 <?php endif; ?>
@@ -189,6 +192,47 @@
 	</p>
 </div>
 
+<?php /* ── Recintos del torneo ─────────────────────────────────────── */ ?>
+<div class="st-card" style="margin-bottom:20px">
+	<div class="st-card-header">
+		<h2 class="st-card-title">🏟️ <?php esc_html_e( 'Recintos del torneo', 'soccertrack' ); ?></h2>
+	</div>
+
+	<?php if ( empty( $venues ) ) : ?>
+		<p style="margin:0;font-size:.85rem">
+			<a href="<?php echo esc_url( home_url( '/panel/recintos/' ) ); ?>">
+				<?php esc_html_e( '→ Crea un recinto primero para asignarlo aquí', 'soccertrack' ); ?>
+			</a>
+		</p>
+	<?php else : ?>
+	<form method="post" action="">
+		<?php wp_nonce_field( 'st_update_venues_' . $tournament['id'] ); ?>
+		<input type="hidden" name="st_update_venues" value="1">
+
+		<div style="display:flex;gap:14px;flex-wrap:wrap;padding-bottom:12px">
+			<?php foreach ( $venues as $v ) : ?>
+				<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.9rem">
+					<input
+						type="checkbox"
+						name="tournament_venue_ids[]"
+						value="<?php echo esc_attr( (string) $v['id'] ); ?>"
+						<?php checked( in_array( (int) $v['id'], $tournament_venue_ids ?? [], true ) ); ?>
+					>
+					<?php echo esc_html( $v['name'] ); ?>
+				</label>
+			<?php endforeach; ?>
+		</div>
+
+		<button type="submit" class="st-btn st-btn--secondary st-btn--sm">
+			💾 <?php esc_html_e( 'Guardar', 'soccertrack' ); ?>
+		</button>
+	</form>
+	<p style="margin:8px 0 0;font-size:.8rem;color:#888">
+		<?php esc_html_e( 'Los selectores de recinto al generar el fixture mostrarán solo los recintos marcados aquí. Si no hay ninguno marcado, se muestran todos.', 'soccertrack' ); ?>
+	</p>
+	<?php endif; ?>
+</div>
+
 <?php /* ── Fixture ───────────────────────────────────────────────────── */ ?>
 <div class="st-card">
 	<div class="st-card-header">
@@ -203,11 +247,17 @@
 		</form>
 		<?php endif; ?>
 		<?php if ( empty( $matches ) && ! empty( $teams ) ) : ?>
-		<?php if ( ! empty( $venues ) ) : ?>
+		<?php
+		// Filtrar recintos al subconjunto configurado para el torneo (si hay alguno).
+		$venues_for_select = ! empty( $tournament_venue_ids )
+			? array_values( array_filter( $venues, fn( $v ) => in_array( (int) $v['id'], $tournament_venue_ids, true ) ) )
+			: $venues;
+		?>
+		<?php if ( ! empty( $venues_for_select ) ) : ?>
 		<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
 			<select id="st-venue-select" class="st-input" style="max-width:220px">
 				<option value=""><?php esc_html_e( '— Seleccionar recinto —', 'soccertrack' ); ?></option>
-				<?php foreach ( $venues as $v ) : ?>
+				<?php foreach ( $venues_for_select as $v ) : ?>
 					<option value="<?php echo esc_attr( (string) $v['id'] ); ?>">
 						<?php echo esc_html( $v['name'] ); ?>
 					</option>
@@ -473,11 +523,16 @@
 			<p style="margin-bottom:12px;color:#3C3A47">
 				<?php esc_html_e( 'Fase regular finalizada. Puedes generar las semi-finales con los 4 mejores equipos de la tabla.', 'soccertrack' ); ?>
 			</p>
-			<?php if ( ! empty( $venues ) ) : ?>
+			<?php
+			$venues_for_select ??= ! empty( $tournament_venue_ids )
+				? array_values( array_filter( $venues, fn( $v ) => in_array( (int) $v['id'], $tournament_venue_ids, true ) ) )
+				: $venues;
+			?>
+			<?php if ( ! empty( $venues_for_select ) ) : ?>
 			<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
 				<select id="st-playoff-venue-select" class="st-input" style="max-width:220px">
 					<option value=""><?php esc_html_e( '— Seleccionar recinto —', 'soccertrack' ); ?></option>
-					<?php foreach ( $venues as $v ) : ?>
+					<?php foreach ( $venues_for_select as $v ) : ?>
 						<option value="<?php echo esc_attr( (string) $v['id'] ); ?>">
 							<?php echo esc_html( $v['name'] ); ?>
 						</option>
@@ -505,11 +560,11 @@
 			<p style="margin-bottom:12px;color:#3C3A47">
 				<?php esc_html_e( 'Semi-finales finalizadas. Puedes generar la Final y el partido por el 3.er puesto.', 'soccertrack' ); ?>
 			</p>
-			<?php if ( ! empty( $venues ) ) : ?>
+			<?php if ( ! empty( $venues_for_select ) ) : ?>
 			<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
 				<select id="st-playoff-venue-select" class="st-input" style="max-width:220px">
 					<option value=""><?php esc_html_e( '— Seleccionar recinto —', 'soccertrack' ); ?></option>
-					<?php foreach ( $venues as $v ) : ?>
+					<?php foreach ( $venues_for_select as $v ) : ?>
 						<option value="<?php echo esc_attr( (string) $v['id'] ); ?>">
 							<?php echo esc_html( $v['name'] ); ?>
 						</option>
