@@ -33,7 +33,7 @@
 			<label class="st-label"><?php esc_html_e( 'Formato', 'soccertrack' ); ?></label>
 			<select name="format" class="st-input">
 				<option value="round_robin"><?php esc_html_e( 'Todos contra todos', 'soccertrack' ); ?></option>
-				<option value="round_robin_playoffs" selected><?php esc_html_e( 'Todos contra todos + Play-offs', 'soccertrack' ); ?></option>
+				<option value="round_robin_playoffs" selected="selected"><?php esc_html_e( 'Todos contra todos + Play-offs', 'soccertrack' ); ?></option>
 				<option value="group_stage"><?php esc_html_e( 'Fase de grupos', 'soccertrack' ); ?></option>
 				<option value="knockout"><?php esc_html_e( 'Eliminación directa', 'soccertrack' ); ?></option>
 			</select>
@@ -49,7 +49,7 @@
 				<option value="3"><?php esc_html_e( 'Miércoles', 'soccertrack' ); ?></option>
 				<option value="4"><?php esc_html_e( 'Jueves', 'soccertrack' ); ?></option>
 				<option value="5"><?php esc_html_e( 'Viernes', 'soccertrack' ); ?></option>
-				<option value="6" selected><?php esc_html_e( 'Sábado', 'soccertrack' ); ?></option>
+				<option value="6" selected="selected"><?php esc_html_e( 'Sábado', 'soccertrack' ); ?></option>
 				<option value="0"><?php esc_html_e( 'Domingo', 'soccertrack' ); ?></option>
 			</select>
 		</div>
