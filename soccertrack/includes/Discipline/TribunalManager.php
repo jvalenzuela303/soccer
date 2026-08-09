@@ -152,16 +152,19 @@ final class TribunalManager {
 		);
 
 		// Levantar el bloqueo de los jugadores de estos equipos que ya no tienen sanciones activas.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+		// NOT EXISTS es más predecible que NOT IN con subquery en MariaDB 10.6.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$wpdb->query(
 			$wpdb->prepare(
 				"UPDATE {$wpdb->prefix}ds_team_players tp
 				 SET tp.is_suspended = 0
 				 WHERE tp.team_id IN (%d, %d)
-				   AND tp.player_id NOT IN (
-				       SELECT player_id
-				       FROM {$wpdb->prefix}ds_disciplinary_sanctions
-				       WHERE tournament_id = %d AND status = 'active'
+				   AND NOT EXISTS (
+				       SELECT 1
+				       FROM {$wpdb->prefix}ds_disciplinary_sanctions ds
+				       WHERE ds.player_id     = tp.player_id
+				         AND ds.tournament_id = %d
+				         AND ds.status        = 'active'
 				   )",
 				$home_team_id,
 				$away_team_id,

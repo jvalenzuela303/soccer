@@ -196,11 +196,12 @@ final class TournamentPage {
 		}
 
 		$venues = $wpdb->get_results( // phpcs:ignore
-			"SELECT v.*, COUNT(DISTINCT c.id) AS court_count, COUNT(DISTINCT m.id) AS match_count
+			"SELECT v.id, v.name, v.address,
+			        (SELECT COUNT(*) FROM {$wpdb->prefix}ds_courts  c WHERE c.venue_id = v.id) AS court_count,
+			        (SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches m WHERE m.venue_id = v.id) AS match_count
 			 FROM {$wpdb->prefix}ds_venues v
-			 LEFT JOIN {$wpdb->prefix}ds_courts  c ON c.venue_id = v.id
-			 LEFT JOIN {$wpdb->prefix}ds_matches m ON m.venue_id = v.id
-			 GROUP BY v.id ORDER BY v.id DESC",
+			 ORDER BY v.id DESC
+			 LIMIT 100",
 			ARRAY_A
 		);
 
@@ -267,70 +268,95 @@ final class TournamentPage {
 	}
 
 	/**
-	 * Vista de partidos asignados al árbitro o planillero actual.
-	 * Acceso: ds_enter_match_incidents, ds_close_match, o ds_view_match_sheet.
+	 * Vista de todos los partidos del torneo — ingreso de resultados.
+	 * Acceso: ds_manage_tournaments (coordinador) o ds_close_match (veedor).
 	 */
 	private static function view_mis_partidos(): void {
 		global $wpdb;
 
-		if ( ! current_user_can( 'ds_enter_match_incidents' ) && ! current_user_can( 'ds_view_match_sheet' ) ) {
+		if ( ! current_user_can( 'ds_manage_tournaments' ) && ! current_user_can( 'ds_close_match' ) ) {
 			wp_safe_redirect( home_url( '/panel/' ) );
 			exit;
 		}
 
-		$user_id = get_current_user_id();
-
-		// Partidos asignados a este árbitro o planillero.
-		$matches_assigned = $wpdb->get_results( // phpcs:ignore
-			$wpdb->prepare(
-				"SELECT m.id, m.round_number, m.match_datetime, m.status,
-				        m.home_score, m.away_score,
-				        th.name AS home_team, ta.name AS away_team,
-				        tr.name AS tournament_name,
-				        v.name  AS venue, c.court_name,
-				        CASE WHEN m.planillero_user_id = %d THEN 'planillero' ELSE 'arbitro' END AS assigned_role
-				 FROM {$wpdb->prefix}ds_matches m
-				 JOIN {$wpdb->prefix}ds_teams  th ON th.id = m.home_team_id
-				 JOIN {$wpdb->prefix}ds_teams  ta ON ta.id = m.away_team_id
-				 JOIN {$wpdb->prefix}ds_tournaments tr ON tr.id = m.tournament_id
-				 LEFT JOIN {$wpdb->prefix}ds_venues  v ON v.id  = m.venue_id
-				 LEFT JOIN {$wpdb->prefix}ds_courts  c ON c.id  = m.court_id
-				 WHERE m.referee_user_id = %d OR m.planillero_user_id = %d
-				 ORDER BY m.status ASC, m.match_datetime ASC, m.round_number ASC
-				 LIMIT 50",
-				$user_id,
-				$user_id,
-				$user_id
-			),
+		// Lista de torneos para el filtro.
+		$tournaments = $wpdb->get_results( // phpcs:ignore
+			"SELECT id, name FROM {$wpdb->prefix}ds_tournaments ORDER BY id DESC",
 			ARRAY_A
 		);
 
-		// Si no hay partidos asignados por nombre, mostrar todos los pendientes del sistema
-		// (útil cuando el árbitro aún no tiene partidos asignados formalmente).
-		$matches_pending = [];
-		if ( empty( $matches_assigned ) ) {
-			$matches_pending = $wpdb->get_results( // phpcs:ignore
-				"SELECT m.id, m.round_number, m.match_datetime, m.status,
-				        m.home_score, m.away_score,
-				        th.name AS home_team, ta.name AS away_team,
-				        tr.name AS tournament_name,
-				        v.name  AS venue, c.court_name
-				 FROM {$wpdb->prefix}ds_matches m
-				 JOIN {$wpdb->prefix}ds_teams  th ON th.id = m.home_team_id
-				 JOIN {$wpdb->prefix}ds_teams  ta ON ta.id = m.away_team_id
-				 JOIN {$wpdb->prefix}ds_tournaments tr ON tr.id = m.tournament_id
-				 LEFT JOIN {$wpdb->prefix}ds_venues  v ON v.id  = m.venue_id
-				 LEFT JOIN {$wpdb->prefix}ds_courts  c ON c.id  = m.court_id
-				 WHERE m.status != 'finished'
-				   AND tr.status = 'active'
-				 ORDER BY m.match_datetime ASC, m.round_number ASC
-				 LIMIT 50",
-				ARRAY_A
+		// Torneo seleccionado (primer torneo por defecto si existe).
+		$selected_tournament = isset( $_GET['tournament_id'] ) // phpcs:ignore
+			? (int) $_GET['tournament_id'] // phpcs:ignore
+			: ( ! empty( $tournaments ) ? (int) $tournaments[0]['id'] : 0 );
+
+		// Fechas (round_number) disponibles para el torneo seleccionado.
+		$rounds = [];
+		if ( $selected_tournament > 0 ) {
+			$rounds = $wpdb->get_col( // phpcs:ignore
+				$wpdb->prepare(
+					"SELECT DISTINCT round_number FROM {$wpdb->prefix}ds_matches
+					 WHERE tournament_id = %d AND round_number IS NOT NULL
+					 ORDER BY round_number ASC",
+					$selected_tournament
+				)
 			);
 		}
 
-		$page_title = __( 'Mis Partidos', 'soccertrack' );
-		self::render( 'mis-partidos', compact( 'matches_assigned', 'matches_pending', 'page_title' ) );
+		// Fecha seleccionada (primera disponible por defecto).
+		$selected_round = isset( $_GET['round_number'] ) // phpcs:ignore
+			? (int) $_GET['round_number'] // phpcs:ignore
+			: ( ! empty( $rounds ) ? (int) $rounds[0] : 0 );
+
+		// Construir query con filtros de torneo y fecha.
+		if ( $selected_tournament > 0 && $selected_round > 0 ) {
+			$matches = $wpdb->get_results( // phpcs:ignore
+				$wpdb->prepare(
+					"SELECT m.id, m.round_number, m.match_datetime, m.status,
+					        m.home_score, m.away_score,
+					        th.name AS home_team, ta.name AS away_team,
+					        tr.name AS tournament_name,
+					        v.name  AS venue, c.court_name
+					 FROM {$wpdb->prefix}ds_matches m
+					 JOIN {$wpdb->prefix}ds_teams  th ON th.id = m.home_team_id
+					 JOIN {$wpdb->prefix}ds_teams  ta ON ta.id = m.away_team_id
+					 JOIN {$wpdb->prefix}ds_tournaments tr ON tr.id = m.tournament_id
+					 LEFT JOIN {$wpdb->prefix}ds_venues  v ON v.id  = m.venue_id
+					 LEFT JOIN {$wpdb->prefix}ds_courts  c ON c.id  = m.court_id
+					 WHERE m.tournament_id = %d AND m.round_number = %d
+					 ORDER BY m.match_datetime ASC",
+					$selected_tournament,
+					$selected_round
+				),
+				ARRAY_A
+			);
+		} elseif ( $selected_tournament > 0 ) {
+			$matches = $wpdb->get_results( // phpcs:ignore
+				$wpdb->prepare(
+					"SELECT m.id, m.round_number, m.match_datetime, m.status,
+					        m.home_score, m.away_score,
+					        th.name AS home_team, ta.name AS away_team,
+					        tr.name AS tournament_name,
+					        v.name  AS venue, c.court_name
+					 FROM {$wpdb->prefix}ds_matches m
+					 JOIN {$wpdb->prefix}ds_teams  th ON th.id = m.home_team_id
+					 JOIN {$wpdb->prefix}ds_teams  ta ON ta.id = m.away_team_id
+					 JOIN {$wpdb->prefix}ds_tournaments tr ON tr.id = m.tournament_id
+					 LEFT JOIN {$wpdb->prefix}ds_venues  v ON v.id  = m.venue_id
+					 LEFT JOIN {$wpdb->prefix}ds_courts  c ON c.id  = m.court_id
+					 WHERE m.tournament_id = %d
+					 ORDER BY m.match_datetime ASC, m.round_number ASC
+					 LIMIT 200",
+					$selected_tournament
+				),
+				ARRAY_A
+			);
+		} else {
+			$matches = [];
+		}
+
+		$page_title = __( 'Partidos del Torneo', 'soccertrack' );
+		self::render( 'mis-partidos', compact( 'matches', 'tournaments', 'rounds', 'selected_tournament', 'selected_round', 'page_title' ) );
 	}
 
 	private static function view_dashboard(): void {
@@ -366,7 +392,8 @@ final class TournamentPage {
 		}
 
 		// Cambiar estado del torneo.
-		$notice = '';
+		$notice       = '';
+		$status_error = '';
 		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_change_status'] ) ) {
 			check_admin_referer( 'st_change_status' );
 			$tid        = absint( $_POST['tournament_id'] ?? 0 );
@@ -374,14 +401,29 @@ final class TournamentPage {
 			$allowed    = [ 'draft', 'active', 'completed' ];
 
 			if ( $tid && in_array( $new_status, $allowed, true ) ) {
-				$wpdb->update( // phpcs:ignore
-					"{$wpdb->prefix}ds_tournaments",
-					[ 'status' => $new_status ],
-					[ 'id'     => $tid ],
-					[ '%s' ],
-					[ '%d' ]
-				);
-				$notice = 'status_updated';
+				// Validar: para activar se requieren al menos 2 equipos.
+				if ( 'active' === $new_status ) {
+					$team_count = (int) $wpdb->get_var( // phpcs:ignore
+						$wpdb->prepare(
+							"SELECT COUNT(*) FROM {$wpdb->prefix}ds_teams WHERE tournament_id = %d",
+							$tid
+						)
+					);
+					if ( $team_count < 2 ) {
+						$status_error = __( 'No se puede activar el torneo: se requieren al menos 2 equipos inscritos.', 'soccertrack' );
+					}
+				}
+
+				if ( ! $status_error ) {
+					$wpdb->update( // phpcs:ignore
+						"{$wpdb->prefix}ds_tournaments",
+						[ 'status' => $new_status ],
+						[ 'id'     => $tid ],
+						[ '%s' ],
+						[ '%d' ]
+					);
+					$notice = 'status_updated';
+				}
 			}
 		}
 
@@ -422,7 +464,7 @@ final class TournamentPage {
 		);
 
 		$page_title = __( 'Torneos', 'soccertrack' );
-		self::render( 'torneos', compact( 'tournaments', 'notice', 'page_title' ) );
+		self::render( 'torneos', compact( 'tournaments', 'notice', 'status_error', 'page_title' ) );
 	}
 
 	private static function view_torneo( int $id ): void {
@@ -769,7 +811,7 @@ final class TournamentPage {
 			}
 		}
 
-		// ── Auto-asignar árbitros y planilleros libres ───────────────────────
+		// ── Asignar fechas y canchas según configuración del torneo ──────────
 		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_auto_assign'] ) ) {
 			check_admin_referer( 'st_auto_assign_' . $id );
 
@@ -778,7 +820,7 @@ final class TournamentPage {
 			}
 
 			$notice = 'auto_assigned';
-			self::auto_assign_officials( $id );
+			self::auto_assign_schedule( $id );
 		}
 
 		// ── Actualizar parámetros de horario del torneo ──────────────────
@@ -805,9 +847,9 @@ final class TournamentPage {
 			}
 			$match_weekdays_json = wp_json_encode( array_values( $match_weekdays ) );
 
-			$raw_time      = sanitize_text_field( $_POST['match_time'] ?? '19:00' );
-			$match_time    = preg_match( '/^\d{1,2}:\d{2}$/', $raw_time ) ? $raw_time . ':00' : '19:00:00';
-			$match_duration = max( 30, min( 180, (int) ( $_POST['match_duration'] ?? 60 ) ) );
+			$raw_time       = sanitize_text_field( $_POST['match_time'] ?? '19:00' );
+			$match_time     = preg_match( '/^\d{1,2}:\d{2}$/', $raw_time ) ? $raw_time . ':00' : '19:00:00';
+			$match_duration = max( 30, min( 120, (int) ( $_POST['match_duration'] ?? 60 ) ) );
 
 			$wpdb->update( // phpcs:ignore
 				"{$wpdb->prefix}ds_tournaments",
@@ -855,6 +897,35 @@ final class TournamentPage {
 			);
 		}
 
+		// ── Actualizar fechas del torneo ─────────────────────────────────────
+		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_update_dates'] ) ) {
+			check_admin_referer( 'st_update_dates_' . $id );
+
+			if ( ! current_user_can( 'ds_manage_tournaments' ) ) {
+				wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), '', [ 'response' => 403 ] );
+			}
+
+			$start_date = sanitize_text_field( $_POST['start_date'] ?? '' ) ?: null;
+			$end_date   = sanitize_text_field( $_POST['end_date'] ?? '' ) ?: null;
+
+			$wpdb->update( // phpcs:ignore
+				"{$wpdb->prefix}ds_tournaments",
+				[
+					'start_date' => $start_date,
+					'end_date'   => $end_date,
+				],
+				[ 'id' => $id ],
+				[ '%s', '%s' ],
+				[ '%d' ]
+			);
+			$notice = 'dates_updated';
+
+			$tournament = $wpdb->get_row(
+				$wpdb->prepare( "SELECT * FROM {$wpdb->prefix}ds_tournaments WHERE id = %d", $id ),
+				ARRAY_A
+			);
+		}
+
 		// ── Actualizar recintos del torneo ───────────────────────────────────
 		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_update_venues'] ) ) {
 			check_admin_referer( 'st_update_venues_' . $id );
@@ -885,7 +956,7 @@ final class TournamentPage {
 		}
 
 		$venues = $wpdb->get_results( // phpcs:ignore
-			"SELECT id, name FROM {$wpdb->prefix}ds_venues ORDER BY name ASC",
+			"SELECT id, name FROM {$wpdb->prefix}ds_venues ORDER BY id ASC",
 			ARRAY_A
 		);
 
@@ -940,14 +1011,14 @@ final class TournamentPage {
 		}
 
 		$referees = get_users( [
-			'role__in' => [ 'ds_arbitro' ],
+			'role__in' => [ 'ds_veedor', 'ds_coordinador' ],
 			'orderby'  => 'display_name',
 			'order'    => 'ASC',
 			'fields'   => [ 'ID', 'display_name' ],
 		] );
 
 		$planilleros = get_users( [
-			'role__in' => [ 'ds_planillero' ],
+			'role__in' => [ 'ds_veedor', 'ds_coordinador' ],
 			'orderby'  => 'display_name',
 			'order'    => 'ASC',
 			'fields'   => [ 'ID', 'display_name' ],
@@ -970,124 +1041,181 @@ final class TournamentPage {
 	}
 
 	/**
-	 * Auto-asigna árbitros y planilleros disponibles a partidos sin asignar del torneo.
-	 * Solo actúa sobre partidos con match_datetime y sin árbitro/planillero.
-	 * Restricción: un oficial no puede cubrir dos partidos con menos de 90 min entre sí.
+	 * Calcula y asigna match_datetime + court_id a todos los partidos no finalizados
+	 * usando la configuración de horario y recintos del torneo.
+	 *
+	 * Lógica:
+	 *  - Los partidos se agrupan por round_number.
+	 *  - Dentro de cada jornada los partidos se distribuyen en franjas de N canchas en paralelo.
+	 *  - La fecha/hora de cada franja se calcula con el mismo algoritmo que FixtureGenerator.
 	 */
-	private static function auto_assign_officials( int $tournament_id ): void {
+	private static function auto_assign_schedule( int $tournament_id ): void {
 		global $wpdb;
 
+		// ── Leer configuración del torneo ──────────────────────────────────
+		$tournament = $wpdb->get_row( // phpcs:ignore
+			$wpdb->prepare( "SELECT * FROM {$wpdb->prefix}ds_tournaments WHERE id = %d", $tournament_id ),
+			ARRAY_A
+		);
+		if ( ! $tournament ) {
+			return;
+		}
+
+		// Días de la semana ordenados lunes-primero.
+		$raw_days = $tournament['match_weekdays'] ?? null;
+		$weekdays = [];
+		if ( is_string( $raw_days ) && $raw_days !== '' ) {
+			$decoded = json_decode( $raw_days, true );
+			if ( is_array( $decoded ) && ! empty( $decoded ) ) {
+				$weekdays = array_unique( array_map( 'intval', $decoded ) );
+				usort( $weekdays, fn( int $a, int $b ) => ( ( $a + 6 ) % 7 ) - ( ( $b + 6 ) % 7 ) );
+			}
+		}
+		if ( empty( $weekdays ) ) {
+			$weekdays = [ (int) ( $tournament['match_weekday'] ?? 6 ) ];
+		}
+
+		$time     = (string) ( $tournament['match_time'] ?? '19:00:00' );
+		$duration = max( 30, min( 120, (int) ( $tournament['match_duration'] ?? 60 ) ) );
+
+		// ── Recinto y canchas ──────────────────────────────────────────────
+		// Usar el primer recinto asignado al torneo; si no hay, el primero disponible.
+		$venue_id = (int) $wpdb->get_var( // phpcs:ignore
+			$wpdb->prepare(
+				"SELECT venue_id FROM {$wpdb->prefix}ds_tournament_venues WHERE tournament_id = %d ORDER BY venue_id ASC LIMIT 1",
+				$tournament_id
+			)
+		);
+		if ( ! $venue_id ) {
+			$venue_id = (int) $wpdb->get_var( "SELECT id FROM {$wpdb->prefix}ds_venues ORDER BY id ASC LIMIT 1" ); // phpcs:ignore
+		}
+		if ( ! $venue_id ) {
+			return; // Sin recinto no podemos asignar.
+		}
+
+		$courts = $wpdb->get_results( // phpcs:ignore
+			$wpdb->prepare(
+				"SELECT id FROM {$wpdb->prefix}ds_courts WHERE venue_id = %d ORDER BY id ASC",
+				$venue_id
+			),
+			ARRAY_A
+		) ?: [];
+		$num_courts = max( 1, count( $courts ) );
+
+		// ── Partidos pendientes: no finalizados y con fecha futura (o sin fecha) ─
+		// No se tocan partidos ya jugados (finished/suspended) ni partidos cuya
+		// fecha ya pasó aunque sigan en estado 'scheduled'.
 		$matches = $wpdb->get_results( // phpcs:ignore
 			$wpdb->prepare(
-				"SELECT id, match_datetime, referee_user_id, planillero_user_id
+				"SELECT id, round_number, phase
 				 FROM {$wpdb->prefix}ds_matches
 				 WHERE tournament_id = %d
-				   AND match_datetime IS NOT NULL
-				   AND status NOT IN ('finished','suspended')
-				 ORDER BY match_datetime ASC, id ASC",
+				   AND status NOT IN ('finished', 'suspended')
+				   AND ( match_datetime IS NULL OR match_datetime > NOW() )
+				 ORDER BY round_number ASC, id ASC",
 				$tournament_id
 			),
 			ARRAY_A
 		);
-
 		if ( empty( $matches ) ) {
 			return;
 		}
 
-		$referee_ids = array_column(
-			get_users( [ 'role__in' => [ 'ds_arbitro' ], 'fields' => [ 'ID' ] ] ),
-			'ID'
-		);
-
-		$planillero_ids = array_column(
-			get_users( [ 'role__in' => [ 'ds_planillero' ], 'fields' => [ 'ID' ] ] ),
-			'ID'
-		);
-
-		// Pre-cargar asignaciones actuales para detectar conflictos en PHP (evita N+1).
-		$assigned_ref_slots  = []; // referee_user_id  => int[] timestamps
-		$assigned_plan_slots = []; // planillero_user_id => int[] timestamps
-
-		// Los partidos finished/suspended no bloquean reasignación (intencional:
-		// un partido suspendido no debe impedir usar al árbitro en otra fecha).
-		$existing_assignments = $wpdb->get_results( // phpcs:ignore
-			$wpdb->prepare(
-				"SELECT referee_user_id, planillero_user_id, match_datetime
-				 FROM {$wpdb->prefix}ds_matches
-				 WHERE tournament_id = %d
-				   AND status NOT IN ('finished', 'suspended')
-				   AND ( referee_user_id IS NOT NULL OR planillero_user_id IS NOT NULL )",
-				$tournament_id
-			),
-			ARRAY_A
-		) ?: [];
-
-		foreach ( $existing_assignments as $row ) {
-			$ts = strtotime( $row['match_datetime'] );
-			if ( $row['referee_user_id'] ) {
-				$assigned_ref_slots[ (int) $row['referee_user_id'] ][] = $ts;
-			}
-			if ( $row['planillero_user_id'] ) {
-				$assigned_plan_slots[ (int) $row['planillero_user_id'] ][] = $ts;
-			}
+		// ── Agrupar por jornada ───────────────────────────────────────────
+		$rounds = [];
+		foreach ( $matches as $m ) {
+			$rounds[ (int) $m['round_number'] ][] = $m;
 		}
 
-		$ninety       = 90 * 60;
-		$has_conflict = static function ( array $slots, int $ts ) use ( $ninety ): bool {
-			foreach ( $slots as $slot_ts ) {
-				if ( abs( $ts - $slot_ts ) < $ninety ) {
-					return true;
-				}
-			}
-			return false;
-		};
+		// El round_index usa el número de jornada original (1-based → 0-based),
+		// así la jornada 5 siempre cae en la 5.ª posición del ciclo de días,
+		// independientemente de cuántas jornadas anteriores ya estén finalizadas.
+		foreach ( $rounds as $round_num => $round_matches ) {
+			$round_index = $round_num - 1;
 
-		foreach ( $matches as &$match ) {
-			$dt       = $match['match_datetime'];
-			$match_id = (int) $match['id'];
-			$ts       = strtotime( $dt );
+			foreach ( $round_matches as $idx => $match ) {
+				$batch     = (int) floor( $idx / $num_courts );
+				$court_idx = $idx % $num_courts;
+				$court_id  = isset( $courts[ $court_idx ] ) ? (int) $courts[ $court_idx ]['id'] : null;
 
-			// ── Asignar árbitro si falta ──────────────────────────────────
-			if ( ! $match['referee_user_id'] && ! empty( $referee_ids ) ) {
-				foreach ( $referee_ids as $rid ) {
-					if ( ! $has_conflict( $assigned_ref_slots[ (int) $rid ] ?? [], $ts ) ) {
-						$wpdb->update( // phpcs:ignore
-							"{$wpdb->prefix}ds_matches",
-							[ 'referee_user_id' => $rid ],
-							[ 'id' => $match_id ],
-							[ '%d' ],
-							[ '%d' ]
-						);
-						$match['referee_user_id']            = $rid;
-						$assigned_ref_slots[ (int) $rid ][] = $ts;
-						break;
-					}
-				}
-			}
+				$dt = self::schedule_match_datetime( $weekdays, $time, $batch, $round_index, $duration );
 
-			// ── Asignar planillero si falta ───────────────────────────────
-			if ( ! $match['planillero_user_id'] && ! empty( $planillero_ids ) ) {
-				$assigned_ref = (int) ( $match['referee_user_id'] ?? 0 );
-				foreach ( $planillero_ids as $pid ) {
-					if ( $pid === $assigned_ref ) {
-						continue; // No puede ser el mismo que el árbitro.
-					}
-					if ( ! $has_conflict( $assigned_plan_slots[ (int) $pid ] ?? [], $ts ) ) {
-						$wpdb->update( // phpcs:ignore
-							"{$wpdb->prefix}ds_matches",
-							[ 'planillero_user_id' => $pid ],
-							[ 'id' => $match_id ],
-							[ '%d' ],
-							[ '%d' ]
-						);
-						$match['planillero_user_id']          = $pid;
-						$assigned_plan_slots[ (int) $pid ][] = $ts;
-						break;
-					}
+				$data   = [ 'match_datetime' => $dt, 'venue_id' => $venue_id ];
+				$format = [ '%s', '%d' ];
+
+				if ( $court_id ) {
+					$data['court_id'] = $court_id;
+					$format[]         = '%d';
 				}
+
+				$wpdb->update( // phpcs:ignore
+					"{$wpdb->prefix}ds_matches",
+					$data,
+					[ 'id' => (int) $match['id'] ],
+					$format,
+					[ '%d' ]
+				);
 			}
 		}
-		unset( $match );
+	}
+
+	/**
+	 * Calcula la fecha y hora de un partido dado un ciclo de días de la semana.
+	 * Duplica la lógica de FixtureGenerator::next_match_datetime() para uso interno.
+	 *
+	 * @param int[]  $weekdays         Días ordenados lunes-primero (0=dom…6=sáb).
+	 * @param string $time             Hora de inicio 'H:i:s'.
+	 * @param int    $batch_offset     Franja dentro de la jornada (0 = primer slot).
+	 * @param int    $round_index      Índice de jornada 0-based.
+	 * @param int    $duration_minutes Duración en minutos (define el espaciado entre franjas).
+	 */
+	private static function schedule_match_datetime(
+		array  $weekdays,
+		string $time,
+		int    $batch_offset     = 0,
+		int    $round_index      = 0,
+		int    $duration_minutes = 60
+	): string {
+		$day_names = [
+			0 => 'sunday', 1 => 'monday', 2 => 'tuesday', 3 => 'wednesday',
+			4 => 'thursday', 5 => 'friday', 6 => 'saturday',
+		];
+
+		if ( empty( $weekdays ) ) {
+			$weekdays = [ 6 ];
+		}
+
+		$count        = count( $weekdays );
+		$day_in_cycle = $round_index % $count;
+		$week_num     = intdiv( $round_index, $count );
+
+		$first_day  = $weekdays[0];
+		$target_day = $weekdays[ $day_in_cycle ];
+
+		$first_day_name = $day_names[ $first_day ] ?? 'saturday';
+		$base           = new \DateTimeImmutable( "next {$first_day_name}" );
+
+		if ( $week_num > 0 ) {
+			$base = $base->modify( "+{$week_num} weeks" );
+		}
+
+		$first_pos  = ( $first_day + 6 ) % 7;
+		$target_pos = ( $target_day + 6 ) % 7;
+		$day_offset = ( $target_pos - $first_pos + 7 ) % 7;
+
+		if ( $day_offset > 0 ) {
+			$base = $base->modify( "+{$day_offset} days" );
+		}
+
+		[ $h, $m, $s ] = array_map( 'intval', explode( ':', $time . ':00' ) );
+		$start_minutes  = $h * 60 + $m + $batch_offset * $duration_minutes;
+		$base           = $base->setTime(
+			intdiv( $start_minutes, 60 ) % 24,
+			$start_minutes % 60,
+			$s
+		);
+
+		return $base->format( 'Y-m-d H:i:s' );
 	}
 
 	private static function view_equipo( int $id ): void {
@@ -1302,7 +1430,7 @@ final class TournamentPage {
 		$notice_plan = '';
 		$error_plan  = '';
 
-		// Procesar asignación de árbitro.
+		// Procesar asignación de árbitro (nombre de texto desde catálogo o campo libre).
 		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_save_referee'] ) ) {
 			check_admin_referer( 'st_save_referee_' . $id );
 
@@ -1310,45 +1438,34 @@ final class TournamentPage {
 				wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), '', [ 'response' => 403 ] );
 			}
 
-			$referee_id = absint( $_POST['referee_user_id'] ?? 0 );
+			$custom_name  = sanitize_text_field( $_POST['custom_name'] ?? '' );
+			$catalog_id   = absint( $_POST['staff_id'] ?? 0 );
+			$referee_name = '';
 
-			if ( $referee_id > 0 ) {
-				$ref_user = get_user_by( 'id', $referee_id );
-				if ( ! $ref_user || ! $ref_user->has_cap( 'ds_enter_match_incidents' ) ) {
-					$error_ref = __( 'Usuario no válido o sin permisos de árbitro.', 'soccertrack' );
-				}
-
-				// Verificar que el árbitro no tenga otro partido en el mismo horario (±90 min).
-				if ( ! $error_ref && ! empty( $match['match_datetime'] ) ) {
-					$conflict_ref = (int) $wpdb->get_var( // phpcs:ignore
-						$wpdb->prepare(
-							"SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches
-							 WHERE referee_user_id = %d AND id != %d
-							   AND match_datetime BETWEEN DATE_SUB( %s, INTERVAL 90 MINUTE )
-							                         AND DATE_ADD( %s, INTERVAL 90 MINUTE )",
-							$referee_id, $id, $match['match_datetime'], $match['match_datetime']
-						)
-					);
-					if ( $conflict_ref > 0 ) {
-						$error_ref = __( 'El árbitro ya tiene un partido asignado en ese horario (conflicto de menos de 90 minutos).', 'soccertrack' );
-					}
-				}
+			if ( $custom_name !== '' ) {
+				$referee_name = $custom_name;
+			} elseif ( $catalog_id > 0 ) {
+				$staff_row    = $wpdb->get_var( $wpdb->prepare( "SELECT nombre FROM {$wpdb->prefix}ds_staff WHERE id = %d AND tipo = 'arbitro'", $catalog_id ) ); // phpcs:ignore
+				$referee_name = $staff_row ? sanitize_text_field( $staff_row ) : '';
 			}
 
-			if ( ! $error_ref ) {
-				$wpdb->update( // phpcs:ignore
-					"{$wpdb->prefix}ds_matches",
-					[ 'referee_user_id' => $referee_id ?: null ],
-					[ 'id' => $id ],
-					[ '%d' ],
-					[ '%d' ]
-				);
-				$match['referee_user_id'] = $referee_id;
+			$updated = $wpdb->update( // phpcs:ignore
+				"{$wpdb->prefix}ds_matches",
+				[ 'referee_name' => $referee_name ?: null ],
+				[ 'id' => $id ],
+				[ '%s' ],
+				[ '%d' ]
+			);
+
+			if ( false === $updated ) {
+				$error_ref = __( 'Error al guardar el árbitro. Contacta al administrador.', 'soccertrack' );
+			} else {
+				$match['referee_name'] = $referee_name;
 				$notice_ref = 'referee_saved';
 			}
 		}
 
-		// Procesar asignación de planillero.
+		// Procesar asignación de planillero (nombre de texto desde catálogo o campo libre).
 		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_save_planillero'] ) ) {
 			check_admin_referer( 'st_save_planillero_' . $id );
 
@@ -1356,48 +1473,30 @@ final class TournamentPage {
 				wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), '', [ 'response' => 403 ] );
 			}
 
-			$planillero_id = absint( $_POST['planillero_user_id'] ?? 0 );
+			$custom_name     = sanitize_text_field( $_POST['custom_name'] ?? '' );
+			$catalog_id      = absint( $_POST['staff_id'] ?? 0 );
+			$planillero_name = '';
 
-			if ( $planillero_id > 0 ) {
-				$plan_user = get_user_by( 'id', $planillero_id );
-				if ( ! $plan_user || ! $plan_user->has_cap( 'ds_enter_match_incidents' ) ) {
-					$error_plan = __( 'Usuario no válido o sin permisos de planillero.', 'soccertrack' );
-				}
-
-				// Verificar conflicto de horario (±120 min).
-				if ( ! $error_plan && ! empty( $match['match_datetime'] ) ) {
-					$conflict_plan = (int) $wpdb->get_var( // phpcs:ignore
-						$wpdb->prepare(
-							"SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches
-							 WHERE planillero_user_id = %d AND id != %d
-							   AND status NOT IN ('finished','suspended')
-							   AND match_datetime BETWEEN DATE_SUB( %s, INTERVAL 120 MINUTE )
-							                         AND DATE_ADD( %s, INTERVAL 120 MINUTE )",
-							$planillero_id, $id, $match['match_datetime'], $match['match_datetime']
-						)
-					);
-					if ( $conflict_plan > 0 ) {
-						$error_plan = __( 'El planillero ya está asignado a otro partido en ese horario.', 'soccertrack' );
-					}
-				}
+			if ( $custom_name !== '' ) {
+				$planillero_name = $custom_name;
+			} elseif ( $catalog_id > 0 ) {
+				$staff_row       = $wpdb->get_var( $wpdb->prepare( "SELECT nombre FROM {$wpdb->prefix}ds_staff WHERE id = %d AND tipo = 'planillero'", $catalog_id ) ); // phpcs:ignore
+				$planillero_name = $staff_row ? sanitize_text_field( $staff_row ) : '';
 			}
 
-			if ( ! $error_plan ) {
-				$updated = $wpdb->update( // phpcs:ignore
-					"{$wpdb->prefix}ds_matches",
-					[ 'planillero_user_id' => $planillero_id ?: null ],
-					[ 'id' => $id ],
-					[ '%d' ],
-					[ '%d' ]
-				);
-				if ( false === $updated ) {
-					// false = error de SQL (p.ej. columna inexistente).
-					$error_plan = __( 'Error al guardar el planillero. Contacta al administrador.', 'soccertrack' );
-				} else {
-					// 0 = sin cambio (mismo valor), > 0 = actualizado — ambos son éxito.
-					$match['planillero_user_id'] = $planillero_id;
-					$notice_plan = 'planillero_saved';
-				}
+			$updated = $wpdb->update( // phpcs:ignore
+				"{$wpdb->prefix}ds_matches",
+				[ 'planillero_name' => $planillero_name ?: null ],
+				[ 'id' => $id ],
+				[ '%s' ],
+				[ '%d' ]
+			);
+
+			if ( false === $updated ) {
+				$error_plan = __( 'Error al guardar el planillero. Contacta al administrador.', 'soccertrack' );
+			} else {
+				$match['planillero_name'] = $planillero_name;
+				$notice_plan = 'planillero_saved';
 			}
 		}
 
@@ -1440,27 +1539,16 @@ final class TournamentPage {
 			);
 		}
 
-		$referees = get_users( [
-			'role__in' => [ 'ds_arbitro', 'administrator' ],
-			'orderby'  => 'display_name',
-			'order'    => 'ASC',
-			'fields'   => [ 'ID', 'display_name' ],
-		] );
-
-		// Planilleros: usuarios con cap ds_enter_match_incidents (planillero + arbitro + coordinador + admin).
-		$planilleros = get_users( [
-			'role__in' => [ 'ds_planillero', 'ds_arbitro', 'ds_coordinador', 'administrator' ],
-			'orderby'  => 'display_name',
-			'order'    => 'ASC',
-			'fields'   => [ 'ID', 'display_name' ],
-		] );
+		// Catálogo de árbitros y planilleros desde wp_ds_staff.
+		$staff_arbitros   = $wpdb->get_results( "SELECT id, nombre FROM {$wpdb->prefix}ds_staff WHERE tipo = 'arbitro'  ORDER BY nombre ASC", ARRAY_A ); // phpcs:ignore
+		$staff_planilleros = $wpdb->get_results( "SELECT id, nombre FROM {$wpdb->prefix}ds_staff WHERE tipo = 'planillero' ORDER BY nombre ASC", ARRAY_A ); // phpcs:ignore
 
 		$home_team = $wpdb->get_row( // phpcs:ignore
-			$wpdb->prepare( "SELECT * FROM {$wpdb->prefix}ds_teams WHERE id = %d", $match['home_team_id'] ),
+			$wpdb->prepare( "SELECT id, name, logo_url FROM {$wpdb->prefix}ds_teams WHERE id = %d", $match['home_team_id'] ),
 			ARRAY_A
 		);
 		$away_team = $wpdb->get_row( // phpcs:ignore
-			$wpdb->prepare( "SELECT * FROM {$wpdb->prefix}ds_teams WHERE id = %d", $match['away_team_id'] ),
+			$wpdb->prepare( "SELECT id, name, logo_url FROM {$wpdb->prefix}ds_teams WHERE id = %d", $match['away_team_id'] ),
 			ARRAY_A
 		);
 
@@ -1481,7 +1569,7 @@ final class TournamentPage {
 
 		self::render( 'partido', compact(
 			'match', 'tournament', 'home_team', 'away_team', 'home_players', 'away_players',
-			'referees', 'planilleros',
+			'staff_arbitros', 'staff_planilleros',
 			'notice_ref', 'error_ref',
 			'notice_plan', 'error_plan',
 			'notice_staff', 'error_staff',
@@ -1530,6 +1618,77 @@ final class TournamentPage {
 		$form_player_id  = 0;
 		$form_reason     = '';
 		$form_matches    = '';
+
+		// ── Editar sanción (apelación / corrección) ──────────────────────────
+		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_edit_sanction'] ) ) {
+			check_admin_referer( 'st_edit_sanction' );
+			$sanction_id   = absint( $_POST['sanction_id'] ?? 0 );
+			$new_matches   = absint( $_POST['ban_matches'] ?? 0 );
+			$observaciones = sanitize_textarea_field( wp_unslash( $_POST['observaciones'] ?? '' ) );
+
+			if ( $sanction_id && $new_matches >= 1 && $new_matches <= 20 ) {
+				$san = $wpdb->get_row( // phpcs:ignore
+					$wpdb->prepare(
+						"SELECT id, player_id, tournament_id, team_id, ban_days_or_matches, remaining_matches, status
+						 FROM {$wpdb->prefix}ds_disciplinary_sanctions WHERE id = %d",
+						$sanction_id
+					),
+					ARRAY_A
+				);
+				if ( $san && $san['status'] === 'active' ) {
+					// Fechas ya cumplidas = total original - restantes actuales.
+					$already_served  = max( 0, (int) $san['ban_days_or_matches'] - (int) $san['remaining_matches'] );
+					$new_remaining   = max( 0, $new_matches - $already_served );
+					$new_status      = $new_remaining === 0 ? 'served' : 'active';
+
+					$wpdb->update( // phpcs:ignore
+						"{$wpdb->prefix}ds_disciplinary_sanctions",
+						[
+							'ban_days_or_matches' => $new_matches,
+							'remaining_matches'   => $new_remaining,
+							'status'              => $new_status,
+							'observaciones'       => $observaciones ?: null,
+							'resolved_at'         => $new_status === 'served' ? current_time( 'mysql' ) : null,
+						],
+						[ 'id' => $sanction_id ],
+						[ '%d', '%d', '%s', '%s', '%s' ],
+						[ '%d' ]
+					);
+
+					// Si quedó en 0, desmarcar suspensión si no hay otras activas.
+					if ( $new_status === 'served' ) {
+						$team_id_san = (int) ( $san['team_id'] ?? 0 );
+						if ( ! $team_id_san ) {
+							$team_id_san = (int) $wpdb->get_var( // phpcs:ignore
+								$wpdb->prepare(
+									"SELECT t.id FROM {$wpdb->prefix}ds_teams t
+									 JOIN {$wpdb->prefix}ds_team_players tp ON tp.team_id = t.id
+									 WHERE tp.player_id = %d AND t.tournament_id = %d LIMIT 1",
+									$san['player_id'], $san['tournament_id']
+								)
+							);
+						}
+						$other_active = (int) $wpdb->get_var( // phpcs:ignore
+							$wpdb->prepare(
+								"SELECT COUNT(*) FROM {$wpdb->prefix}ds_disciplinary_sanctions
+								 WHERE player_id = %d AND tournament_id = %d AND status = 'active' AND id != %d",
+								$san['player_id'], $san['tournament_id'], $sanction_id
+							)
+						);
+						if ( ! $other_active && $team_id_san ) {
+							$wpdb->update( // phpcs:ignore
+								"{$wpdb->prefix}ds_team_players",
+								[ 'is_suspended' => 0 ],
+								[ 'player_id' => $san['player_id'], 'team_id' => $team_id_san ],
+								[ '%d' ],
+								[ '%d', '%d' ]
+							);
+						}
+					}
+				}
+				$notice = 'edited';
+			}
+		}
 
 		// ── Alta manual de sanción ────────────────────────────────────────
 		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_add_sanction'] ) ) {
@@ -1696,7 +1855,7 @@ final class TournamentPage {
 			$round_events = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 				$wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 					"SELECT e.event_type, e.minute,
-					        p.first_name, p.last_name, t.name AS team_name,
+					        p.id AS player_id, p.first_name, p.last_name, t.name AS team_name,
 					        ht.name AS home_team, at.name AS away_team,
 					        m.home_score, m.away_score
 					 FROM {$wpdb->prefix}ds_match_events e
@@ -1761,6 +1920,20 @@ final class TournamentPage {
 				$teams_with_players = array_values(
 					array_filter( $teams_with_players, fn( $g ) => $g['team']['id'] === $team_filter )
 				);
+			}
+
+			// Si hay fecha y eventos en esa fecha, limitar el selector al equipo seleccionado.
+			if ( $round_number && ! empty( $round_events ) ) {
+				$player_ids_in_round = array_unique( array_column( $round_events, 'player_id' ) );
+				$teams_with_players  = array_values(
+					array_map( function ( $g ) use ( $player_ids_in_round ) {
+						$g['players'] = array_values(
+							array_filter( $g['players'], fn( $p ) => in_array( $p['id'], $player_ids_in_round, true ) )
+						);
+						return $g;
+					}, $teams_with_players )
+				);
+				$teams_with_players = array_values( array_filter( $teams_with_players, fn( $g ) => ! empty( $g['players'] ) ) );
 			}
 		}
 
@@ -2077,7 +2250,7 @@ final class TournamentPage {
 	/* ------------------------------------------------------------------ */
 
 	private static function view_usuarios(): void {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'ds_manage_tournaments' ) ) {
 			wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), '', [ 'response' => 403 ] );
 		}
 
@@ -2157,6 +2330,44 @@ final class TournamentPage {
 				$reset_user_name  = $user->display_name;
 			}
 		}
+
+		// ── Crear personal (árbitro / planillero) ───────────────────────
+		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_create_staff'] ) ) {
+			check_admin_referer( 'st_staff_action' );
+
+			$staff_nombre = sanitize_text_field( $_POST['nombre'] ?? '' );
+			$staff_tipo   = sanitize_key( $_POST['tipo'] ?? '' );
+
+			if ( ! $staff_nombre ) {
+				$error = __( 'El nombre del personal es obligatorio.', 'soccertrack' );
+			} elseif ( ! in_array( $staff_tipo, [ 'arbitro', 'planillero' ], true ) ) {
+				$error = __( 'Tipo inválido. Debe ser árbitro o planillero.', 'soccertrack' );
+			} else {
+				$wpdb->insert( // phpcs:ignore
+					"{$wpdb->prefix}ds_staff",
+					[ 'nombre' => $staff_nombre, 'tipo' => $staff_tipo ],
+					[ '%s', '%s' ]
+				);
+				$notice = 'st_staff_created';
+			}
+		}
+
+		// ── Eliminar personal ────────────────────────────────────────────
+		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_delete_staff'] ) ) {
+			check_admin_referer( 'st_staff_action' );
+
+			$staff_id = absint( $_POST['staff_id'] ?? 0 );
+			if ( $staff_id > 0 ) {
+				$wpdb->delete( "{$wpdb->prefix}ds_staff", [ 'id' => $staff_id ], [ '%d' ] ); // phpcs:ignore
+				$notice = 'st_staff_deleted';
+			}
+		}
+
+		global $wpdb;
+		$staff_list = $wpdb->get_results( // phpcs:ignore
+			"SELECT id, nombre, tipo FROM {$wpdb->prefix}ds_staff ORDER BY tipo ASC, nombre ASC",
+			ARRAY_A
+		);
 
 		$users     = \SportsLeague\Core\UserManager::list_plugin_users();
 		$role_opts = \SportsLeague\Core\UserManager::PLUGIN_ROLES;

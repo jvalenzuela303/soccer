@@ -143,7 +143,7 @@ final class AdminController {
 		}
 
 		$tournaments = $wpdb->get_results( // phpcs:ignore
-			"SELECT * FROM {$wpdb->prefix}ds_tournaments ORDER BY id DESC",
+			"SELECT id, name, start_date, end_date, format, status FROM {$wpdb->prefix}ds_tournaments ORDER BY id DESC LIMIT 100",
 			ARRAY_A
 		);
 

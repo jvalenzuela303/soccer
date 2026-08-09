@@ -40,6 +40,7 @@ final class DatabaseInstaller {
 			bases_pdf_url       VARCHAR(255)    NULL,
 			match_weekday       TINYINT(1)      NOT NULL DEFAULT 6,
 			match_time          TIME            NOT NULL DEFAULT '19:00:00',
+			match_time_weekend  TIME            NOT NULL DEFAULT '10:00:00',
 			registration_mode   ENUM('realtime','deferred') NOT NULL DEFAULT 'deferred',
 			fixture_release_days TINYINT(1)     NOT NULL DEFAULT 0,
 			created_at          DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -193,6 +194,7 @@ final class DatabaseInstaller {
 	private static function apply_index_migrations(): void {
 		global $wpdb;
 
+		$c      = $wpdb->get_charset_collate();
 		$prefix = $wpdb->prefix;
 
 		// ds_match_events: reemplazar idx_match(match_id) → idx_match_minute(match_id, minute)
@@ -475,6 +477,30 @@ final class DatabaseInstaller {
 			);
 		}
 
+		// v1.9.0 — ds_staff: catálogo de árbitros y planilleros (nombres de texto).
+		$has_staff = $wpdb->get_var( "SHOW TABLES LIKE '{$prefix}ds_staff'" ); // phpcs:ignore
+		if ( ! $has_staff ) {
+			$wpdb->query( // phpcs:ignore
+				"CREATE TABLE {$prefix}ds_staff (
+					id     BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+					nombre VARCHAR(120)    NOT NULL,
+					tipo   ENUM('arbitro','planillero') NOT NULL,
+					PRIMARY KEY (id),
+					KEY idx_tipo (tipo)
+				) ENGINE=InnoDB {$c}"
+			);
+		}
+
+		// v1.8.2 — ds_tournaments: hora de inicio diferenciada para fin de semana (sáb/dom).
+		$has_time_wknd = $wpdb->get_var( "SHOW COLUMNS FROM {$prefix}ds_tournaments LIKE 'match_time_weekend'" ); // phpcs:ignore
+		if ( ! $has_time_wknd ) {
+			$wpdb->query( // phpcs:ignore
+				"ALTER TABLE {$prefix}ds_tournaments
+				 ADD COLUMN match_time_weekend TIME NOT NULL DEFAULT '10:00:00'
+				 AFTER match_time"
+			);
+		}
+
 		// v1.8.0 — ds_tournaments: soporte para múltiples días de partido por semana.
 		$has_weekdays = $wpdb->get_var( "SHOW COLUMNS FROM {$prefix}ds_tournaments LIKE 'match_weekdays'" ); // phpcs:ignore
 		if ( ! $has_weekdays ) {
@@ -488,6 +514,12 @@ final class DatabaseInstaller {
 				"UPDATE {$prefix}ds_tournaments
 				 SET match_weekdays = CONCAT('[', CAST(match_weekday AS CHAR), ']')"
 			);
+		}
+
+		// v1.9.0 — ds_team_players: índice (player_id, team_id) para subqueries correlacionadas del tribunal.
+		$has_player_team = $wpdb->get_var( "SHOW INDEX FROM {$prefix}ds_team_players WHERE Key_name = 'idx_player_team'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( ! $has_player_team ) {
+			$wpdb->query( "ALTER TABLE {$prefix}ds_team_players ADD KEY idx_player_team (player_id, team_id)" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		}
 	}
 
@@ -521,6 +553,8 @@ final class DatabaseInstaller {
 			'ds_courts',
 			'ds_venues',
 			'ds_tournaments',
+			'ds_tournament_venues',
+			'ds_staff',
 		];
 
 		foreach ( $tables as $table ) {
