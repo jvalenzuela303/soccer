@@ -465,8 +465,8 @@ final class SpreadsheetImporter {
 	}
 
 	/**
-	 * Importa árbitros desde un archivo CSV/XLSX.
-	 * Crea un usuario WordPress con rol ds_arbitro por cada fila.
+	 * Importa veedores desde un archivo CSV/XLSX.
+	 * Crea un usuario WordPress con rol ds_veedor por cada fila.
 	 *
 	 * Columnas esperadas (fila 1 = cabecera ignorada):
 	 *   A: Nombre
@@ -512,7 +512,7 @@ final class SpreadsheetImporter {
 
 			$display_name = sanitize_text_field( $first_name . ' ' . $last_name );
 			$password     = wp_generate_password( 12, false );
-			$result       = \SportsLeague\Core\UserManager::create( $email, $display_name, 'ds_arbitro', $password );
+			$result       = \SportsLeague\Core\UserManager::create( $email, $display_name, 'ds_veedor', $password );
 
 			if ( is_wp_error( $result ) ) {
 				$errors[] = sprintf( '%s — %s', $email, $result->get_error_message() );

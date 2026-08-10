@@ -48,7 +48,7 @@ delete_option( 'soccertrack_db_version' );
 delete_option( 'soccertrack_settings' );
 
 // Eliminar roles personalizados.
-foreach ( [ 'ds_coordinador', 'ds_arbitro', 'ds_planillero' ] as $role_slug ) {
+foreach ( [ 'ds_coordinador', 'ds_veedor', 'ds_arbitro', 'ds_planillero' ] as $role_slug ) {
 	remove_role( $role_slug );
 }
 

@@ -10,6 +10,10 @@
 <div class="st-alert st-alert--success"><?php esc_html_e( 'Estado del torneo actualizado.', 'soccertrack' ); ?></div>
 <?php endif; ?>
 
+<?php if ( ! empty( $status_error ?? '' ) ) : ?>
+<div class="st-alert st-alert--error">⚠️ <?php echo esc_html( $status_error ); ?></div>
+<?php endif; ?>
+
 <?php /* ── Formulario crear torneo ─────────────────────────────────── */ ?>
 <div class="st-card">
 	<h2 class="st-card-title"><?php esc_html_e( 'Nuevo torneo', 'soccertrack' ); ?></h2>
@@ -26,7 +30,11 @@
 			<input type="date" name="start_date" class="st-input">
 		</div>
 		<div class="st-field">
-			<label class="st-label"><?php esc_html_e( 'Fin', 'soccertrack' ); ?></label>
+			<label class="st-label">
+				<?php esc_html_e( 'Fin estimado', 'soccertrack' ); ?>
+				<span title="<?php esc_attr_e( 'Puede ajustarse más adelante según el desarrollo del torneo (clima, suspensiones, etc.)', 'soccertrack' ); ?>"
+					  style="font-size:.75rem;color:#999;font-weight:400;cursor:default"> ℹ</span>
+			</label>
 			<input type="date" name="end_date" class="st-input">
 		</div>
 		<div class="st-field">
@@ -103,9 +111,9 @@
 						</a>
 						<?php
 						$status_transitions = [
-							'draft'     => [ 'new' => 'active',    'label' => __( '▶ Activar', 'soccertrack' ),    'class' => 'st-btn--success' ],
-							'active'    => [ 'new' => 'completed', 'label' => __( '✔ Finalizar', 'soccertrack' ),  'class' => 'st-btn--warning' ],
-							'completed' => [ 'new' => 'draft',     'label' => __( '↩ Borrador', 'soccertrack' ),   'class' => 'st-btn--danger' ],
+							'draft'  => [ 'new' => 'active',    'label' => __( '▶ Activar', 'soccertrack' ),   'class' => 'st-btn--success' ],
+							'active' => [ 'new' => 'completed', 'label' => __( '✔ Finalizar', 'soccertrack' ), 'class' => 'st-btn--warning' ],
+							// completed: sin transición — un torneo finalizado no retrocede.
 						];
 						$transition = $status_transitions[ $t['status'] ?? 'draft' ] ?? null;
 						if ( $transition ) :

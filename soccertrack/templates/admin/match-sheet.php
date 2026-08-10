@@ -17,16 +17,22 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$is_finished        = 'finished' === ( $match['status'] ?? '' );
-$tournament_id      = (int) ( $match['tournament_id'] ?? 0 );
+$is_finished         = 'finished' === ( $match['status'] ?? '' );
+$tournament_id       = (int) ( $match['tournament_id'] ?? 0 );
 $can_enter_incidents = current_user_can( 'ds_enter_match_incidents' );
-$can_close          = current_user_can( 'ds_close_match' );
-$can_edit_incidents = current_user_can( 'ds_edit_incidents' );
+$can_close           = current_user_can( 'ds_close_match' );
+$can_edit_incidents  = current_user_can( 'ds_edit_incidents' );
+// Administrador y coordinador pueden editar la planilla aunque ya esté cerrada.
+$can_reopen = current_user_can( 'manage_options' ) || current_user_can( 'ds_manage_tournaments' );
+// $is_locked = bloqueado para edición (cerrado Y sin permiso de reapertura).
+$is_locked = $is_finished && ! $can_reopen;
 // Compatibilidad: si se pasa $can_edit explícitamente desde el contexto (modo embed), usarlo.
 if ( isset( $can_edit ) && false === $can_edit ) {
 	$can_enter_incidents = false;
 	$can_close           = false;
 	$can_edit_incidents  = false;
+	$can_reopen          = false;
+	$is_locked           = $is_finished;
 }
 
 function st_player_option( array $player ): string {
@@ -43,9 +49,13 @@ function st_player_option( array $player ): string {
 		— <?php esc_html_e( 'Fecha', 'soccertrack' ); ?> <?php echo esc_html( (string) $match['round_number'] ); ?>
 	</h1>
 
-	<?php if ( $is_finished ) : ?>
+	<?php if ( $is_finished && ! $can_reopen ) : ?>
 		<div class="st-alert st-alert--warning">
 			<?php esc_html_e( 'Este partido ya fue cerrado. El resultado no puede modificarse.', 'soccertrack' ); ?>
+		</div>
+	<?php elseif ( $is_finished && $can_reopen ) : ?>
+		<div class="st-alert st-alert--info">
+			⚠️ <?php esc_html_e( 'Partido cerrado. Como coordinador/administrador puedes editar y volver a guardar el resultado.', 'soccertrack' ); ?>
 		</div>
 	<?php endif; ?>
 
@@ -99,142 +109,154 @@ function st_player_option( array $player ): string {
 		</div>
 	<?php endif; ?>
 
-	<?php /* ── Asignación de árbitro (solo coordinadores) ──────────── */ ?>
+	<?php /* ── Asignación de árbitro ─────────────────────────────────── */ ?>
 	<?php if ( current_user_can( 'ds_manage_tournaments' ) ) : ?>
+	<?php
+	$current_ref_name = (string) ( $match['referee_name'] ?? '' );
+	$has_ref          = $current_ref_name !== '';
+	?>
 	<div class="st-card" style="margin-bottom:16px">
-		<div class="st-card-header">
-			<h2 class="st-card-title" style="font-size:1rem">⚖️ <?php esc_html_e( 'Árbitro del partido', 'soccertrack' ); ?></h2>
+		<div class="st-card-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+			<h2 class="st-card-title" style="font-size:1rem;margin:0">⚖️ <?php esc_html_e( 'Árbitro del partido', 'soccertrack' ); ?></h2>
+			<?php if ( $has_ref ) : ?>
+				<span style="font-weight:600;color:#0E0C19"><?php echo esc_html( $current_ref_name ); ?></span>
+				<button
+					type="button"
+					class="st-btn st-btn--secondary st-btn--sm"
+					onclick="document.getElementById('st-referee-form').style.display=document.getElementById('st-referee-form').style.display==='none'?'block':'none'"
+				>✏️ <?php esc_html_e( 'Editar', 'soccertrack' ); ?></button>
+			<?php else : ?>
+				<button
+					type="button"
+					class="st-btn st-btn--primary st-btn--sm"
+					onclick="document.getElementById('st-referee-form').style.display='block';this.style.display='none'"
+				>➕ <?php esc_html_e( 'Agregar árbitro', 'soccertrack' ); ?></button>
+			<?php endif; ?>
 		</div>
+
 		<?php if ( ( $notice_ref ?? '' ) === 'referee_saved' ) : ?>
-			<div class="st-alert st-alert--success" style="margin-bottom:10px">✅ <?php esc_html_e( 'Árbitro guardado.', 'soccertrack' ); ?></div>
+			<div class="st-alert st-alert--success" style="margin:10px 0 0">✅ <?php esc_html_e( 'Árbitro guardado.', 'soccertrack' ); ?></div>
 		<?php endif; ?>
 		<?php if ( ! empty( $error_ref ?? '' ) ) : ?>
-			<div class="st-alert st-alert--error" style="margin-bottom:10px">⚠️ <?php echo esc_html( $error_ref ); ?></div>
+			<div class="st-alert st-alert--error" style="margin:10px 0 0">⚠️ <?php echo esc_html( $error_ref ); ?></div>
 		<?php endif; ?>
-		<form method="post" action="">
-			<?php wp_nonce_field( 'st_save_referee_' . $match['id'] ); ?>
-			<input type="hidden" name="st_save_referee" value="1">
-			<div class="st-form-inline">
-				<div class="st-field" style="flex:1;min-width:200px">
-					<label class="st-label"><?php esc_html_e( 'Árbitro asignado', 'soccertrack' ); ?></label>
-					<select name="referee_user_id" class="st-input">
-						<option value="0"><?php esc_html_e( '— Sin árbitro —', 'soccertrack' ); ?></option>
-						<?php foreach ( $referees ?? [] as $ref ) : ?>
-							<option value="<?php echo esc_attr( (string) $ref->ID ); ?>"
-								<?php selected( (int) ( $match['referee_user_id'] ?? 0 ), (int) $ref->ID ); ?>>
-								<?php echo esc_html( $ref->display_name ); ?>
-							</option>
-						<?php endforeach; ?>
-					</select>
+
+		<div id="st-referee-form" style="margin-top:12px;<?php echo $has_ref ? 'display:none' : ''; ?>">
+			<form method="post" action="">
+				<?php wp_nonce_field( 'st_save_referee_' . $match['id'] ); ?>
+				<input type="hidden" name="st_save_referee" value="1">
+				<div class="st-form-inline" style="gap:12px;align-items:flex-end">
+					<div class="st-field" style="flex:1;min-width:180px">
+						<label class="st-label"><?php esc_html_e( 'Seleccionar del catálogo', 'soccertrack' ); ?></label>
+						<select name="staff_id" class="st-input">
+							<option value="0"><?php esc_html_e( '— Seleccionar —', 'soccertrack' ); ?></option>
+							<?php foreach ( $staff_arbitros ?? [] as $arb ) : ?>
+								<option value="<?php echo esc_attr( (string) $arb['id'] ); ?>">
+									<?php echo esc_html( $arb['nombre'] ); ?>
+								</option>
+							<?php endforeach; ?>
+						</select>
+					</div>
+					<div class="st-field" style="flex:1;min-width:180px">
+						<label class="st-label"><?php esc_html_e( 'O escribe el nombre', 'soccertrack' ); ?></label>
+						<input
+							type="text"
+							name="custom_name"
+							class="st-input"
+							value="<?php echo esc_attr( $current_ref_name ); ?>"
+							placeholder="<?php esc_attr_e( 'Nombre personalizado', 'soccertrack' ); ?>"
+						>
+					</div>
+					<div class="st-field">
+						<button type="submit" class="st-btn st-btn--primary st-btn--sm">
+							💾 <?php esc_html_e( 'Guardar', 'soccertrack' ); ?>
+						</button>
+					</div>
 				</div>
-				<div class="st-field" style="justify-content:flex-end">
-					<button type="submit" class="st-btn st-btn--primary st-btn--sm">
-						💾 <?php esc_html_e( 'Guardar', 'soccertrack' ); ?>
-					</button>
-				</div>
-			</div>
-		</form>
+				<p style="font-size:.8rem;color:#888;margin:6px 0 0">
+					<?php esc_html_e( 'Si no está en la lista, escribe el nombre en el campo de texto.', 'soccertrack' ); ?>
+				</p>
+			</form>
+		</div>
 	</div>
 	<?php else : ?>
-		<?php
-		$ref_id   = (int) ( $match['referee_user_id'] ?? 0 );
-		$ref_name = $ref_id ? ( get_user_by( 'id', $ref_id )?->display_name ?? '—' ) : '—';
-		?>
-		<p style="margin-bottom:12px">⚖️ <strong><?php esc_html_e( 'Árbitro:', 'soccertrack' ); ?></strong> <?php echo esc_html( $ref_name ); ?></p>
+		<?php $ref_display = (string) ( $match['referee_name'] ?? '' ); ?>
+		<p style="margin-bottom:12px">⚖️ <strong><?php esc_html_e( 'Árbitro:', 'soccertrack' ); ?></strong> <?php echo $ref_display !== '' ? esc_html( $ref_display ) : '—'; ?></p>
 	<?php endif; ?>
 
-	<?php /* ── Asignación de planillero (solo coordinadores) ─────────── */ ?>
+	<?php /* ── Asignación de planillero ──────────────────────────────── */ ?>
 	<?php if ( current_user_can( 'ds_manage_tournaments' ) ) : ?>
+	<?php
+	$current_plan_name = (string) ( $match['planillero_name'] ?? '' );
+	$has_plan          = $current_plan_name !== '';
+	?>
 	<div class="st-card" style="margin-bottom:16px">
-		<div class="st-card-header">
-			<h2 class="st-card-title" style="font-size:1rem">📋 <?php esc_html_e( 'Planillero del partido', 'soccertrack' ); ?></h2>
+		<div class="st-card-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+			<h2 class="st-card-title" style="font-size:1rem;margin:0">📋 <?php esc_html_e( 'Planillero del partido', 'soccertrack' ); ?></h2>
+			<?php if ( $has_plan ) : ?>
+				<span style="font-weight:600;color:#0E0C19"><?php echo esc_html( $current_plan_name ); ?></span>
+				<button
+					type="button"
+					class="st-btn st-btn--secondary st-btn--sm"
+					onclick="document.getElementById('st-planillero-form').style.display=document.getElementById('st-planillero-form').style.display==='none'?'block':'none'"
+				>✏️ <?php esc_html_e( 'Editar', 'soccertrack' ); ?></button>
+			<?php else : ?>
+				<button
+					type="button"
+					class="st-btn st-btn--primary st-btn--sm"
+					onclick="document.getElementById('st-planillero-form').style.display='block';this.style.display='none'"
+				>➕ <?php esc_html_e( 'Agregar planillero', 'soccertrack' ); ?></button>
+			<?php endif; ?>
 		</div>
+
 		<?php if ( ( $notice_plan ?? '' ) === 'planillero_saved' ) : ?>
-			<div class="st-alert st-alert--success" style="margin-bottom:10px">✅ <?php esc_html_e( 'Planillero guardado.', 'soccertrack' ); ?></div>
+			<div class="st-alert st-alert--success" style="margin:10px 0 0">✅ <?php esc_html_e( 'Planillero guardado.', 'soccertrack' ); ?></div>
 		<?php endif; ?>
 		<?php if ( ! empty( $error_plan ?? '' ) ) : ?>
-			<div class="st-alert st-alert--error" style="margin-bottom:10px">⚠️ <?php echo esc_html( $error_plan ); ?></div>
+			<div class="st-alert st-alert--error" style="margin:10px 0 0">⚠️ <?php echo esc_html( $error_plan ); ?></div>
 		<?php endif; ?>
-		<form method="post" action="" id="st-planillero-form">
-			<?php wp_nonce_field( 'st_save_planillero_' . $match['id'] ); ?>
-			<input type="hidden" name="st_save_planillero" value="1">
-			<div class="st-form-inline">
-				<div class="st-field" style="flex:1;min-width:200px">
-					<label class="st-label"><?php esc_html_e( 'Planillero asignado', 'soccertrack' ); ?></label>
-					<select name="planillero_user_id" class="st-input">
-						<option value="0"><?php esc_html_e( '— Sin planillero —', 'soccertrack' ); ?></option>
-						<?php foreach ( $planilleros ?? [] as $plan ) : ?>
-							<option value="<?php echo esc_attr( (string) $plan->ID ); ?>"
-								<?php selected( (int) ( $match['planillero_user_id'] ?? 0 ), (int) $plan->ID ); ?>>
-								<?php echo esc_html( $plan->display_name ); ?>
-							</option>
-						<?php endforeach; ?>
-					</select>
+
+		<div id="st-planillero-form" style="margin-top:12px;<?php echo $has_plan ? 'display:none' : ''; ?>">
+			<form method="post" action="">
+				<?php wp_nonce_field( 'st_save_planillero_' . $match['id'] ); ?>
+				<input type="hidden" name="st_save_planillero" value="1">
+				<div class="st-form-inline" style="gap:12px;align-items:flex-end">
+					<div class="st-field" style="flex:1;min-width:180px">
+						<label class="st-label"><?php esc_html_e( 'Seleccionar del catálogo', 'soccertrack' ); ?></label>
+						<select name="staff_id" class="st-input">
+							<option value="0"><?php esc_html_e( '— Seleccionar —', 'soccertrack' ); ?></option>
+							<?php foreach ( $staff_planilleros ?? [] as $plan ) : ?>
+								<option value="<?php echo esc_attr( (string) $plan['id'] ); ?>">
+									<?php echo esc_html( $plan['nombre'] ); ?>
+								</option>
+							<?php endforeach; ?>
+						</select>
+					</div>
+					<div class="st-field" style="flex:1;min-width:180px">
+						<label class="st-label"><?php esc_html_e( 'O escribe el nombre', 'soccertrack' ); ?></label>
+						<input
+							type="text"
+							name="custom_name"
+							class="st-input"
+							value="<?php echo esc_attr( $current_plan_name ); ?>"
+							placeholder="<?php esc_attr_e( 'Nombre personalizado', 'soccertrack' ); ?>"
+						>
+					</div>
+					<div class="st-field">
+						<button type="submit" class="st-btn st-btn--primary st-btn--sm">
+							💾 <?php esc_html_e( 'Guardar', 'soccertrack' ); ?>
+						</button>
+					</div>
 				</div>
-				<div class="st-field" style="justify-content:flex-end">
-					<button type="submit" class="st-btn st-btn--primary st-btn--sm">
-						💾 <?php esc_html_e( 'Guardar', 'soccertrack' ); ?>
-					</button>
-				</div>
-			</div>
-		</form>
+				<p style="font-size:.8rem;color:#888;margin:6px 0 0">
+					<?php esc_html_e( 'Si no está en la lista, escribe el nombre en el campo de texto.', 'soccertrack' ); ?>
+				</p>
+			</form>
+		</div>
 	</div>
 	<?php else : ?>
-		<?php
-		$plan_id   = (int) ( $match['planillero_user_id'] ?? 0 );
-		$plan_name = $plan_id ? ( get_user_by( 'id', $plan_id )?->display_name ?? '—' ) : '—';
-		?>
-		<p style="margin-bottom:12px">📋 <strong><?php esc_html_e( 'Planillero:', 'soccertrack' ); ?></strong> <?php echo esc_html( $plan_name ); ?></p>
-	<?php endif; ?>
-
-	<?php if ( ( $tournament['registration_mode'] ?? 'realtime' ) === 'deferred' && current_user_can( 'ds_manage_tournaments' ) ) : ?>
-	<div class="st-card" style="margin-bottom:16px">
-		<div class="st-card-header">
-			<h2 class="st-card-title">👥 <?php esc_html_e( 'Personal del partido', 'soccertrack' ); ?></h2>
-		</div>
-
-		<?php if ( ( $notice_staff ?? '' ) === 'staff_saved' ) : ?>
-			<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Nombres guardados.', 'soccertrack' ); ?></div>
-		<?php endif; ?>
-
-		<form method="post" action="" class="st-form-inline" style="gap:16px;padding:8px 0">
-			<?php wp_nonce_field( 'st_save_staff_names_' . $match['id'] ); ?>
-			<input type="hidden" name="st_save_staff_names" value="1">
-
-			<div class="st-field">
-				<label class="st-label"><?php esc_html_e( 'Árbitro', 'soccertrack' ); ?></label>
-				<input
-					type="text"
-					name="referee_name"
-					class="st-input"
-					value="<?php echo esc_attr( (string) ( $match['referee_name'] ?? '' ) ); ?>"
-					placeholder="<?php esc_attr_e( 'Nombre del árbitro', 'soccertrack' ); ?>"
-					style="max-width:220px"
-				>
-			</div>
-
-			<div class="st-field">
-				<label class="st-label"><?php esc_html_e( 'Planillero', 'soccertrack' ); ?></label>
-				<input
-					type="text"
-					name="planillero_name"
-					class="st-input"
-					value="<?php echo esc_attr( (string) ( $match['planillero_name'] ?? '' ) ); ?>"
-					placeholder="<?php esc_attr_e( 'Nombre del planillero', 'soccertrack' ); ?>"
-					style="max-width:220px"
-				>
-			</div>
-
-			<div class="st-field" style="align-self:flex-end">
-				<button type="submit" class="st-btn st-btn--secondary st-btn--sm">
-					💾 <?php esc_html_e( 'Guardar', 'soccertrack' ); ?>
-				</button>
-			</div>
-		</form>
-		<p style="font-size:.8rem;color:#888;margin:4px 0 0">
-			<?php esc_html_e( 'Solo visible en modo planilla física. Los nombres se usan como referencia en el acta.', 'soccertrack' ); ?>
-		</p>
-	</div>
+		<?php $plan_display = (string) ( $match['planillero_name'] ?? '' ); ?>
+		<p style="margin-bottom:12px">📋 <strong><?php esc_html_e( 'Planillero:', 'soccertrack' ); ?></strong> <?php echo $plan_display !== '' ? esc_html( $plan_display ) : '—'; ?></p>
 	<?php endif; ?>
 
 	<?php /* ── Encabezado del partido ──────────────────────────────────── */ ?>
@@ -261,19 +283,6 @@ function st_player_option( array $player ): string {
 				<?php echo esc_html( $match['venue'] ?? '' ); ?>
 				<?php echo ! empty( $match['court_name'] ) ? ' · ' . esc_html( $match['court_name'] ) : ''; ?>
 			</div>
-			<?php /* Timer visual */ ?>
-			<div style="text-align:center;margin-top:12px">
-				<span id="st-match-timer" style="font-size:1.4rem;font-weight:700;color:#3CBC20">00:00</span><br>
-				<button id="st-timer-start" class="st-btn st-btn--secondary" style="margin-top:6px;font-size:0.75rem;padding:4px 10px">
-					▶ <?php esc_html_e( 'Iniciar', 'soccertrack' ); ?>
-				</button>
-				<button id="st-timer-stop" class="st-btn st-btn--secondary" style="font-size:0.75rem;padding:4px 10px" disabled>
-					⏸ <?php esc_html_e( 'Pausar', 'soccertrack' ); ?>
-				</button>
-				<button id="st-timer-reset" class="st-btn st-btn--secondary" style="font-size:0.75rem;padding:4px 10px">
-					↺ <?php esc_html_e( 'Reset', 'soccertrack' ); ?>
-				</button>
-			</div>
 		</div>
 
 		<div class="st-match-sheet-team">
@@ -290,41 +299,28 @@ function st_player_option( array $player ): string {
 	</div>
 
 	<?php /* ── Controles de marcador (planillero + árbitro + coordinador) ── */ ?>
-	<?php if ( ! $is_finished && $can_enter_incidents ) : ?>
+	<?php if ( ! $is_locked && $can_enter_incidents ) : ?>
 	<div class="st-card" style="text-align:center">
 		<div style="display:flex;justify-content:center;align-items:center;gap:40px">
 			<div>
 				<p style="margin:0 0 8px;font-weight:600"><?php echo esc_html( $home_team['name'] ); ?></p>
-				<button class="st-btn st-btn--secondary" data-score-action="dec" data-score-team="home" <?php disabled( $is_finished ); ?>>−</button>
+				<button class="st-btn st-btn--secondary" data-score-action="dec" data-score-team="home">−</button>
 				<span style="display:inline-block;min-width:40px;text-align:center;font-size:1.6rem;font-weight:700" id="st-score-home-ctrl">0</span>
-				<button class="st-btn st-btn--primary" data-score-action="inc" data-score-team="home" <?php disabled( $is_finished ); ?>>+</button>
+				<button class="st-btn st-btn--primary" data-score-action="inc" data-score-team="home">+</button>
 			</div>
 			<div>
 				<p style="margin:0 0 8px;font-weight:600"><?php echo esc_html( $away_team['name'] ); ?></p>
-				<button class="st-btn st-btn--secondary" data-score-action="dec" data-score-team="away" <?php disabled( $is_finished ); ?>>−</button>
+				<button class="st-btn st-btn--secondary" data-score-action="dec" data-score-team="away">−</button>
 				<span style="display:inline-block;min-width:40px;text-align:center;font-size:1.6rem;font-weight:700" id="st-score-away-ctrl">0</span>
-				<button class="st-btn st-btn--primary" data-score-action="inc" data-score-team="away" <?php disabled( $is_finished ); ?>>+</button>
+				<button class="st-btn st-btn--primary" data-score-action="inc" data-score-team="away">+</button>
 			</div>
 		</div>
 
-		<?php /* Solo el árbitro/coordinador puede cerrar el acta */ ?>
-		<div style="margin-top:20px">
-			<div id="st-result-notice"></div>
-			<?php if ( $can_close ) : ?>
-			<button
-				id="st-submit-result"
-				class="st-btn st-btn--primary"
-				style="font-size:1rem;padding:12px 36px"
-				<?php disabled( $is_finished ); ?>
-			>
-				✔ <?php esc_html_e( 'Cerrar partido y registrar resultado', 'soccertrack' ); ?>
-			</button>
-			<?php else : ?>
-			<p style="color:#6b7280;font-size:.85rem;margin:0">
-				⏳ <?php esc_html_e( 'Esperando que el árbitro revise y cierre el acta.', 'soccertrack' ); ?>
-			</p>
-			<?php endif; ?>
-		</div>
+		<?php /* Botón oculto — usado por el footer "Guardar resultado" vía JS */ ?>
+		<?php if ( $can_close ) : ?>
+		<div id="st-result-notice" style="margin-top:8px"></div>
+		<button id="st-submit-result" style="display:none"></button>
+		<?php endif; ?>
 	</div>
 	<?php endif; ?>
 
@@ -377,7 +373,7 @@ function st_player_option( array $player ): string {
 
 	<?php /* ── Incidentes (planillero + árbitro + coordinador) ──────────── */ ?>
 	<?php /* ── Tarjetas (Amarilla / Roja) ──────────────────────────────── */ ?>
-	<?php if ( ! $is_finished && $can_enter_incidents ) : ?>
+	<?php if ( ! $is_locked && $can_enter_incidents ) : ?>
 	<div class="st-card st-incidents-panel">
 		<div class="st-card__header">
 			<h2 class="st-card__title"><?php esc_html_e( 'Registrar Tarjeta', 'soccertrack' ); ?></h2>
@@ -510,5 +506,73 @@ function st_player_option( array $player ): string {
 		</p>
 		<?php endif; ?>
 	</div>
+
+	<?php /* ── Botón guardar resultado al final de la hoja ────────────── */ ?>
+	<?php if ( ! $is_finished && $can_close ) : ?>
+	<div style="
+		position:sticky;bottom:0;z-index:100;
+		background:#fff;border-top:2px solid var(--st-green-primary,#3CBC20);
+		padding:14px 20px;margin-top:24px;
+		display:flex;align-items:center;justify-content:space-between;gap:16px;
+		box-shadow:0 -4px 12px rgba(0,0,0,.08)
+	">
+		<div style="font-size:.85rem;color:#555">
+			<strong><?php echo esc_html( $home_team['name'] ); ?></strong>
+			<span id="st-footer-score" style="font-size:1.2rem;font-weight:700;margin:0 12px;color:#0E0C19">
+				<span id="st-footer-home"><?php echo esc_html( (string) ( $match['home_score'] ?? 0 ) ); ?></span>
+				–
+				<span id="st-footer-away"><?php echo esc_html( (string) ( $match['away_score'] ?? 0 ) ); ?></span>
+			</span>
+			<strong><?php echo esc_html( $away_team['name'] ); ?></strong>
+		</div>
+		<div style="display:flex;align-items:center;gap:10px">
+			<div id="st-footer-result-notice" style="font-size:.85rem"></div>
+			<button
+				id="st-submit-result-footer"
+				class="st-btn st-btn--primary"
+				style="font-size:.95rem;padding:10px 28px"
+				onclick="document.getElementById('st-submit-result')?.click()"
+			>
+				✔ <?php esc_html_e( 'Guardar resultado y cerrar partido', 'soccertrack' ); ?>
+			</button>
+		</div>
+	</div>
+	<script>
+	// Sincronizar marcador del footer con los controles del marcador principal.
+	(function () {
+		function syncFooter() {
+			var h = document.getElementById( 'st-score-home-ctrl' );
+			var a = document.getElementById( 'st-score-away-ctrl' );
+			var fh = document.getElementById( 'st-footer-home' );
+			var fa = document.getElementById( 'st-footer-away' );
+			if ( h && fh ) fh.textContent = h.textContent;
+			if ( a && fa ) fa.textContent = a.textContent;
+		}
+		// Observar cambios en los controles del marcador.
+		var homeCtrl = document.getElementById( 'st-score-home-ctrl' );
+		var awayCtrl = document.getElementById( 'st-score-away-ctrl' );
+		if ( homeCtrl && awayCtrl ) {
+			new MutationObserver( syncFooter ).observe( homeCtrl, { childList: true, characterData: true, subtree: true } );
+			new MutationObserver( syncFooter ).observe( awayCtrl, { childList: true, characterData: true, subtree: true } );
+		}
+	} )();
+	</script>
+	<?php elseif ( $is_finished ) : ?>
+	<div style="
+		background:#f0fdf4;border-top:2px solid #86efac;
+		padding:14px 20px;margin-top:24px;
+		display:flex;align-items:center;justify-content:center;gap:12px
+	">
+		<span style="font-size:1.1rem">✅</span>
+		<span style="font-size:.9rem;color:#166534;font-weight:600">
+			<?php esc_html_e( 'Partido cerrado. Resultado registrado.', 'soccertrack' ); ?>
+			<strong>
+				<?php echo esc_html( (string) ( $match['home_score'] ?? 0 ) ); ?>
+				–
+				<?php echo esc_html( (string) ( $match['away_score'] ?? 0 ) ); ?>
+			</strong>
+		</span>
+	</div>
+	<?php endif; ?>
 
 </div>

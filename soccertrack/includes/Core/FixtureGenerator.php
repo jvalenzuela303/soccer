@@ -37,8 +37,8 @@ final class FixtureGenerator {
 	private function next_match_datetime(
 		array  $weekdays,
 		string $time,
-		int    $batch_offset    = 0,
-		int    $round_index     = 0,
+		int    $batch_offset     = 0,
+		int    $round_index      = 0,
 		int    $duration_minutes = 60
 	): string {
 		$day_names = [
@@ -94,6 +94,7 @@ final class FixtureGenerator {
 		return max( 30, min( 180, (int) ( $tournament['match_duration'] ?? 60 ) ) );
 	}
 
+
 	/**
 	 * Decodifica match_weekdays desde el array del torneo.
 	 *
@@ -141,8 +142,8 @@ final class FixtureGenerator {
 
 		$tournament_id = (int) $tournament['id'];
 		$weekdays      = $this->weekdays_from_tournament( $tournament );
-		$time          = (string) ( $tournament['match_time'] ?? '19:00:00' );
-		$duration      = $this->duration_from_tournament( $tournament );
+		$time     = (string) ( $tournament['match_time'] ?? '19:00:00' );
+		$duration = $this->duration_from_tournament( $tournament );
 
 		// 1. Verificar que todos los partidos regulares estén finalizados.
 		$pending = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
@@ -235,8 +236,8 @@ final class FixtureGenerator {
 
 		$tournament_id = (int) $tournament['id'];
 		$weekdays      = $this->weekdays_from_tournament( $tournament );
-		$time          = (string) ( $tournament['match_time'] ?? '19:00:00' );
-		$duration      = $this->duration_from_tournament( $tournament );
+		$time     = (string) ( $tournament['match_time'] ?? '19:00:00' );
+		$duration = $this->duration_from_tournament( $tournament );
 
 		// 1. Leer semi-finales finalizadas.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
@@ -328,9 +329,9 @@ final class FixtureGenerator {
 	public function generate( array $tournament, array $team_ids, int $venue_id ): array {
 		$tournament_id = (int) $tournament['id'];
 		$weekdays      = $this->weekdays_from_tournament( $tournament );
-		$time          = (string) ( $tournament['match_time'] ?? '19:00:00' );
-		$duration      = $this->duration_from_tournament( $tournament );
-		$num_courts    = $this->count_courts( $venue_id );
+		$time       = (string) ( $tournament['match_time'] ?? '19:00:00' );
+		$duration   = $this->duration_from_tournament( $tournament );
+		$num_courts = $this->count_courts( $venue_id );
 
 		$n     = count( $team_ids );
 		$teams = $team_ids;

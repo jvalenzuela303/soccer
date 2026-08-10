@@ -53,6 +53,7 @@
 		<table class="st-table">
 			<thead>
 				<tr>
+					<th style="width:44px">#ID</th>
 					<th><?php esc_html_e( 'Recinto', 'soccertrack' ); ?></th>
 					<th><?php esc_html_e( 'Dirección', 'soccertrack' ); ?></th>
 					<th style="text-align:center"><?php esc_html_e( 'Canchas', 'soccertrack' ); ?></th>
@@ -63,6 +64,7 @@
 			<tbody>
 			<?php foreach ( $venues as $v ) : ?>
 				<tr>
+					<td style="font-weight:700;color:#555">#<?php echo esc_html( (string) $v['id'] ); ?></td>
 					<td><strong><?php echo esc_html( $v['name'] ); ?></strong></td>
 					<td><?php echo esc_html( $v['address'] ?? '—' ); ?></td>
 					<td style="text-align:center"><?php echo esc_html( (string) $v['court_count'] ); ?></td>

@@ -47,6 +47,8 @@ $render_obs = static function ( string $obs, string $player, string $reason ): s
 	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Sanción registrada correctamente.', 'soccertrack' ); ?></div>
 <?php elseif ( $notice === 'resolved' ) : ?>
 	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Sanción marcada como cumplida.', 'soccertrack' ); ?></div>
+<?php elseif ( $notice === 'edited' ) : ?>
+	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Sanción actualizada correctamente.', 'soccertrack' ); ?></div>
 <?php endif; ?>
 
 <?php if ( $error ) : ?>
@@ -306,6 +308,17 @@ $render_obs = static function ( string $obs, string $player, string $reason ): s
 					</td>
 					<td>
 						<?php if ( $s['status'] === 'active' ) : ?>
+					<div style="display:flex;gap:4px;flex-wrap:wrap">
+						<button
+							type="button"
+							class="st-btn st-btn--sm st-btn--secondary st-edit-sanction-btn"
+							data-id="<?php echo esc_attr( (string) $s['id'] ); ?>"
+							data-matches="<?php echo esc_attr( (string) $s['ban_days_or_matches'] ); ?>"
+							data-obs="<?php echo esc_attr( (string) ( $s['observaciones'] ?? '' ) ); ?>"
+							data-player="<?php echo esc_attr( $s['first_name'] . ' ' . $s['last_name'] ); ?>"
+						>
+							✏️ <?php esc_html_e( 'Editar', 'soccertrack' ); ?>
+						</button>
 						<form method="post" action="?st_panel_page=1&st_panel_vista=tribunal&tournament_id=<?php echo esc_attr( (string) $tournament_id ); ?><?php echo $team_filter ? '&team_filter=' . esc_attr( (string) $team_filter ) : ''; ?>"
 							  onsubmit="return confirm('<?php esc_attr_e( '¿Marcar esta sanción como cumplida?', 'soccertrack' ); ?>')">
 							<?php wp_nonce_field( 'st_resolve_sanction' ); ?>
@@ -315,7 +328,8 @@ $render_obs = static function ( string $obs, string $player, string $reason ): s
 								✅ <?php esc_html_e( 'Cumplida', 'soccertrack' ); ?>
 							</button>
 						</form>
-						<?php endif; ?>
+					</div>
+					<?php endif; ?>
 					</td>
 				</tr>
 			<?php endforeach; ?>
@@ -401,6 +415,60 @@ $render_obs = static function ( string $obs, string $player, string $reason ): s
 	</div>
 </div>
 <?php endif; ?>
+
+<?php /* ── Modal editar sanción (apelación) ─────────────────────────── */ ?>
+<div id="st-edit-sanction-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center">
+	<div style="background:#fff;border-radius:8px;padding:28px 32px;min-width:360px;max-width:480px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.18)">
+		<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+			<h3 style="margin:0;font-size:1rem">✏️ <?php esc_html_e( 'Editar sanción', 'soccertrack' ); ?></h3>
+			<button type="button" id="st-edit-sanction-close" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#555">✕</button>
+		</div>
+		<div id="st-edit-sanction-player" style="font-size:.85rem;color:#666;margin-bottom:16px;font-style:italic"></div>
+		<form method="post" action="?st_panel_page=1&st_panel_vista=tribunal&tournament_id=<?php echo esc_attr( (string) $tournament_id ); ?><?php echo $team_filter ? '&team_filter=' . esc_attr( (string) $team_filter ) : ''; ?>" id="st-edit-sanction-form">
+			<?php wp_nonce_field( 'st_edit_sanction' ); ?>
+			<input type="hidden" name="st_edit_sanction" value="1">
+			<input type="hidden" name="sanction_id" id="st-edit-sanction-id" value="">
+			<div style="margin-bottom:14px">
+				<label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:4px">
+					<?php esc_html_e( 'Fechas de sanción *', 'soccertrack' ); ?>
+				</label>
+				<input
+					type="number"
+					name="ban_matches"
+					id="st-edit-sanction-matches"
+					class="st-input"
+					min="1"
+					max="20"
+					required
+					style="max-width:100px"
+				>
+				<small style="display:block;margin-top:4px;color:#888"><?php esc_html_e( 'Nuevo total de fechas (puede ser menor al original por apelación)', 'soccertrack' ); ?></small>
+			</div>
+			<div style="margin-bottom:18px">
+				<label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:4px">
+					<?php esc_html_e( 'Resolución / Observaciones', 'soccertrack' ); ?>
+				</label>
+				<textarea
+					name="observaciones"
+					id="st-edit-sanction-obs"
+					class="st-input"
+					rows="3"
+					maxlength="1000"
+					placeholder="<?php esc_attr_e( 'Ej: Apelación aceptada. Se reduce la sanción a 1 fecha.', 'soccertrack' ); ?>"
+					style="resize:vertical;width:100%"
+				></textarea>
+			</div>
+			<div style="display:flex;gap:8px;justify-content:flex-end">
+				<button type="button" id="st-edit-sanction-cancel" class="st-btn st-btn--secondary">
+					<?php esc_html_e( 'Cancelar', 'soccertrack' ); ?>
+				</button>
+				<button type="submit" class="st-btn st-btn--primary">
+					💾 <?php esc_html_e( 'Guardar cambios', 'soccertrack' ); ?>
+				</button>
+			</div>
+		</form>
+	</div>
+</div>
 
 <?php /* ── Popup de observaciones ──────────────────────────────────────── */ ?>
 <div id="st-obs-overlay" class="st-obs-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="st-obs-title">
@@ -491,6 +559,42 @@ $render_obs = static function ( string $obs, string $player, string $reason ): s
 		if ( e.key === 'Escape' && overlay.classList.contains( 'is-open' ) ) {
 			close();
 		}
+	} );
+} )();
+</script>
+
+<script>
+( () => {
+	const overlay      = document.getElementById( 'st-edit-sanction-overlay' );
+	const idInput      = document.getElementById( 'st-edit-sanction-id' );
+	const matchesInput = document.getElementById( 'st-edit-sanction-matches' );
+	const obsInput     = document.getElementById( 'st-edit-sanction-obs' );
+	const playerEl     = document.getElementById( 'st-edit-sanction-player' );
+	const btnClose     = document.getElementById( 'st-edit-sanction-close' );
+	const btnCancel    = document.getElementById( 'st-edit-sanction-cancel' );
+
+	const open = ( btn ) => {
+		idInput.value        = btn.dataset.id;
+		matchesInput.value   = btn.dataset.matches;
+		obsInput.value       = btn.dataset.obs ?? '';
+		playerEl.textContent = '👤 ' + ( btn.dataset.player ?? '' );
+		overlay.style.display = 'flex';
+		matchesInput.focus();
+	};
+
+	const close = () => { overlay.style.display = 'none'; };
+
+	document.addEventListener( 'click', e => {
+		const btn = e.target.closest( '.st-edit-sanction-btn' );
+		if ( btn ) { open( btn ); return; }
+		if ( e.target === overlay ) { close(); }
+	} );
+
+	btnClose?.addEventListener( 'click', close );
+	btnCancel?.addEventListener( 'click', close );
+
+	document.addEventListener( 'keydown', e => {
+		if ( e.key === 'Escape' && overlay.style.display !== 'none' ) close();
 	} );
 } )();
 </script>

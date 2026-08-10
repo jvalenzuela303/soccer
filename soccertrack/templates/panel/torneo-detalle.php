@@ -13,10 +13,13 @@
 	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Planillero asignado correctamente.', 'soccertrack' ); ?></div>
 <?php endif; ?>
 <?php if ( ( $notice ?? '' ) === 'auto_assigned' ) : ?>
-	<div class="st-alert st-alert--success">🔄 <?php esc_html_e( 'Árbitros y planilleros auto-asignados. Puedes ajustar manualmente si es necesario.', 'soccertrack' ); ?></div>
+	<div class="st-alert st-alert--success">📅 <?php esc_html_e( 'Fechas, horarios y canchas asignados según la configuración del torneo. Puedes ajustar individualmente en el fixture.', 'soccertrack' ); ?></div>
 <?php endif; ?>
 <?php if ( ( $notice ?? '' ) === 'schedule_updated' ) : ?>
 	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Horario del torneo actualizado.', 'soccertrack' ); ?></div>
+<?php endif; ?>
+<?php if ( ( $notice ?? '' ) === 'dates_updated' ) : ?>
+	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Fechas del torneo actualizadas.', 'soccertrack' ); ?></div>
 <?php endif; ?>
 <?php if ( ( $notice ?? '' ) === 'reg_mode_updated' ) : ?>
 	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Modo de registro actualizado.', 'soccertrack' ); ?></div>
@@ -86,25 +89,71 @@
 	<?php endif; ?>
 </div>
 
+<?php /* ── Fechas del torneo ──────────────────────────────────────────── */ ?>
+<div class="st-card" style="margin-bottom:20px">
+	<div class="st-card-header">
+		<h2 class="st-card-title">📆 <?php esc_html_e( 'Fechas del torneo', 'soccertrack' ); ?></h2>
+	</div>
+	<form method="post" action="" class="st-form-inline" style="align-items:flex-end;gap:16px;flex-wrap:wrap">
+		<?php wp_nonce_field( 'st_update_dates_' . $tournament['id'] ); ?>
+		<input type="hidden" name="st_update_dates" value="1">
+
+		<div class="st-field">
+			<label class="st-label"><?php esc_html_e( 'Inicio', 'soccertrack' ); ?></label>
+			<input
+				type="date"
+				name="start_date"
+				class="st-input"
+				value="<?php echo esc_attr( $tournament['start_date'] ?? '' ); ?>"
+			>
+		</div>
+
+		<div class="st-field">
+			<label class="st-label" style="display:flex;align-items:center;gap:4px">
+				<?php esc_html_e( 'Fin estimado', 'soccertrack' ); ?>
+				<span
+					title="<?php esc_attr_e( 'Puede extenderse por eventos climáticos u otras contingencias. Actualiza esta fecha cuando sea necesario.', 'soccertrack' ); ?>"
+					style="font-size:.75rem;color:#999;cursor:default"
+				>ℹ</span>
+			</label>
+			<input
+				type="date"
+				name="end_date"
+				class="st-input"
+				value="<?php echo esc_attr( $tournament['end_date'] ?? '' ); ?>"
+			>
+		</div>
+
+		<div class="st-field" style="align-self:flex-end">
+			<button type="submit" class="st-btn st-btn--secondary st-btn--sm">
+				💾 <?php esc_html_e( 'Guardar', 'soccertrack' ); ?>
+			</button>
+		</div>
+	</form>
+	<p style="margin:8px 0 0;font-size:.8rem;color:#888">
+		<?php esc_html_e( 'La fecha de fin es referencial. Puedes modificarla en cualquier momento si el torneo se extiende por clima, suspensiones u otras contingencias.', 'soccertrack' ); ?>
+	</p>
+</div>
+
 <?php /* ── Configuración de horario del torneo ─────────────────────────── */ ?>
 <div class="st-card" style="margin-bottom:20px">
 	<div class="st-card-header">
 		<h2 class="st-card-title">🕖 <?php esc_html_e( 'Horario habitual de partidos', 'soccertrack' ); ?></h2>
 	</div>
-	<form method="post" action="" class="st-form-inline" style="align-items:flex-end;gap:16px;padding:0 0 4px">
+
+	<form method="post" action="">
 		<?php wp_nonce_field( 'st_update_schedule_' . $tournament['id'] ); ?>
 		<input type="hidden" name="st_update_schedule" value="1">
 
 		<?php
-		// Días en orden lunes-domingo (0=dom al final para mostrar lun-dom).
 		$day_labels = [
-			1 => __( 'Lunes', 'soccertrack' ),
-			2 => __( 'Martes', 'soccertrack' ),
-			3 => __( 'Miércoles', 'soccertrack' ),
-			4 => __( 'Jueves', 'soccertrack' ),
-			5 => __( 'Viernes', 'soccertrack' ),
-			6 => __( 'Sábado', 'soccertrack' ),
-			0 => __( 'Domingo', 'soccertrack' ),
+			1 => [ 'short' => 'Lun', 'full' => 'Lunes' ],
+			2 => [ 'short' => 'Mar', 'full' => 'Martes' ],
+			3 => [ 'short' => 'Mié', 'full' => 'Miércoles' ],
+			4 => [ 'short' => 'Jue', 'full' => 'Jueves' ],
+			5 => [ 'short' => 'Vie', 'full' => 'Viernes' ],
+			6 => [ 'short' => 'Sáb', 'full' => 'Sábado' ],
+			0 => [ 'short' => 'Dom', 'full' => 'Domingo' ],
 		];
 
 		$saved_days_raw = $tournament['match_weekdays'] ?? null;
@@ -116,89 +165,125 @@
 		if ( empty( $saved_days ) ) {
 			$saved_days = [ (int) ( $tournament['match_weekday'] ?? 6 ) ];
 		}
+
+		$start_hm     = substr( (string) ( $tournament['match_time'] ?? '19:00:00' ), 0, 5 );
+		$duration_min = max( 30, (int) ( $tournament['match_duration'] ?? 60 ) );
+		[ $sh, $sm ]  = array_map( 'intval', explode( ':', $start_hm ) );
+		$end_total    = $sh * 60 + $sm + $duration_min;
+		$end_hm       = sprintf( '%02d:%02d', intdiv( $end_total, 60 ) % 24, $end_total % 60 );
 		?>
 
-		<div class="st-field">
-			<label class="st-label"><?php esc_html_e( 'Días de partido', 'soccertrack' ); ?></label>
-			<div style="display:flex;gap:12px;flex-wrap:wrap;padding-top:4px">
-				<?php foreach ( $day_labels as $val => $label ) : ?>
-					<label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:.9rem">
-						<input
-							type="checkbox"
-							name="match_weekdays[]"
-							value="<?php echo esc_attr( (string) $val ); ?>"
-							<?php checked( in_array( $val, $saved_days, true ) ); ?>
-						>
-						<?php echo esc_html( $label ); ?>
-					</label>
+		<?php /* ── Días ── */ ?>
+		<div style="margin-bottom:20px">
+			<p class="st-label" style="margin:0 0 10px"><?php esc_html_e( '¿Qué días se juega?', 'soccertrack' ); ?></p>
+			<div style="display:flex;gap:6px;flex-wrap:wrap">
+				<?php foreach ( $day_labels as $val => $day ) :
+					$active = in_array( $val, $saved_days, true );
+				?>
+				<label
+					title="<?php echo esc_attr( $day['full'] ); ?>"
+					style="
+						cursor:pointer;
+						display:flex;align-items:center;justify-content:center;
+						width:52px;height:42px;border-radius:6px;font-size:.9rem;font-weight:600;
+						border:2px solid <?php echo $active ? 'var(--st-green-primary,#3CBC20)' : '#ddd'; ?>;
+						background:<?php echo $active ? 'var(--st-green-primary,#3CBC20)' : '#f5f5f5'; ?>;
+						color:<?php echo $active ? '#fff' : '#555'; ?>;
+						transition:all .15s
+					"
+					onmouseover="this.style.borderColor='var(--st-green-primary,#3CBC20)'"
+					onmouseout="if(!this.querySelector('input').checked){this.style.borderColor='#ddd'}"
+				>
+					<input
+						type="checkbox"
+						name="match_weekdays[]"
+						value="<?php echo esc_attr( (string) $val ); ?>"
+						<?php checked( $active ); ?>
+						style="display:none"
+						onchange="
+							this.parentElement.style.background = this.checked ? 'var(--st-green-primary,#3CBC20)' : '#f5f5f5';
+							this.parentElement.style.color      = this.checked ? '#fff' : '#555';
+							this.parentElement.style.borderColor= this.checked ? 'var(--st-green-primary,#3CBC20)' : '#ddd';
+						"
+					>
+					<?php echo esc_html( $day['short'] ); ?>
+				</label>
 				<?php endforeach; ?>
+			</div>
+			<p style="margin:8px 0 0;font-size:.78rem;color:#999">
+				<?php esc_html_e( 'Selecciona uno o más días. El fixture se distribuirá entre los días marcados.', 'soccertrack' ); ?>
+			</p>
+		</div>
+
+		<?php /* ── Hora y duración ── */ ?>
+		<div style="display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:20px">
+			<div>
+				<label class="st-label" style="display:block;margin-bottom:4px">
+					<?php esc_html_e( 'Hora de inicio', 'soccertrack' ); ?>
+				</label>
+				<input
+					type="time"
+					name="match_time"
+					id="st-match-time"
+					class="st-input"
+					value="<?php echo esc_attr( $start_hm ); ?>"
+					style="max-width:120px"
+				>
+			</div>
+
+			<div>
+				<label class="st-label" style="display:block;margin-bottom:4px">
+					<?php esc_html_e( 'Duración', 'soccertrack' ); ?>
+				</label>
+				<div style="display:flex;align-items:center;gap:6px">
+					<input
+						type="number"
+						name="match_duration"
+						id="st-duration"
+						class="st-input"
+						value="<?php echo esc_attr( (string) $duration_min ); ?>"
+						min="30" max="120" step="5"
+						style="max-width:75px"
+					>
+					<span style="font-size:.85rem;color:#666">min</span>
+				</div>
+			</div>
+
+			<div style="padding-bottom:2px;font-size:.9rem;color:#444;white-space:nowrap">
+				<?php esc_html_e( 'Término estimado:', 'soccertrack' ); ?>
+				<strong id="st-end-time" style="font-size:1rem"><?php echo esc_html( $end_hm ); ?></strong>
 			</div>
 		</div>
 
-		<?php
-		$start_hm      = substr( (string) ( $tournament['match_time'] ?? '19:00:00' ), 0, 5 );
-		$duration_min  = max( 30, (int) ( $tournament['match_duration'] ?? 60 ) );
-		[ $sh, $sm ]   = array_map( 'intval', explode( ':', $start_hm ) );
-		$end_total_min = $sh * 60 + $sm + $duration_min;
-		$end_hm        = sprintf( '%02d:%02d', intdiv( $end_total_min, 60 ) % 24, $end_total_min % 60 );
-		?>
-
-		<div class="st-field">
-			<label class="st-label"><?php esc_html_e( 'Hora inicio', 'soccertrack' ); ?></label>
-			<input
-				type="time"
-				name="match_time"
-				class="st-input"
-				value="<?php echo esc_attr( $start_hm ); ?>"
-				style="max-width:120px"
-			>
+		<?php /* ── Explicación del sistema ── */ ?>
+		<div style="background:#f8f8f8;border-left:3px solid var(--st-green-primary,#3CBC20);border-radius:0 6px 6px 0;padding:10px 14px;margin-bottom:16px;font-size:.82rem;color:#555;line-height:1.6">
+			<strong style="color:#333;display:block;margin-bottom:4px">
+				<?php esc_html_e( '¿Cómo usa el sistema estos datos?', 'soccertrack' ); ?>
+			</strong>
+			<?php esc_html_e( 'Al generar el fixture, cada jornada se asigna al siguiente día marcado del ciclo semanal. Los partidos de la jornada inician a la hora indicada: si el recinto tiene 2 canchas, se juegan 2 partidos simultáneos y los siguientes inician una hora después (ej: 19:00 y 20:00 con 2 canchas). Los horarios individuales pueden ajustarse en el fixture una vez generado.', 'soccertrack' ); ?>
 		</div>
 
-		<div class="st-field">
-			<label class="st-label"><?php esc_html_e( 'Duración (min)', 'soccertrack' ); ?></label>
-			<input
-				type="number"
-				name="match_duration"
-				class="st-input"
-				value="<?php echo esc_attr( (string) $duration_min ); ?>"
-				min="30"
-				max="180"
-				step="5"
-				style="max-width:90px"
-			>
-			<span style="font-size:.85rem;color:#555;align-self:center">
-				→ <?php esc_html_e( 'Término:', 'soccertrack' ); ?>
-				<strong id="st-match-end-time"><?php echo esc_html( $end_hm ); ?></strong>
-			</span>
-		</div>
-
-		<div class="st-field" style="align-self:flex-end">
-			<button type="submit" class="st-btn st-btn--secondary st-btn--sm">
-				💾 <?php esc_html_e( 'Guardar', 'soccertrack' ); ?>
-			</button>
-		</div>
+		<button type="submit" class="st-btn st-btn--primary st-btn--sm">
+			💾 <?php esc_html_e( 'Guardar', 'soccertrack' ); ?>
+		</button>
 	</form>
-	<p style="margin:8px 0 0;font-size:.8rem;color:#888">
-		<?php esc_html_e( 'Este horario se usa al generar el fixture. Los partidos ya generados conservan su fecha individual.', 'soccertrack' ); ?>
-	</p>
+
 	<script>
 	(function () {
-		const timeInput = document.querySelector( '[name="match_time"]' );
-		const durInput  = document.querySelector( '[name="match_duration"]' );
-		const endLabel  = document.getElementById( 'st-match-end-time' );
-		if ( ! timeInput || ! durInput || ! endLabel ) return;
-
-		function updateEnd() {
-			const [ h, m ] = timeInput.value.split( ':' ).map( Number );
-			const dur      = Math.max( 30, parseInt( durInput.value, 10 ) || 60 );
+		const timeIn = document.getElementById( 'st-match-time' );
+		const durIn  = document.getElementById( 'st-duration' );
+		const endOut = document.getElementById( 'st-end-time' );
+		if ( ! timeIn || ! durIn || ! endOut ) return;
+		function update() {
+			const [ h, m ] = timeIn.value.split( ':' ).map( Number );
+			const dur      = Math.max( 30, parseInt( durIn.value, 10 ) || 60 );
 			const total    = h * 60 + m + dur;
-			const eh       = String( Math.floor( total / 60 ) % 24 ).padStart( 2, '0' );
-			const em       = String( total % 60 ).padStart( 2, '0' );
-			endLabel.textContent = eh + ':' + em;
+			endOut.textContent =
+				String( Math.floor( total / 60 ) % 24 ).padStart( 2, '0' ) + ':' +
+				String( total % 60 ).padStart( 2, '0' );
 		}
-
-		timeInput.addEventListener( 'input', updateEnd );
-		durInput.addEventListener( 'input', updateEnd );
+		timeIn.addEventListener( 'input', update );
+		durIn.addEventListener( 'input', update );
 	} )();
 	</script>
 </div>
@@ -262,6 +347,7 @@
 						value="<?php echo esc_attr( (string) $v['id'] ); ?>"
 						<?php checked( in_array( (int) $v['id'], $tournament_venue_ids ?? [], true ) ); ?>
 					>
+					<span style="font-size:.75rem;color:#999;font-weight:600">#<?php echo esc_html( (string) $v['id'] ); ?></span>
 					<?php echo esc_html( $v['name'] ); ?>
 				</label>
 			<?php endforeach; ?>
@@ -282,13 +368,54 @@
 	<div class="st-card-header">
 		<h2 class="st-card-title"><?php esc_html_e( 'Fixture', 'soccertrack' ); ?></h2>
 		<?php if ( ! empty( $matches ) ) : ?>
-		<form method="post" style="display:inline">
-			<?php wp_nonce_field( 'st_auto_assign_' . $tournament['id'] ); ?>
-			<input type="hidden" name="st_auto_assign" value="1">
-			<button type="submit" class="st-btn st-btn--sm st-btn--secondary">
-				🔄 <?php esc_html_e( 'Auto-asignar', 'soccertrack' ); ?>
-			</button>
-		</form>
+		<?php
+		// ── Validaciones para "Asignar fechas y canchas" ────────────────────
+		$assign_errors = [];
+
+		if ( count( $teams ) < 2 ) {
+			$assign_errors[] = __( 'Se requieren al menos 2 equipos inscritos.', 'soccertrack' );
+		}
+
+		$teams_no_players = array_values( array_filter( $teams, fn( $t ) => (int) $t['player_count'] < 1 ) );
+		if ( ! empty( $teams_no_players ) ) {
+			$names = implode( ', ', array_column( $teams_no_players, 'name' ) );
+			/* translators: %s: comma-separated team names */
+			$assign_errors[] = sprintf( __( 'Sin jugadores: %s', 'soccertrack' ), $names );
+		}
+
+		if ( empty( $saved_days ) ) {
+			$assign_errors[] = __( 'Horario sin días seleccionados.', 'soccertrack' );
+		}
+
+		if ( empty( $tournament_venue_ids ) ) {
+			$assign_errors[] = __( 'Sin recintos seleccionados para este torneo.', 'soccertrack' );
+		}
+
+		$can_assign = empty( $assign_errors );
+		?>
+		<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+			<form method="post" style="display:inline">
+				<?php wp_nonce_field( 'st_auto_assign_' . $tournament['id'] ); ?>
+				<input type="hidden" name="st_auto_assign" value="1">
+				<button
+					type="submit"
+					class="st-btn st-btn--sm <?php echo $can_assign ? 'st-btn--secondary' : ''; ?>"
+					<?php echo $can_assign ? '' : 'disabled style="opacity:.45;cursor:not-allowed"'; ?>
+					title="<?php echo $can_assign
+						? esc_attr__( 'Recalcula fechas, horarios y canchas según la configuración del torneo', 'soccertrack' )
+						: esc_attr( implode( ' · ', $assign_errors ) ); ?>"
+				>
+					📅 <?php esc_html_e( 'Asignar fechas y canchas', 'soccertrack' ); ?>
+				</button>
+			</form>
+			<?php if ( ! $can_assign ) : ?>
+			<ul style="margin:0;padding:0;list-style:none;font-size:.78rem;color:#c0392b;text-align:right">
+				<?php foreach ( $assign_errors as $err ) : ?>
+				<li>⚠ <?php echo esc_html( $err ); ?></li>
+				<?php endforeach; ?>
+			</ul>
+			<?php endif; ?>
+		</div>
 		<?php endif; ?>
 		<?php if ( empty( $matches ) && ! empty( $teams ) ) : ?>
 		<?php
@@ -340,20 +467,30 @@
 		'postponed'   => __( 'Aplazado', 'soccertrack' ),
 	];
 	?>
-	<div class="st-table-wrap">
-		<table class="st-table st-table--fixture">
+	<div class="st-table-wrap" style="overflow-x:auto">
+		<table class="st-table st-table--fixture" style="table-layout:fixed;min-width:900px;width:100%">
+			<colgroup>
+				<col style="width:32px">  <?php /* Jornada — 2 dígitos max */ ?>
+				<col style="width:14%">   <?php /* Local */ ?>
+				<col style="width:70px">  <?php /* Resultado */ ?>
+				<col style="width:14%">   <?php /* Visitante */ ?>
+				<col style="width:90px">  <?php /* Estado */ ?>
+				<col style="width:150px"> <?php /* Horario */ ?>
+				<col style="width:40px">  <?php /* Recinto */ ?>
+				<col style="width:125px"> <?php /* Cancha */ ?>
+				<col>                     <?php /* Acciones — ocupa el resto */ ?>
+			</colgroup>
 			<thead>
 				<tr>
-					<th><?php esc_html_e( 'Fecha / Fase', 'soccertrack' ); ?></th>
+					<th style="text-align:center;padding:8px 4px">J°</th>
 					<th><?php esc_html_e( 'Local', 'soccertrack' ); ?></th>
 					<th><?php esc_html_e( 'Resultado', 'soccertrack' ); ?></th>
 					<th><?php esc_html_e( 'Visitante', 'soccertrack' ); ?></th>
 					<th><?php esc_html_e( 'Estado', 'soccertrack' ); ?></th>
 					<th><?php esc_html_e( 'Horario', 'soccertrack' ); ?></th>
+					<th><?php esc_html_e( '#R', 'soccertrack' ); ?></th>
 					<th><?php esc_html_e( 'Cancha', 'soccertrack' ); ?></th>
-					<th><?php esc_html_e( 'Árbitro', 'soccertrack' ); ?></th>
-					<th><?php esc_html_e( 'Planillero', 'soccertrack' ); ?></th>
-					<th><?php esc_html_e( 'Planilla', 'soccertrack' ); ?></th>
+					<th><?php esc_html_e( 'Acciones', 'soccertrack' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -367,7 +504,7 @@
 			?>
 			<?php foreach ( $matches as $m ) : ?>
 				<tr>
-					<td>
+					<td style="text-align:center;font-weight:700;padding:8px 4px;font-size:.85rem">
 						<?php
 						$phase_cur = $m['phase'] ?? 'regular';
 						if ( $phase_cur === 'regular' ) {
@@ -397,13 +534,13 @@
 						if ( $m['status'] !== 'finished' ) :
 					?>
 						<?php if ( $locked_by_time ) : ?>
-						<span style="font-size:.82rem;color:#555">
-							<?php echo $dt ? esc_html( date_i18n( 'd/m/Y H:i', strtotime( $dt ) ) ) : '—'; ?>
+						<span style="font-size:.78rem;color:#555">
+							<?php echo $dt ? esc_html( date_i18n( 'd/m H:i', strtotime( $dt ) ) ) : '—'; ?>
 						</span>
 						<span title="<?php esc_attr_e( 'No se puede modificar con menos de 1 hora de anticipación', 'soccertrack' ); ?>"
 							  style="font-size:.8rem;color:#e67e22;margin-left:4px">🔒</span>
 						<?php else : ?>
-						<form method="post" action="">
+						<form method="post" action="" style="display:flex;align-items:center;gap:4px">
 							<?php wp_nonce_field( 'st_update_datetime_' . $tournament['id'] ); ?>
 							<input type="hidden" name="st_update_datetime" value="1">
 							<input type="hidden" name="match_id" value="<?php echo esc_attr( (string) $m['id'] ); ?>">
@@ -412,24 +549,39 @@
 								name="match_datetime"
 								class="st-input st-fixture-dt-input"
 								value="<?php echo esc_attr( $dt ? substr( str_replace( ' ', 'T', $dt ), 0, 16 ) : '' ); ?>"
+								style="max-width:148px;font-size:.78rem;padding:3px 5px"
 							>
 							<button type="submit" class="st-btn st-btn--sm st-btn--secondary" title="<?php esc_attr_e( 'Guardar horario', 'soccertrack' ); ?>">✔</button>
 						</form>
 						<?php endif; ?>
 						<?php else :
-							echo $dt ? esc_html( date_i18n( 'd/m/Y H:i', strtotime( $dt ) ) ) : '—';
+							echo $dt ? '<span style="font-size:.82rem">' . esc_html( date_i18n( 'd/m H:i', strtotime( $dt ) ) ) . '</span>' : '—';
 						endif; ?>
+					</td>
+					<td style="text-align:center">
+						<?php
+						$v_id = (int) ( $m['venue_id'] ?? 0 );
+						if ( $v_id ) :
+							$v_name = '';
+							foreach ( $venues as $v ) {
+								if ( (int) $v['id'] === $v_id ) { $v_name = $v['name']; break; }
+							}
+							echo '<span title="' . esc_attr( $v_name ) . '" style="font-size:.82rem;font-weight:600;color:#555;cursor:default">#' . esc_html( (string) $v_id ) . '</span>';
+						else :
+							echo '<span style="color:#bbb">—</span>';
+						endif;
+						?>
 					</td>
 					<td>
 						<?php
 						$venue_courts = $courts_by_venue[ (int) ( $m['venue_id'] ?? 0 ) ] ?? [];
 						if ( $m['status'] !== 'finished' && ! empty( $venue_courts ) ) :
 						?>
-						<form method="post" action="">
+						<form method="post" action="" style="display:flex;align-items:center;gap:4px">
 							<?php wp_nonce_field( 'st_update_court_' . $tournament['id'] ); ?>
 							<input type="hidden" name="st_update_court" value="1">
 							<input type="hidden" name="match_id" value="<?php echo esc_attr( (string) $m['id'] ); ?>">
-							<select name="court_id" class="st-input st-fixture-court-select">
+							<select name="court_id" class="st-input st-fixture-court-select" style="max-width:110px;font-size:.78rem;padding:3px 5px">
 								<?php foreach ( $venue_courts as $c ) : ?>
 									<option value="<?php echo esc_attr( (string) $c['id'] ); ?>" <?php selected( (int) ( $m['court_id'] ?? 0 ), (int) $c['id'] ); ?>>
 										<?php echo esc_html( $c['court_name'] ); ?>
@@ -446,82 +598,18 @@
 							echo esc_html( $cname );
 						endif; ?>
 					</td>
-					<td>
-						<?php
-						$ref_id   = (int) ( $m['referee_user_id'] ?? 0 );
-						if ( $m['status'] !== 'finished' && ! empty( $referees ) ) :
-						?>
-						<form method="post" action="">
-							<?php wp_nonce_field( 'st_update_referee_' . $tournament['id'] ); ?>
-							<input type="hidden" name="st_update_referee" value="1">
-							<input type="hidden" name="match_id" value="<?php echo esc_attr( (string) $m['id'] ); ?>">
-							<select name="referee_user_id" class="st-input st-fixture-referee-select">
-								<option value="0"><?php esc_html_e( '— Ninguno —', 'soccertrack' ); ?></option>
-								<?php foreach ( $referees as $ref ) : ?>
-									<option value="<?php echo esc_attr( (string) $ref->ID ); ?>" <?php selected( $ref_id, (int) $ref->ID ); ?>>
-										<?php echo esc_html( $ref->display_name ); ?>
-									</option>
-								<?php endforeach; ?>
-							</select>
-							<button type="submit" class="st-btn st-btn--sm st-btn--secondary" title="<?php esc_attr_e( 'Guardar árbitro', 'soccertrack' ); ?>">✔</button>
-						</form>
-						<?php elseif ( $m['status'] === 'finished' ) :
-							$ref_name = $ref_id ? ( get_user_by( 'id', $ref_id )?->display_name ?? '—' ) : '—';
-							echo esc_html( $ref_name );
-						else :
-							echo '—';
-						endif; ?>
-					</td>
-					<td>
-					<?php
-					$plan_id = (int) ( $m['planillero_user_id'] ?? 0 );
-					if ( $m['status'] !== 'finished' && ! empty( $planilleros ) ) :
-					?>
-					<form method="post" action="">
-						<?php wp_nonce_field( 'st_update_planillero_' . $tournament['id'] ); ?>
-						<input type="hidden" name="st_update_planillero" value="1">
-						<input type="hidden" name="match_id" value="<?php echo esc_attr( (string) $m['id'] ); ?>">
-						<select name="planillero_user_id" class="st-input st-fixture-planillero-select">
-							<option value="0"><?php esc_html_e( '— Ninguno —', 'soccertrack' ); ?></option>
-							<?php foreach ( $planilleros as $plan ) : ?>
-								<option value="<?php echo esc_attr( (string) $plan->ID ); ?>" <?php selected( $plan_id, (int) $plan->ID ); ?>>
-									<?php echo esc_html( $plan->display_name ); ?>
-								</option>
-							<?php endforeach; ?>
-						</select>
-						<button type="submit" class="st-btn st-btn--sm st-btn--secondary" title="<?php esc_attr_e( 'Guardar planillero', 'soccertrack' ); ?>">✔</button>
-					</form>
-					<?php elseif ( $m['status'] === 'finished' ) :
-						$plan_name = $plan_id ? ( get_user_by( 'id', $plan_id )?->display_name ?? '—' ) : '—';
-						echo esc_html( $plan_name );
-					else :
-						echo '—';
-					endif; ?>
-					</td>
-					<td>
-						<?php if ( $m['status'] !== 'finished' ) : ?>
+					<td style="white-space:nowrap">
 						<a href="<?php echo esc_url( home_url( '/panel/partido/' . $m['id'] . '/' ) ); ?>" class="st-btn st-btn--sm st-btn--primary">
-							📋 <?php esc_html_e( 'Planilla', 'soccertrack' ); ?>
+							📝 <?php esc_html_e( 'Resultado', 'soccertrack' ); ?>
 						</a>
-						<?php endif; ?>
-						<?php
-						$match_transitions = [
-							'scheduled'   => [ 'new' => 'in_progress', 'label' => '▶ Iniciar',   'class' => 'st-btn--success' ],
-							'in_progress' => [ 'new' => 'finished',    'label' => '✔ Finalizar', 'class' => 'st-btn--warning' ],
-							'finished'    => [ 'new' => 'scheduled',   'label' => '↩ Reabrir',   'class' => 'st-btn--danger' ],
-							'suspended'   => [ 'new' => 'scheduled',   'label' => '↩ Reprogramar','class' => 'st-btn--secondary' ],
-							'postponed'   => [ 'new' => 'scheduled',   'label' => '↩ Reprogramar','class' => 'st-btn--secondary' ],
-						];
-						$mt = $match_transitions[ $m['status'] ?? 'scheduled' ] ?? null;
-						if ( $mt ) :
-						?>
+						<?php if ( $m['status'] === 'finished' ) : ?>
 						<form method="post" style="display:inline;margin-left:4px">
 							<?php wp_nonce_field( 'st_change_match_status_' . $tournament['id'] ); ?>
 							<input type="hidden" name="st_change_match_status" value="1">
 							<input type="hidden" name="match_id" value="<?php echo esc_attr( (string) $m['id'] ); ?>">
-							<input type="hidden" name="new_status" value="<?php echo esc_attr( $mt['new'] ); ?>">
-							<button type="submit" class="st-btn st-btn--sm <?php echo esc_attr( $mt['class'] ); ?>">
-								<?php echo esc_html( $mt['label'] ); ?>
+							<input type="hidden" name="new_status" value="scheduled">
+							<button type="submit" class="st-btn st-btn--sm st-btn--danger" title="<?php esc_attr_e( 'Reabrir partido', 'soccertrack' ); ?>">
+								↩ <?php esc_html_e( 'Reabrir', 'soccertrack' ); ?>
 							</button>
 						</form>
 						<?php endif; ?>

@@ -24,10 +24,12 @@
 	 *           homePlayers:Array, awayPlayers:Array,
 	 *           currentUserId:number, canEditIncidents:boolean, canClose:boolean,
 	 *           i18n:Record<string,string> }} */
-	const cfg  = window.stMatchSheet ?? {};
-	const API  = ( cfg.apiBase ?? '' ).replace( /\/$/, '' );
-	const MID  = Number( cfg.matchId ?? 0 );
-	const i18n = cfg.i18n ?? {};
+	const cfg             = window.stMatchSheet ?? {};
+	const API             = ( cfg.apiBase ?? '' ).replace( /\/$/, '' );
+	const MID             = Number( cfg.matchId ?? 0 );
+	const i18n            = cfg.i18n ?? {};
+	const redirectAfterSave = cfg.redirectAfterSave ?? '';
+	const canReopen       = cfg.canReopen ?? false;
 
 	/* ------------------------------------------------------------------ */
 	/* Helpers DOM                                                          */
@@ -803,40 +805,37 @@
 	/* ------------------------------------------------------------------ */
 
 	function setupResultForm() {
-		const btn    = qs( '#st-submit-result' );
-		const notice = qs( '#st-result-notice' );
+		const btn       = qs( '#st-submit-result' );
+		const btnFooter = qs( '#st-submit-result-footer' );
+		const notice    = qs( '#st-result-notice' );
+		const noticeFooter = qs( '#st-footer-result-notice' );
 		if ( ! btn ) return;
 
-		// Bloquear si no hay árbitro asignado.
-		if ( ! cfg.refereeUserId ) {
-			btn.disabled = true;
-			btn.title    = i18n.no_referee ?? '⚠️ Debes asignar un árbitro antes de cerrar el partido.';
-			showNotice(
-				notice,
-				i18n.no_referee ?? '⚠️ Debes asignar un árbitro antes de cerrar el partido.',
-				'warning'
-			);
-		}
+		// Gestiona el estado de carga en ambos botones (oculto + footer visible).
+		const setResultLoading = ( loading ) => {
+			setLoading( btn, loading );
+			if ( btnFooter ) {
+				btnFooter.disabled = loading;
+				if ( loading ) {
+					btnFooter.dataset.label = btnFooter.textContent;
+					btnFooter.textContent   = i18n.saving ?? 'Guardando…';
+				} else {
+					btnFooter.textContent = btnFooter.dataset.label ?? btnFooter.textContent;
+				}
+			}
+		};
 
 		btn.addEventListener( 'click', async () => {
 			if ( submitted ) return;
-
-			if ( ! cfg.refereeUserId ) {
-				showNotice(
-					notice,
-					i18n.no_referee ?? '⚠️ Debes asignar un árbitro antes de cerrar el partido.',
-					'warning'
-				);
-				return;
-			}
 
 			const confirmed = window.confirm(
 				`${ i18n.confirm_result ?? '¿Confirmar resultado?' } ${ homeScore } – ${ awayScore }`
 			);
 			if ( ! confirmed ) return;
 
-			setLoading( btn, true );
+			setResultLoading( true );
 			if ( notice ) notice.innerHTML = '';
+			if ( noticeFooter ) noticeFooter.innerHTML = '';
 
 			try {
 				await apiPost(
@@ -844,15 +843,27 @@
 					{ home_score: homeScore, away_score: awayScore }
 				);
 
-				submitted = true;
+				if ( ! canReopen ) {
+					submitted = true;
+					qsa( '[data-score-action], #st-submit-result, .st-incident-form button, .st-incident-edit, .st-incident-delete' )
+						.forEach( el => { el.disabled = true; } );
+				}
 
-				qsa( '[data-score-action], #st-submit-result, .st-incident-form button, .st-incident-edit, .st-incident-delete' )
-					.forEach( el => { el.disabled = true; } );
+				setResultLoading( false );
+				const msg = i18n.result_saved ?? 'Resultado registrado correctamente.';
+				showNotice( notice, msg, 'success' );
+				if ( noticeFooter ) showNotice( noticeFooter, msg, 'success' );
 
-				showNotice( notice, i18n.result_saved ?? 'Resultado registrado correctamente.', 'success' );
+				if ( redirectAfterSave ) {
+					setTimeout( () => {
+						window.location.href = redirectAfterSave;
+					}, 1200 );
+				}
 			} catch ( err ) {
-				showNotice( notice, `${ i18n.error_save ?? 'Error al guardar.' } ${ err.message }`, 'error' );
-				setLoading( btn, false );
+				const errMsg = `${ i18n.error_save ?? 'Error al guardar.' } ${ err.message }`;
+				showNotice( notice, errMsg, 'error' );
+				if ( noticeFooter ) showNotice( noticeFooter, errMsg, 'error' );
+				setResultLoading( false );
 			}
 		} );
 	}

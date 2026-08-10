@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><?php echo isset( $page_title ) ? esc_html( $page_title ) . ' — SoccerTrack' : 'SoccerTrack Panel'; ?></title>
+<title><?php echo isset( $page_title ) ? esc_html( $page_title ) . ' — Gestión de Torneos' : 'Gestión de Torneos Panel'; ?></title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Poppins:wght@300;400;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
@@ -18,17 +18,15 @@
 	<div class="st-panel-header-inner">
 		<a href="<?php echo esc_url( home_url( '/panel/' ) ); ?>" class="st-panel-brand">
 			<span class="st-panel-logo">⚽</span>
-			<span class="st-panel-brand-name">SoccerTrack</span>
+			<span class="st-panel-brand-name">Gestión de Torneos</span>
 			<span class="st-panel-brand-sub">
 				<?php
-				if ( current_user_can( 'ds_manage_tournaments' ) ) {
+				if ( current_user_can( 'manage_options' ) ) {
+					esc_html_e( 'Administrador', 'soccertrack' );
+				} elseif ( current_user_can( 'ds_manage_tournaments' ) ) {
 					esc_html_e( 'Coordinador', 'soccertrack' );
 				} elseif ( current_user_can( 'ds_close_match' ) ) {
-					esc_html_e( 'Árbitro', 'soccertrack' );
-				} elseif ( current_user_can( 'ds_enter_match_incidents' ) ) {
-					esc_html_e( 'Planillero', 'soccertrack' );
-				} elseif ( current_user_can( 'manage_options' ) ) {
-					esc_html_e( 'Administrador', 'soccertrack' );
+					esc_html_e( 'Veedor de Resultados', 'soccertrack' );
 				}
 				?>
 			</span>

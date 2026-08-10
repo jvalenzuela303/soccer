@@ -2254,6 +2254,8 @@ final class TournamentPage {
 			wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), '', [ 'response' => 403 ] );
 		}
 
+		global $wpdb;
+
 		$notice            = '';
 		$error             = '';
 		$created_password  = '';
@@ -2363,7 +2365,6 @@ final class TournamentPage {
 			}
 		}
 
-		global $wpdb;
 		$staff_list = $wpdb->get_results( // phpcs:ignore
 			"SELECT id, nombre, tipo FROM {$wpdb->prefix}ds_staff ORDER BY tipo ASC, nombre ASC",
 			ARRAY_A

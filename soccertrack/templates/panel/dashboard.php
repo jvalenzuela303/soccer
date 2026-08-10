@@ -79,10 +79,13 @@
 		<a href="<?php echo esc_url( home_url( '/panel/tribunal/' ) ); ?>" class="st-quick-link">
 			<span>🟥</span><?php esc_html_e( 'Tribunal disciplinario', 'soccertrack' ); ?>
 		</a>
+		<a href="<?php echo esc_url( home_url( '/panel/usuarios/' ) ); ?>" class="st-quick-link">
+			<span>👤</span><?php esc_html_e( 'Gestionar usuarios', 'soccertrack' ); ?>
+		</a>
 		<?php endif; ?>
-		<?php if ( current_user_can( 'ds_enter_match_incidents' ) || current_user_can( 'ds_close_match' ) ) : ?>
+		<?php if ( current_user_can( 'ds_manage_tournaments' ) || current_user_can( 'ds_close_match' ) ) : ?>
 		<a href="<?php echo esc_url( home_url( '/panel/mis-partidos/' ) ); ?>" class="st-quick-link st-quick-link--primary">
-			<span>📋</span><?php esc_html_e( 'Planilla arbitral', 'soccertrack' ); ?>
+			<span>📋</span><?php esc_html_e( 'Partidos del torneo', 'soccertrack' ); ?>
 		</a>
 		<?php endif; ?>
 	</div>

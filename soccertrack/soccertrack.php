@@ -1,12 +1,12 @@
 <?php
 /**
- * Plugin Name:       SoccerTrack — Gestión Deportiva
+ * Plugin Name:       SportManager — Gestión de Torneos
  * Plugin URI:        https://neurolabs.cl/
  * Description:       Motor de gestión multi-torneos: fixture Round-Robin, tribunal disciplinario, planilla digital, portal público con pestañas.
- * Version:           1.8.1
+ * Version:           1.8.4
  * Requires at least: 7.0
  * Requires PHP:      8.2
- * Author:            Jvalenzuela
+ * Author:            Neurolabs
  * Author URI:        https://neurolabs.cl/
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -35,8 +35,8 @@ if ( version_compare( PHP_VERSION, '8.2', '<' ) ) {
 }
 
 // ── Constantes ────────────────────────────────────────────────────────────────
-define( 'SOCCERTRACK_VERSION',    '1.8.1' );
-define( 'SOCCERTRACK_DB_VERSION', '1.8.1' );
+define( 'SOCCERTRACK_VERSION',    '1.8.4' );
+define( 'SOCCERTRACK_DB_VERSION', '1.8.4' );
 define( 'SOCCERTRACK_FILE',       __FILE__ );
 define( 'SOCCERTRACK_DIR',        plugin_dir_path( __FILE__ ) );
 define( 'SOCCERTRACK_URL',        plugin_dir_url( __FILE__ ) );

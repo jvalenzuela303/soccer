@@ -29,6 +29,7 @@ $ms_config = [
 	'currentUserId'     => get_current_user_id(),
 	'canEditIncidents'  => current_user_can( 'ds_edit_incidents' ),
 	'canClose'          => current_user_can( 'ds_close_match' ),
+	'canReopen'         => current_user_can( 'manage_options' ) || current_user_can( 'ds_manage_tournaments' ),
 	'homeTeam'          => [
 		'id'   => (int) $home_team['id'],
 		'name' => $home_team['name'],
@@ -39,6 +40,10 @@ $ms_config = [
 	],
 	'homePlayers'       => array_map( fn( array $p ) => $map_player( $p, (int) $home_team['id'] ), $home_players ),
 	'awayPlayers'       => array_map( fn( array $p ) => $map_player( $p, (int) $away_team['id'] ), $away_players ),
+	'redirectAfterSave' => home_url( add_query_arg( [
+		'tournament_id' => (int) ( $match['tournament_id'] ?? 0 ),
+		'round_number'  => (int) ( $match['round_number']  ?? 0 ),
+	], '/panel/mis-partidos/' ) ),
 	'i18n'              => [
 		'saving'                => __( 'Guardando…', 'soccertrack' ),
 		'confirm_result'        => __( '¿Confirmar resultado?', 'soccertrack' ),

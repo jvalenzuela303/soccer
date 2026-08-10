@@ -374,16 +374,11 @@ final class AdminEndpoints {
 			return new \WP_Error( 'match_not_found', __( 'Partido no encontrado.', 'soccertrack' ), [ 'status' => 404 ] );
 		}
 
-		if ( 'finished' === $match['status'] ) {
-			return new \WP_Error( 'match_already_finished', __( 'El partido ya tiene resultado registrado.', 'soccertrack' ), [ 'status' => 409 ] );
-		}
+		$was_finished = 'finished' === $match['status'];
+		$can_reopen   = current_user_can( 'manage_options' ) || current_user_can( 'ds_manage_tournaments' );
 
-		if ( empty( $match['referee_user_id'] ) ) {
-			return new \WP_Error(
-				'no_referee',
-				__( 'Debes asignar un árbitro antes de cerrar el partido.', 'soccertrack' ),
-				[ 'status' => 422 ]
-			);
+		if ( $was_finished && ! $can_reopen ) {
+			return new \WP_Error( 'match_already_finished', __( 'El partido ya tiene resultado registrado.', 'soccertrack' ), [ 'status' => 409 ] );
 		}
 
 		$tournament_id = (int) $match['tournament_id'];
@@ -408,8 +403,10 @@ final class AdminEndpoints {
 			return new \WP_Error( 'db_error', __( 'Error al guardar el resultado.', 'soccertrack' ), [ 'status' => 500 ] );
 		}
 
-		// Decrementar 1 fecha de sanción solo a los jugadores de los equipos que disputaron este partido.
-		( new TribunalManager() )->decrement_after_match( $tournament_id, $home_team_id, $away_team_id );
+		// Decrementar sanciones solo si el partido NO estaba ya cerrado (evitar doble decremento).
+		if ( ! $was_finished ) {
+			( new TribunalManager() )->decrement_after_match( $tournament_id, $home_team_id, $away_team_id );
+		}
 
 		// Recalcular tabla de posiciones.
 		$standings = ( new StandingsCalculator() )->recalculate( $tournament_id );
@@ -542,7 +539,7 @@ final class AdminEndpoints {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$tournament = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT id, match_weekday, match_weekdays, match_time, match_duration FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
+				"SELECT id, match_weekday, match_weekdays, match_time, match_time_weekend, match_duration FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
 				$tournament_id
 			),
 			ARRAY_A
@@ -1144,7 +1141,7 @@ final class AdminEndpoints {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$tournament = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT id, match_weekday, match_weekdays, match_time, match_duration FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
+				"SELECT id, match_weekday, match_weekdays, match_time, match_time_weekend, match_duration FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
 				$tid
 			),
 			ARRAY_A
@@ -1183,7 +1180,7 @@ final class AdminEndpoints {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$tournament = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT id, match_weekday, match_weekdays, match_time, match_duration FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
+				"SELECT id, match_weekday, match_weekdays, match_time, match_time_weekend, match_duration FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
 				$tid
 			),
 			ARRAY_A

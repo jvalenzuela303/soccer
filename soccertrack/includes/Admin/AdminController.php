@@ -37,8 +37,8 @@ final class AdminController {
 
 	public static function register_menus(): void {
 		add_menu_page(
-			__( 'SoccerTrack', 'soccertrack' ),
-			__( 'SoccerTrack', 'soccertrack' ),
+			__( 'Gestión de Torneos', 'soccertrack' ),
+			__( 'Gestión de Torneos', 'soccertrack' ),
 			'read',
 			'soccertrack-panel-login',
 			[ self::class, 'redirect_to_panel' ],

@@ -143,39 +143,6 @@ defined( 'ABSPATH' ) || exit;
 		<?php endif; ?>
 	</div>
 
-	<?php /* ── Importar Árbitros ─────────────────────────────────────────── */ ?>
-	<div class="st-card">
-		<div class="st-card__header">
-			<h2 class="st-card__title">
-				<?php esc_html_e( 'Importar Árbitros', 'soccertrack' ); ?>
-			</h2>
-		</div>
-
-		<p style="font-size:0.85rem;color:#666;margin-bottom:12px">
-			<?php esc_html_e( 'Columnas: A = Nombre · B = Apellido · C = Correo electrónico', 'soccertrack' ); ?>
-			<br><em><?php esc_html_e( 'Se crea un usuario WordPress con rol Árbitro. Las contraseñas temporales se mostrarán al finalizar.', 'soccertrack' ); ?></em>
-		</p>
-
-		<div
-			class="st-dropzone"
-			id="st-dropzone-referees"
-			data-endpoint="soccertrack/v1/admin/import/referees"
-			data-extra-field=""
-			data-extra-value=""
-		>
-			<div class="st-dropzone__icon" aria-hidden="true">🏁</div>
-			<p class="st-dropzone__text"><?php esc_html_e( 'Arrastra tu archivo aquí, o haz clic para buscar', 'soccertrack' ); ?></p>
-			<p class="st-dropzone__hint"><?php esc_html_e( 'CSV o XLSX · Máximo 5 MB', 'soccertrack' ); ?></p>
-			<input
-				type="file"
-				accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-				aria-label="<?php esc_attr_e( 'Archivo de árbitros', 'soccertrack' ); ?>"
-			>
-		</div>
-
-		<div class="st-import-result" id="st-result-referees"></div>
-	</div>
-
 	<?php endif; ?>
 
 </div>

@@ -3,20 +3,19 @@
  * Gestión de roles y capabilities de SoccerTrack.
  *
  * Roles definidos:
- *  - ds_coordinador : Comisario/Coordinador de Liga — carga masiva, fixture, tribunal.
- *  - ds_arbitro     : Árbitro/Veedor — revisa incidentes, cierra el acta.
- *  - ds_planillero  : Planillero — registra goles y tarjetas con detalle durante el partido.
+ *  - ds_coordinador : Comisario/Coordinador de Liga — carga masiva, fixture, tribunal, gestión completa.
+ *  - ds_veedor      : Veedor de Resultados — ingreso de resultados e incidentes de todos los partidos.
  *
  * Capabilities por responsabilidad (RACI):
- *  - ds_manage_tournaments    : Crear/editar/eliminar torneos y asignar árbitros/planilleros.
+ *  - ds_manage_tournaments    : Crear/editar/eliminar torneos y gestión completa.
  *  - ds_load_excel            : Importar CSV/XLSX de equipos y jugadores.
  *  - ds_generate_fixture      : Ejecutar generador Round-Robin.
  *  - ds_manage_discipline     : Emitir y gestionar sanciones del tribunal.
  *  - ds_view_admin_panel      : Acceder al panel de administración del torneo.
  *  - ds_view_match_sheet      : Acceder a la planilla digital (lectura).
- *  - ds_enter_match_incidents : Registrar goles y tarjetas (planillero + árbitro + coordinador).
- *  - ds_edit_incidents        : Editar o eliminar incidentes ajenos (árbitro + coordinador).
- *  - ds_close_match           : Cerrar el acta y registrar resultado final (árbitro + coordinador).
+ *  - ds_enter_match_incidents : Registrar goles y tarjetas.
+ *  - ds_edit_incidents        : Editar o eliminar incidentes.
+ *  - ds_close_match           : Cerrar el acta y registrar resultado final.
  *
  * @package SoccerTrack
  */
@@ -67,27 +66,12 @@ final class RolesManager {
 	];
 
 	/** @var array<string, bool> */
-	private const CAPS_ARBITRO = [
-		// Capabilities personalizadas del plugin.
+	private const CAPS_VEEDOR = [
 		'read'                     => true,
 		'ds_view_match_sheet'      => true,
 		'ds_enter_match_incidents' => true,
 		'ds_edit_incidents'        => true,
 		'ds_close_match'           => true,
-		// Capabilities de CPT: solo editar partidos asignados (sin crear ni borrar).
-		'edit_st_partidos'         => true,
-		'create_st_partidos'       => false,
-		'delete_st_partidos'       => false,
-		'publish_st_partidos'      => false,
-	];
-
-	/** @var array<string, bool> */
-	private const CAPS_PLANILLERO = [
-		// Capabilities personalizadas del plugin.
-		'read'                     => true,
-		'ds_view_match_sheet'      => true,
-		'ds_enter_match_incidents' => true,
-		// No tiene ds_edit_incidents ni ds_close_match.
 	];
 
 	/** @var array<string, array{label:string, caps:array<string,bool>}> */
@@ -96,13 +80,9 @@ final class RolesManager {
 			'label' => 'Coordinador de Liga',
 			'caps'  => self::CAPS_COORDINADOR,
 		],
-		'ds_arbitro' => [
-			'label' => 'Árbitro / Veedor de Campo',
-			'caps'  => self::CAPS_ARBITRO,
-		],
-		'ds_planillero' => [
-			'label' => 'Planillero',
-			'caps'  => self::CAPS_PLANILLERO,
+		'ds_veedor' => [
+			'label' => 'Veedor de Resultados',
+			'caps'  => self::CAPS_VEEDOR,
 		],
 	];
 
@@ -111,6 +91,13 @@ final class RolesManager {
 	 * Se llama en el hook de activación.
 	 */
 	public static function add_roles(): void {
+		// Eliminar roles obsoletos si aún existen.
+		foreach ( [ 'ds_arbitro', 'ds_planillero' ] as $obsolete ) {
+			if ( get_role( $obsolete ) ) {
+				remove_role( $obsolete );
+			}
+		}
+
 		foreach ( self::ROLE_DEFINITIONS as $slug => $def ) {
 			if ( ! get_role( $slug ) ) {
 				add_role( $slug, __( $def['label'], 'soccertrack' ), $def['caps'] );
@@ -125,6 +112,13 @@ final class RolesManager {
 	 * Idempotente: llama en plugins_loaded para garantizar migración sin reactivación.
 	 */
 	public static function update_roles(): void {
+		// Eliminar roles obsoletos si aún existen.
+		foreach ( [ 'ds_arbitro', 'ds_planillero' ] as $obsolete ) {
+			if ( get_role( $obsolete ) ) {
+				remove_role( $obsolete );
+			}
+		}
+
 		foreach ( self::ROLE_DEFINITIONS as $slug => $def ) {
 			$role = get_role( $slug );
 			if ( ! $role ) {
@@ -153,8 +147,7 @@ final class RolesManager {
 
 		$all_caps = array_merge(
 			self::CAPS_COORDINADOR,
-			self::CAPS_ARBITRO,
-			self::CAPS_PLANILLERO
+			self::CAPS_VEEDOR
 		);
 
 		foreach ( $all_caps as $cap => $grant ) {

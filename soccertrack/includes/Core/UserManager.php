@@ -16,8 +16,7 @@ final class UserManager {
 	/** @var array<string, string> rol slug → etiqueta legible */
 	public const PLUGIN_ROLES = [
 		'ds_coordinador' => 'Coordinador de Liga',
-		'ds_arbitro'     => 'Árbitro / Veedor de Campo',
-		'ds_planillero'  => 'Planillero',
+		'ds_veedor'      => 'Veedor de Resultados',
 	];
 
 	/**
@@ -25,7 +24,7 @@ final class UserManager {
 	 *
 	 * @param string $email        Correo electrónico (único).
 	 * @param string $display_name Nombre para mostrar.
-	 * @param string $role         Slug del rol (ds_coordinador | ds_arbitro | ds_planillero).
+	 * @param string $role         Slug del rol (ds_coordinador | ds_veedor).
 	 * @param string $password     Contraseña en texto plano.
 	 * @return int|\WP_Error       ID del usuario creado, o WP_Error si falla.
 	 */

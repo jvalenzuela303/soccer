@@ -180,6 +180,96 @@ include SOCCERTRACK_DIR . 'templates/panel/_partials/header.php';
 	<?php endif; ?>
 </div>
 
+<?php /* ── Sección: Personal del Torneo (Árbitros / Planilleros) ─── */ ?>
+
+<?php if ( $notice === 'st_staff_created' ) : ?>
+<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Personal agregado correctamente.', 'soccertrack' ); ?></div>
+<?php elseif ( $notice === 'st_staff_deleted' ) : ?>
+<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Personal eliminado correctamente.', 'soccertrack' ); ?></div>
+<?php endif; ?>
+
+<div class="st-card">
+	<h2 class="st-card-title"><?php esc_html_e( 'Personal del Torneo (Árbitros / Planilleros)', 'soccertrack' ); ?></h2>
+
+	<?php /* Formulario para agregar */ ?>
+	<form method="post" class="st-form-inline" style="margin-bottom:20px">
+		<?php wp_nonce_field( 'st_staff_action' ); ?>
+		<input type="hidden" name="st_create_staff" value="1">
+
+		<div class="st-field">
+			<label class="st-label"><?php esc_html_e( 'Nombre', 'soccertrack' ); ?> *</label>
+			<input
+				type="text"
+				name="nombre"
+				class="st-input"
+				required
+				placeholder="<?php esc_attr_e( 'Ej: Juan Pérez', 'soccertrack' ); ?>"
+			>
+		</div>
+
+		<div class="st-field">
+			<label class="st-label"><?php esc_html_e( 'Tipo', 'soccertrack' ); ?> *</label>
+			<select name="tipo" class="st-input" required>
+				<option value=""><?php esc_html_e( '— Seleccionar —', 'soccertrack' ); ?></option>
+				<option value="arbitro"><?php esc_html_e( 'Árbitro', 'soccertrack' ); ?></option>
+				<option value="planillero"><?php esc_html_e( 'Planillero', 'soccertrack' ); ?></option>
+			</select>
+		</div>
+
+		<button type="submit" class="st-btn st-btn--primary">
+			<?php esc_html_e( '+ Agregar personal', 'soccertrack' ); ?>
+		</button>
+	</form>
+
+	<?php /* Tabla de personal */ ?>
+	<?php if ( empty( $staff_list ) ) : ?>
+		<p class="st-empty-state"><?php esc_html_e( 'No hay personal registrado aún.', 'soccertrack' ); ?></p>
+	<?php else : ?>
+		<?php
+		$staff_by_tipo = [];
+		foreach ( $staff_list as $s ) {
+			$staff_by_tipo[ $s['tipo'] ][] = $s;
+		}
+		$tipo_labels = [
+			'arbitro'    => __( 'Árbitros', 'soccertrack' ),
+			'planillero' => __( 'Planilleros', 'soccertrack' ),
+		];
+		foreach ( $tipo_labels as $tipo_key => $tipo_label ) :
+			if ( empty( $staff_by_tipo[ $tipo_key ] ) ) continue;
+		?>
+		<h3 style="font-size:.95rem;font-weight:700;margin:16px 0 8px;color:#3C3A47"><?php echo esc_html( $tipo_label ); ?></h3>
+		<div class="st-table-responsive">
+			<table class="st-table">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'Nombre', 'soccertrack' ); ?></th>
+						<th style="width:100px"><?php esc_html_e( 'Acciones', 'soccertrack' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php foreach ( $staff_by_tipo[ $tipo_key ] as $s ) : ?>
+					<tr>
+						<td><?php echo esc_html( $s['nombre'] ); ?></td>
+						<td>
+							<form method="post" style="display:inline"
+								  onsubmit="return confirm('<?php esc_attr_e( '¿Eliminar este personal?', 'soccertrack' ); ?>')">
+								<?php wp_nonce_field( 'st_staff_action' ); ?>
+								<input type="hidden" name="st_delete_staff" value="1">
+								<input type="hidden" name="staff_id" value="<?php echo esc_attr( (string) $s['id'] ); ?>">
+								<button type="submit" class="st-btn st-btn--danger st-btn--sm">
+									<?php esc_html_e( 'Eliminar', 'soccertrack' ); ?>
+								</button>
+							</form>
+						</td>
+					</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
+		</div>
+		<?php endforeach; ?>
+	<?php endif; ?>
+</div>
+
 <script>
 ( () => {
 	const searchInput  = document.getElementById( 'st-user-search' );

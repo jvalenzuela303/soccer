@@ -1,23 +1,24 @@
 <?php
 /**
- * Vista de partidos del árbitro — acceso rápido a planillas.
+ * Vista de partidos del torneo — Ingreso de resultados.
+ * Acceso: ds_coordinador y ds_veedor.
  *
  * Variables:
- *   $matches_assigned  array[]  Partidos con referee_user_id = usuario actual.
- *   $matches_pending   array[]  Partidos pendientes (fallback si no hay asignados).
- *   $page_title        string
+ *   $matches              array[]  Partidos filtrados por torneo y fecha.
+ *   $tournaments          array[]  Lista de torneos para el selector.
+ *   $rounds               array    Fechas disponibles para el torneo seleccionado.
+ *   $selected_tournament  int      ID del torneo seleccionado.
+ *   $selected_round       int      Número de fecha seleccionada.
+ *   $page_title           string
  */
 defined( 'ABSPATH' ) || exit;
-
-$has_assigned = ! empty( $matches_assigned );
-$matches      = $has_assigned ? $matches_assigned : $matches_pending;
 
 /**
  * Devuelve etiqueta y clase CSS según estado del partido.
  */
 function st_match_status_badge( string $status ): string {
 	$map = [
-		'scheduled' => [ '🕐', 'programado', '' ],
+		'scheduled' => [ '🕐', 'Programado', '' ],
 		'live'      => [ '🟢', 'En curso',   'st-badge--success' ],
 		'finished'  => [ '✅', 'Finalizado', 'st-badge--secondary' ],
 		'postponed' => [ '⏸', 'Aplazado',   '' ],
@@ -29,42 +30,84 @@ function st_match_status_badge( string $status ): string {
 ?>
 
 <div class="st-page-header">
-	<h1 class="st-page-title">📋 <?php esc_html_e( 'Mis Partidos', 'soccertrack' ); ?></h1>
+	<h1 class="st-page-title">📋 <?php esc_html_e( 'Partidos del Torneo', 'soccertrack' ); ?></h1>
 </div>
 
-<?php if ( ! $has_assigned ) : ?>
-<div class="st-alert st-alert--info" style="margin-bottom:20px">
-	ℹ️ <?php esc_html_e( 'No tienes partidos asignados aún. Se muestran todos los partidos pendientes del sistema.', 'soccertrack' ); ?>
+<?php if ( ! empty( $tournaments ) ) : ?>
+<div class="st-card" style="margin-bottom:20px">
+	<form method="get" action="" id="st-filter-form" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+		<input type="hidden" name="st_panel_page" value="1">
+		<input type="hidden" name="st_panel_vista" value="mis-partidos">
+
+		<?php /* Filtro torneo */ ?>
+		<div style="display:flex;align-items:center;gap:8px">
+			<label for="st-tournament-filter" style="font-weight:600;color:var(--st-navy);white-space:nowrap">
+				🏆 <?php esc_html_e( 'Torneo', 'soccertrack' ); ?>
+			</label>
+			<select
+				id="st-tournament-filter"
+				name="tournament_id"
+				onchange="document.getElementById('st-round-filter').value=''; this.form.submit()"
+				style="padding:7px 12px;border:1px solid #ddd;border-radius:6px;font-size:.92rem;min-width:200px"
+			>
+				<?php foreach ( $tournaments as $t ) : ?>
+				<option
+					value="<?php echo esc_attr( (string) $t['id'] ); ?>"
+					<?php selected( (int) $t['id'], $selected_tournament ); ?>
+				>
+					<?php echo esc_html( $t['name'] ); ?>
+				</option>
+				<?php endforeach; ?>
+			</select>
+		</div>
+
+		<?php /* Filtro fecha */ ?>
+		<?php if ( ! empty( $rounds ) ) : ?>
+		<div style="display:flex;align-items:center;gap:8px">
+			<label for="st-round-filter" style="font-weight:600;color:var(--st-navy);white-space:nowrap">
+				📅 <?php esc_html_e( 'Fecha', 'soccertrack' ); ?>
+			</label>
+			<select
+				id="st-round-filter"
+				name="round_number"
+				onchange="this.form.submit()"
+				style="padding:7px 12px;border:1px solid #ddd;border-radius:6px;font-size:.92rem;min-width:130px"
+			>
+				<option value=""><?php esc_html_e( 'Todas', 'soccertrack' ); ?></option>
+				<?php foreach ( $rounds as $r ) : ?>
+				<option
+					value="<?php echo esc_attr( (string) $r ); ?>"
+					<?php selected( (int) $r, $selected_round ); ?>
+				>
+					<?php echo esc_html( sprintf( __( 'Fecha %s', 'soccertrack' ), $r ) ); ?>
+				</option>
+				<?php endforeach; ?>
+			</select>
+		</div>
+		<?php endif; ?>
+
+		<span style="font-size:.85rem;color:#888;margin-left:auto">
+			<?php echo esc_html( (string) count( $matches ) ); ?> <?php esc_html_e( 'partido(s)', 'soccertrack' ); ?>
+		</span>
+	</form>
 </div>
 <?php endif; ?>
 
 <?php if ( empty( $matches ) ) : ?>
 <div class="st-card">
 	<p class="st-empty-msg">
-		<?php esc_html_e( 'No hay partidos pendientes en el sistema.', 'soccertrack' ); ?>
+		<?php esc_html_e( 'No hay partidos para los filtros seleccionados.', 'soccertrack' ); ?>
 	</p>
 </div>
 <?php else : ?>
 
-<?php
-// Agrupar por torneo.
-$by_tournament = [];
-foreach ( $matches as $m ) {
-	$by_tournament[ $m['tournament_name'] ][] = $m;
-}
-?>
-
-<?php foreach ( $by_tournament as $tournament_name => $group ) : ?>
-<div class="st-card" style="margin-bottom:20px">
-	<div class="st-card-header">
-		<h2 class="st-card-title">🏆 <?php echo esc_html( $tournament_name ); ?></h2>
-		<span class="st-badge"><?php echo esc_html( (string) count( $group ) ); ?> <?php esc_html_e( 'partido(s)', 'soccertrack' ); ?></span>
-	</div>
+<div class="st-card">
 	<div class="st-table-wrap">
 		<table class="st-table">
 			<thead>
 				<tr>
-					<th style="width:130px"><?php esc_html_e( 'Fecha / Hora', 'soccertrack' ); ?></th>
+					<th style="width:40px"><?php esc_html_e( 'Fecha', 'soccertrack' ); ?></th>
+					<th style="width:130px"><?php esc_html_e( 'Hora', 'soccertrack' ); ?></th>
 					<th><?php esc_html_e( 'Partido', 'soccertrack' ); ?></th>
 					<th><?php esc_html_e( 'Estado', 'soccertrack' ); ?></th>
 					<th><?php esc_html_e( 'Cancha', 'soccertrack' ); ?></th>
@@ -72,8 +115,11 @@ foreach ( $matches as $m ) {
 				</tr>
 			</thead>
 			<tbody>
-			<?php foreach ( $group as $m ) : ?>
+			<?php foreach ( $matches as $m ) : ?>
 				<tr>
+					<td style="text-align:center;font-weight:700;color:var(--st-green-primary)">
+						<?php echo esc_html( (string) $m['round_number'] ); ?>
+					</td>
 					<td style="font-size:.85rem;white-space:nowrap">
 						<?php
 						if ( ! empty( $m['match_datetime'] ) ) {
@@ -87,9 +133,6 @@ foreach ( $matches as $m ) {
 							}
 						} else {
 							echo '<span style="color:#aaa">—</span>';
-						}
-						if ( ! empty( $m['round_number'] ) ) {
-							echo '<span style="font-size:.75rem;color:#999;display:block">Fecha ' . esc_html( (string) $m['round_number'] ) . '</span>';
 						}
 						?>
 					</td>
@@ -131,6 +174,5 @@ foreach ( $matches as $m ) {
 		</table>
 	</div>
 </div>
-<?php endforeach; ?>
 
 <?php endif; ?>
