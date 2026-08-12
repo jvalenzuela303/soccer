@@ -940,4 +940,274 @@ final class FixtureGenerator {
 
 		return [ 'match_ids' => $ids ];
 	}
+
+	/**
+	 * Genera la siguiente ronda eliminatoria de un torneo en Fase de Grupos.
+	 *
+	 * Se llama múltiples veces: cada llamada genera la siguiente ronda disponible.
+	 * Detecta automáticamente el estado del torneo:
+	 *   Estado 1 — Sin eliminatoria: genera Cuartos (8 clasificados) o Semis (2 o 4 clasificados).
+	 *   Estado 2 — Cuartos terminados, sin Semis: genera Semis con los 4 ganadores de QF.
+	 *   Estado 3 — Semis terminadas, sin Final: genera Final + 3.er Puesto (si has_third_place=1).
+	 *
+	 * @param  array{id:int,match_weekday:int,match_weekdays:string,match_time:string,match_duration:int,teams_advancing_per_group:int,has_third_place:int} $tournament
+	 * @param  int     $venue_id
+	 * @param  ?string $match_date  Fecha específica 'Y-m-d' (opcional). Null = próximo día hábil.
+	 * @return array{match_ids: int[], phase: string, error?: string}
+	 */
+	public function generate_group_knockout( array $tournament, int $venue_id, ?string $match_date = null ): array {
+		global $wpdb;
+
+		$tournament_id       = (int) $tournament['id'];
+		$has_third_place     = (bool) ( $tournament['has_third_place'] ?? 1 );
+		$weekdays            = $this->weekdays_from_tournament( $tournament );
+		$time                = (string) ( $tournament['match_time'] ?? '19:00:00' );
+		$duration            = $this->duration_from_tournament( $tournament );
+
+		$resolve_winner = static function ( array $m ): int {
+			return (int) $m['home_score'] >= (int) $m['away_score']
+				? (int) $m['home_team_id']
+				: (int) $m['away_team_id'];
+		};
+
+		$dt = static function ( int $offset ) use ( $match_date, $weekdays, $time, $duration ): string {
+			if ( $match_date !== null ) {
+				[ $h, $min, $s ] = array_map( 'intval', explode( ':', $time . ':00' ) );
+				$start  = $h * 60 + $min + $offset * $duration;
+				$base   = ( new \DateTimeImmutable( $match_date ) )->setTime( intdiv( $start, 60 ) % 24, $start % 60, $s );
+				return $base->format( 'Y-m-d H:i:s' );
+			}
+			$day_names = [ 0 => 'sunday', 1 => 'monday', 2 => 'tuesday', 3 => 'wednesday',
+				4 => 'thursday', 5 => 'friday', 6 => 'saturday' ];
+			$first_day = $weekdays[0] ?? 6;
+			$base      = new \DateTimeImmutable( 'next ' . ( $day_names[ $first_day ] ?? 'saturday' ) );
+			[ $h, $min, $s ] = array_map( 'intval', explode( ':', $time . ':00' ) );
+			$start     = $h * 60 + $min + $offset * $duration;
+			$base      = $base->setTime( intdiv( $start, 60 ) % 24, $start % 60, $s );
+			return $base->format( 'Y-m-d H:i:s' );
+		};
+
+		// ── Detectar estado actual ────────────────────────────────────────────
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$qf_matches = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT id, home_team_id, away_team_id, home_score, away_score, status
+				 FROM {$wpdb->prefix}ds_matches
+				 WHERE tournament_id = %d AND phase = 'quarterfinal'
+				 ORDER BY id ASC",
+				$tournament_id
+			),
+			ARRAY_A
+		);
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$sf_matches = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT id, home_team_id, away_team_id, home_score, away_score, status
+				 FROM {$wpdb->prefix}ds_matches
+				 WHERE tournament_id = %d AND phase = 'semifinal'
+				 ORDER BY id ASC",
+				$tournament_id
+			),
+			ARRAY_A
+		);
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$has_final = (bool) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches
+				 WHERE tournament_id = %d AND phase IN ('final','third_place')",
+				$tournament_id
+			)
+		);
+
+		// ── Estado 3: Semis terminadas, sin Final ────────────────────────────
+		if ( ! empty( $sf_matches ) && ! $has_final ) {
+			$all_sf_done = count( array_filter( $sf_matches, static fn( $m ) => ! in_array( $m['status'], [ 'finished', 'suspended', 'postponed' ], true ) ) ) === 0;
+
+			if ( ! $all_sf_done ) {
+				return [ 'match_ids' => [], 'error' => 'Las semi-finales aún no han terminado.' ];
+			}
+
+			$sf1 = $sf_matches[0];
+			$sf2 = $sf_matches[1] ?? null;
+			if ( ! $sf2 ) {
+				return [ 'match_ids' => [], 'error' => 'Se necesitan exactamente 2 semi-finales para generar la final.' ];
+			}
+
+			$resolve_loser = static function ( array $m ): int {
+				return (int) $m['home_score'] >= (int) $m['away_score']
+					? (int) $m['away_team_id']
+					: (int) $m['home_team_id'];
+			};
+
+			$w1 = $resolve_winner( $sf1 );
+			$w2 = $resolve_winner( $sf2 );
+			$l1 = $resolve_loser( $sf1 );
+			$l2 = $resolve_loser( $sf2 );
+
+			$ids      = [];
+			$inserts  = [];
+
+			if ( $has_third_place ) {
+				$inserts[] = [ 'home' => $l1, 'away' => $l2, 'dt' => $dt( 0 ), 'phase' => 'third_place' ];
+			}
+			$inserts[] = [ 'home' => $w1, 'away' => $w2, 'dt' => $dt( $has_third_place ? 1 : 0 ), 'phase' => 'final' ];
+
+			foreach ( $inserts as $pair ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				$wpdb->insert(
+					"{$wpdb->prefix}ds_matches",
+					[
+						'tournament_id'  => $tournament_id,
+						'round_number'   => 0,
+						'home_team_id'   => $pair['home'],
+						'away_team_id'   => $pair['away'],
+						'venue_id'       => $venue_id,
+						'court_id'       => 0,
+						'match_datetime' => $pair['dt'],
+						'status'         => 'scheduled',
+						'phase'          => $pair['phase'],
+						'group_label'    => null,
+					],
+					[ '%d', '%d', '%d', '%d', '%d', '%d', '%s', '%s', '%s', '%s' ]
+				);
+				if ( $wpdb->insert_id ) {
+					$ids[] = (int) $wpdb->insert_id;
+				}
+			}
+
+			$this->assign_courts( $ids, $venue_id );
+			return [ 'match_ids' => $ids, 'phase' => 'final' ];
+		}
+
+		// ── Estado 2: Cuartos terminados, sin Semis ──────────────────────────
+		if ( ! empty( $qf_matches ) && empty( $sf_matches ) ) {
+			$all_qf_done = count( array_filter( $qf_matches, static fn( $m ) => ! in_array( $m['status'], [ 'finished', 'suspended', 'postponed' ], true ) ) ) === 0;
+
+			if ( ! $all_qf_done ) {
+				return [ 'match_ids' => [], 'error' => 'Los cuartos de final aún no han terminado.' ];
+			}
+
+			$winners = array_map( $resolve_winner, $qf_matches );
+
+			// Fisher-Yates sobre los 4 ganadores.
+			for ( $i = count( $winners ) - 1; $i > 0; $i-- ) {
+				$j = random_int( 0, $i );
+				[ $winners[ $i ], $winners[ $j ] ] = [ $winners[ $j ], $winners[ $i ] ];
+			}
+
+			$ids = [];
+			foreach ( [ [ $winners[0], $winners[1] ], [ $winners[2], $winners[3] ] ] as $k => $pair ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				$wpdb->insert(
+					"{$wpdb->prefix}ds_matches",
+					[
+						'tournament_id'  => $tournament_id,
+						'round_number'   => 0,
+						'home_team_id'   => $pair[0],
+						'away_team_id'   => $pair[1],
+						'venue_id'       => $venue_id,
+						'court_id'       => 0,
+						'match_datetime' => $dt( $k ),
+						'status'         => 'scheduled',
+						'phase'          => 'semifinal',
+						'group_label'    => null,
+					],
+					[ '%d', '%d', '%d', '%d', '%d', '%d', '%s', '%s', '%s', '%s' ]
+				);
+				if ( $wpdb->insert_id ) {
+					$ids[] = (int) $wpdb->insert_id;
+				}
+			}
+
+			$this->assign_courts( $ids, $venue_id );
+			return [ 'match_ids' => $ids, 'phase' => 'semifinal' ];
+		}
+
+		// ── Estado 1: Sin eliminatoria — calcular clasificados ───────────────
+		if ( ! empty( $qf_matches ) || ! empty( $sf_matches ) || $has_final ) {
+			return [ 'match_ids' => [], 'error' => 'Estado del torneo no soportado para generar eliminatoria.' ];
+		}
+
+		// Verificar que todos los partidos regulares estén finalizados.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$pending_regular = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches
+				 WHERE tournament_id = %d AND phase = 'regular'
+				   AND status NOT IN ('finished', 'suspended', 'postponed')",
+				$tournament_id
+			)
+		);
+		if ( $pending_regular > 0 ) {
+			return [ 'match_ids' => [], 'error' => 'Aún hay partidos de fase de grupos sin finalizar.' ];
+		}
+
+		// Calcular clasificados: top N de cada grupo.
+		$advancing_per_group = max( 1, min( 4, (int) ( $tournament['teams_advancing_per_group'] ?? 2 ) ) );
+		$standings_by_group  = ( new StandingsCalculator() )->recalculate_by_group( $tournament_id );
+
+		if ( empty( $standings_by_group ) ) {
+			return [ 'match_ids' => [], 'error' => 'No se encontraron grupos para este torneo.' ];
+		}
+
+		$qualifiers = [];
+		foreach ( $standings_by_group as $rows ) {
+			foreach ( array_slice( $rows, 0, $advancing_per_group ) as $row ) {
+				$qualifiers[] = (int) $row['team_id'];
+			}
+		}
+
+		$n_qual = count( $qualifiers );
+		if ( ! in_array( $n_qual, [ 2, 4, 8 ], true ) ) {
+			return [
+				'match_ids' => [],
+				'error'     => sprintf(
+					'El número de clasificados (%d) no soporta un bracket limpio. Deben ser 2, 4 u 8.',
+					$n_qual
+				),
+			];
+		}
+
+		// Fisher-Yates sobre los clasificados.
+		for ( $i = $n_qual - 1; $i > 0; $i-- ) {
+			$j = random_int( 0, $i );
+			[ $qualifiers[ $i ], $qualifiers[ $j ] ] = [ $qualifiers[ $j ], $qualifiers[ $i ] ];
+		}
+
+		$phase = match ( $n_qual ) {
+			2, 4 => 'semifinal',
+			8    => 'quarterfinal',
+		};
+
+		$ids = [];
+		$pairs = array_chunk( $qualifiers, 2 );
+		foreach ( $pairs as $k => $pair ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->insert(
+				"{$wpdb->prefix}ds_matches",
+				[
+					'tournament_id'  => $tournament_id,
+					'round_number'   => 0,
+					'home_team_id'   => $pair[0],
+					'away_team_id'   => $pair[1],
+					'venue_id'       => $venue_id,
+					'court_id'       => 0,
+					'match_datetime' => $dt( $k ),
+					'status'         => 'scheduled',
+					'phase'          => $phase,
+					'group_label'    => null,
+				],
+				[ '%d', '%d', '%d', '%d', '%d', '%d', '%s', '%s', '%s', '%s' ]
+			);
+			if ( $wpdb->insert_id ) {
+				$ids[] = (int) $wpdb->insert_id;
+			}
+		}
+
+		$this->assign_courts( $ids, $venue_id );
+		return [ 'match_ids' => $ids, 'phase' => $phase ];
+	}
 }
