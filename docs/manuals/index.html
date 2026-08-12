@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SoccerTrack — Manual de Usuario</title>
+<style>
+  :root {
+    --green: #3CBC20;
+    --green2: #6DB728;
+    --navy: #0E0C19;
+    --charcoal: #3C3A47;
+    --bg: #f5f7f5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--charcoal); }
+  header {
+    background: var(--navy);
+    color: #fff;
+    padding: 2rem 3rem;
+    border-bottom: 4px solid var(--green);
+  }
+  header h1 { font-size: 2rem; letter-spacing: .5px; }
+  header p  { margin-top: .4rem; opacity: .8; font-size: .95rem; }
+  main { max-width: 860px; margin: 3rem auto; padding: 0 1.5rem; }
+  h2 { font-size: 1.4rem; color: var(--navy); margin-bottom: 1.2rem; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 1.4rem; }
+  .card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    padding: 1.8rem 1.5rem;
+    text-decoration: none;
+    color: inherit;
+    border-top: 4px solid var(--green);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(0,0,0,.13); }
+  .card .role-icon { font-size: 2.5rem; margin-bottom: .8rem; }
+  .card h3 { font-size: 1.1rem; color: var(--navy); margin-bottom: .4rem; }
+  .card p  { font-size: .88rem; opacity: .75; line-height: 1.5; }
+  footer { text-align: center; padding: 2rem; font-size: .8rem; color: #aaa; margin-top: 3rem; }
+</style>
+</head>
+<body>
+<header>
+  <h1>SoccerTrack — Manual de Usuario</h1>
+  <p>Sistema de Gestión de Torneos de Fútbol Corporativos · Versión 1.9</p>
+</header>
+<main>
+  <h2>Selecciona tu rol</h2>
+  <div class="cards">
+    <a class="card" href="manual-administrador.html">
+      <div class="role-icon">🛡️</div>
+      <h3>Administrador</h3>
+      <p>Acceso total al sistema: configuración, usuarios, torneos, migraciones y auditoría.</p>
+    </a>
+    <a class="card" href="manual-coordinador.html">
+      <div class="role-icon">📋</div>
+      <h3>Coordinador de Liga</h3>
+      <p>Gestión de torneos, equipos, fixture, importaciones, tribunal y resultados.</p>
+    </a>
+    <a class="card" href="manual-veedor.html">
+      <div class="role-icon">📝</div>
+      <h3>Veedor de Resultados</h3>
+      <p>Ingreso de resultados, goles y tarjetas en las planillas de partido.</p>
+    </a>
+  </div>
+</main>
+<footer>SoccerTrack &copy; 2026 · <a href="https://torneoscorporativos.cl" style="color:var(--green)">torneoscorporativos.cl</a></footer>
+</body>
+</html>

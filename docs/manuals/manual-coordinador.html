@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual Coordinador — SoccerTrack</title>
+<style>
+  :root {
+    --green: #3CBC20; --green2: #6DB728;
+    --navy: #0E0C19; --charcoal: #3C3A47; --bg: #f5f7f5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--charcoal); line-height: 1.6; }
+  header { background: var(--navy); color: #fff; padding: 1.5rem 3rem; border-bottom: 4px solid var(--green); display: flex; align-items: center; gap: 1rem; }
+  header .back { color: var(--green); text-decoration: none; font-size: .9rem; }
+  header h1 { font-size: 1.6rem; }
+  header .badge { background: var(--green); color: #fff; border-radius: 20px; padding: .2rem .8rem; font-size: .8rem; margin-left: .5rem; }
+  .layout { display: flex; max-width: 1100px; margin: 2rem auto; padding: 0 1.5rem; gap: 2rem; }
+  nav.sidebar { width: 220px; flex-shrink: 0; }
+  nav.sidebar ul { list-style: none; position: sticky; top: 1rem; }
+  nav.sidebar li a { display: block; padding: .5rem .8rem; border-radius: 6px; text-decoration: none; color: var(--charcoal); font-size: .9rem; transition: background .12s; }
+  nav.sidebar li a:hover { background: #e8f5e4; color: var(--green); }
+  nav.sidebar h3 { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: #999; padding: .6rem .8rem .2rem; margin-top: .8rem; }
+  article { flex: 1; min-width: 0; }
+  section { background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.07); padding: 2rem; margin-bottom: 1.8rem; }
+  section h2 { font-size: 1.3rem; color: var(--navy); margin-bottom: 1rem; border-bottom: 2px solid #e8f5e4; padding-bottom: .5rem; }
+  section h3 { font-size: 1rem; color: var(--green2); margin: 1.2rem 0 .5rem; }
+  p { margin-bottom: .8rem; font-size: .93rem; }
+  ul, ol { padding-left: 1.4rem; margin-bottom: .8rem; font-size: .93rem; }
+  li { margin-bottom: .3rem; }
+  .tip { background: #e8f5e4; border-left: 4px solid var(--green); padding: .8rem 1rem; border-radius: 0 6px 6px 0; font-size: .88rem; margin: .8rem 0; }
+  .warn { background: #fff8e1; border-left: 4px solid #f9a825; padding: .8rem 1rem; border-radius: 0 6px 6px 0; font-size: .88rem; margin: .8rem 0; }
+  code { background: #f0f0f0; border-radius: 4px; padding: .1rem .4rem; font-family: monospace; font-size: .85rem; }
+  table { width: 100%; border-collapse: collapse; font-size: .88rem; margin: .8rem 0; }
+  th { background: var(--navy); color: #fff; padding: .5rem .8rem; text-align: left; }
+  td { padding: .45rem .8rem; border-bottom: 1px solid #eee; }
+  tr:hover td { background: #fafff9; }
+  .cap-list { display: flex; flex-wrap: wrap; gap: .5rem; margin: .6rem 0; }
+  .cap { background: #e8f5e4; color: var(--green2); border-radius: 12px; padding: .2rem .7rem; font-size: .8rem; font-family: monospace; }
+  footer { text-align: center; padding: 1.5rem; font-size: .8rem; color: #aaa; }
+  footer a { color: var(--green); }
+</style>
+</head>
+<body>
+<header>
+  <a class="back" href="index.html">← Índice</a>
+  <h1>Manual del Coordinador de Liga <span class="badge">📋 ds_coordinador</span></h1>
+</header>
+<div class="layout">
+  <nav class="sidebar">
+    <h3>Contenido</h3>
+    <ul>
+      <li><a href="#acceso">Acceso y permisos</a></li>
+      <li><a href="#panel">Panel de control</a></li>
+      <li><a href="#torneos">Torneos</a></li>
+      <li><a href="#equipos">Equipos y jugadores</a></li>
+      <li><a href="#fixture">Fixture</a></li>
+      <li><a href="#resultados">Resultados</a></li>
+      <li><a href="#usuarios">Crear usuarios</a></li>
+      <li><a href="#staff">Personal (árbitros)</a></li>
+      <li><a href="#tribunal">Tribunal</a></li>
+      <li><a href="#importar">Importación masiva</a></li>
+    </ul>
+  </nav>
+  <article>
+
+    <section id="acceso">
+      <h2>Acceso y permisos</h2>
+      <p>El rol <strong>Coordinador de Liga</strong> (<code>ds_coordinador</code>) gestiona completamente los torneos: desde la creación hasta el cierre, pasando por la carga de datos y el ingreso de resultados.</p>
+      <h3>Capacidades habilitadas</h3>
+      <div class="cap-list">
+        <span class="cap">ds_manage_tournaments</span>
+        <span class="cap">ds_load_excel</span>
+        <span class="cap">ds_generate_fixture</span>
+        <span class="cap">ds_manage_discipline</span>
+        <span class="cap">ds_view_admin_panel</span>
+        <span class="cap">ds_enter_match_result</span>
+        <span class="cap">ds_view_match_sheet</span>
+        <span class="cap">ds_close_match</span>
+        <span class="cap">ds_edit_incidents</span>
+      </div>
+      <div class="tip">El Coordinador puede <strong>reabrir y corregir</strong> planillas ya cerradas, igual que el Administrador.</div>
+    </section>
+
+    <section id="panel">
+      <h2>Panel de control</h2>
+      <p>Accede a <code>/panel/</code> con tus credenciales de Coordinador. El dashboard muestra:</p>
+      <ul>
+        <li><strong>Torneos</strong> — crear y gestionar torneos activos.</li>
+        <li><strong>Partidos del torneo</strong> — filtrar y cargar resultados.</li>
+        <li><strong>Gestionar usuarios</strong> — crear veedores y otros coordinadores.</li>
+      </ul>
+    </section>
+
+    <section id="torneos">
+      <h2>Gestión de Torneos</h2>
+      <p>URL: <code>/panel/torneos/</code></p>
+
+      <h3>Crear un torneo</h3>
+      <ol>
+        <li>Completa <em>Nombre</em>, fechas y formato.</li>
+        <li>Haz clic en <strong>+ Crear torneo</strong>.</li>
+        <li>El torneo se crea en estado <strong>Borrador</strong>.</li>
+      </ol>
+
+      <h3>Flujo de estados</h3>
+      <table>
+        <thead><tr><th>Estado</th><th>Acción disponible</th><th>Requisito</th></tr></thead>
+        <tbody>
+          <tr><td>Borrador</td><td>▶ Activar</td><td>≥ 2 equipos inscritos</td></tr>
+          <tr><td>Activo</td><td>✔ Finalizar</td><td>—</td></tr>
+          <tr><td>Finalizado</td><td>(sin acciones)</td><td>Estado definitivo</td></tr>
+        </tbody>
+      </table>
+      <div class="warn">Una vez finalizado, el torneo no puede reactivarse. Verifica que todos los resultados estén cargados antes de finalizar.</div>
+
+      <h3>Ficha del torneo</h3>
+      <p>El botón <strong>Gestionar</strong> abre <code>/panel/torneo/{id}/</code> con:</p>
+      <ul>
+        <li>Lista de equipos inscritos y sus nóminas.</li>
+        <li>Generador de fixture.</li>
+        <li>Tabla de posiciones en tiempo real.</li>
+        <li>Sección de tribunal disciplinario.</li>
+        <li>Configuración de horario y recintos.</li>
+      </ul>
+    </section>
+
+    <section id="equipos">
+      <h2>Equipos y Jugadores</h2>
+      <h3>Agregar equipo manualmente</h3>
+      <ol>
+        <li>En la ficha del torneo, sección <em>Equipos</em>.</li>
+        <li>Escribe el nombre del equipo y haz clic en <strong>Agregar equipo</strong>.</li>
+      </ol>
+      <h3>Agregar jugadores</h3>
+      <ol>
+        <li>Haz clic en el nombre del equipo.</li>
+        <li>Usa el formulario para agregar jugadores: nombre, dorsal, posición.</li>
+      </ol>
+      <div class="tip">Para carga masiva usa <code>/panel/importar/</code> con archivos CSV.</div>
+    </section>
+
+    <section id="fixture">
+      <h2>Fixture</h2>
+      <p>URL: <code>/panel/torneo/{id}/</code> → pestaña <strong>Fixture</strong></p>
+      <h3>Generar fixture automático</h3>
+      <ol>
+        <li>Asegúrate de tener los equipos inscritos y recintos configurados.</li>
+        <li>Configura el horario del torneo (hora inicio, duración, intervalo) en la sección <em>Configuración</em>.</li>
+        <li>Haz clic en <strong>Generar Fixture</strong>.</li>
+        <li>Los partidos se crean en estado <em>Programado</em>.</li>
+      </ol>
+      <h3>Editar partidos del fixture</h3>
+      <ul>
+        <li>Abre la planilla de un partido (<strong>Ver planilla</strong>) para cambiar fecha, hora, recinto y árbitro.</li>
+      </ul>
+    </section>
+
+    <section id="resultados">
+      <h2>Ingreso de Resultados</h2>
+      <p>URL: <code>/panel/mis-partidos/</code></p>
+      <p>Esta vista es el flujo principal de trabajo del Coordinador al final de cada jornada.</p>
+
+      <h3>Filtrar partidos</h3>
+      <ol>
+        <li>Selecciona el <strong>Torneo</strong> en el primer desplegable. La lista de fechas se actualiza automáticamente.</li>
+        <li>Selecciona la <strong>Fecha / Jornada</strong>.</li>
+        <li>La tabla muestra los partidos de esa jornada con su estado actual.</li>
+      </ol>
+
+      <h3>Cargar un resultado</h3>
+      <ol>
+        <li>Haz clic en <strong>Ver planilla</strong> para abrir el partido.</li>
+        <li>En la planilla (<code>/panel/partido/{id}/</code>):
+          <ul>
+            <li>Registra el <strong>marcador final</strong> (goles local y visitante).</li>
+            <li>Agrega <strong>goles</strong>: selecciona jugador, minuto y tipo (normal / penal / propio).</li>
+            <li>Agrega <strong>tarjetas</strong>: jugador, minuto y tipo (amarilla / roja).</li>
+            <li>Opcionalmente, selecciona o escribe el <strong>árbitro</strong> y <strong>planillero</strong>.</li>
+          </ul>
+        </li>
+        <li>Haz clic en <strong>Guardar resultado</strong>.</li>
+        <li>El sistema recalcula posiciones y redirige de vuelta a <code>/panel/mis-partidos/</code> mostrando la misma jornada.</li>
+      </ol>
+
+      <h3>Corregir un resultado ya guardado</h3>
+      <p>Si necesitas corregir una planilla ya cerrada, ábrela nuevamente desde <code>/panel/mis-partidos/</code>. Como Coordinador puedes editar y guardar nuevamente.</p>
+      <div class="warn">Al guardar sobre una planilla ya cerrada, las suspensiones disciplinarias no se decrementan dos veces. El sistema detecta automáticamente el estado previo.</div>
+    </section>
+
+    <section id="usuarios">
+      <h2>Crear Usuarios</h2>
+      <p>URL: <code>/panel/usuarios/</code></p>
+      <p>El Coordinador puede crear usuarios de tipo <strong>Coordinador</strong> y <strong>Veedor</strong>:</p>
+      <ol>
+        <li>Ingresa nombre de usuario, correo electrónico y contraseña temporal.</li>
+        <li>Selecciona el rol.</li>
+        <li>Haz clic en <strong>Crear usuario</strong>.</li>
+      </ol>
+      <div class="tip">Comparte las credenciales al usuario por un canal seguro y pídele que cambie la contraseña en su primer ingreso.</div>
+    </section>
+
+    <section id="staff">
+      <h2>Personal del Torneo</h2>
+      <p>URL: <code>/panel/usuarios/</code> → sección <em>Personal del Torneo (Árbitros / Planilleros)</em></p>
+      <p>Mantén un catálogo de árbitros y planilleros para agilizar el llenado de planillas:</p>
+      <ol>
+        <li>Ingresa el nombre completo.</li>
+        <li>Selecciona el tipo: <em>Árbitro</em> o <em>Planillero</em>.</li>
+        <li>Haz clic en <strong>Agregar</strong>.</li>
+      </ol>
+      <p>Al abrir una planilla de partido, podrás elegirlos del desplegable en lugar de escribirlos manualmente.</p>
+    </section>
+
+    <section id="tribunal">
+      <h2>Tribunal de Disciplina</h2>
+      <p>URL: <code>/panel/torneo/{id}/</code> → pestaña <strong>Tribunal</strong></p>
+      <ul>
+        <li>Consulta tarjetas acumuladas y suspensiones por jugador.</li>
+        <li>Las suspensiones se aplican automáticamente al guardar una planilla con tarjetas rojas o acumulación de amarillas.</li>
+        <li>Puedes registrar resoluciones manuales del comité disciplinario.</li>
+        <li>Jugadores suspendidos quedan bloqueados en las planillas de los partidos afectados.</li>
+      </ul>
+    </section>
+
+    <section id="importar">
+      <h2>Importación Masiva</h2>
+      <p>URL: <code>/panel/importar/</code></p>
+      <h3>Importar equipos</h3>
+      <ol>
+        <li>Prepara un CSV con columna <code>nombre</code> (y opcionalmente <code>ciudad</code>).</li>
+        <li>Selecciona el torneo destino.</li>
+        <li>Sube el archivo y confirma.</li>
+      </ol>
+      <h3>Importar jugadores</h3>
+      <ol>
+        <li>Prepara un CSV con columnas: <code>nombre</code>, <code>dorsal</code>, <code>posicion</code>, <code>equipo</code>.</li>
+        <li>Selecciona el torneo y equipo (o déjalo en blanco si el CSV incluye la columna <code>equipo</code>).</li>
+        <li>Sube el archivo y confirma.</li>
+      </ol>
+      <div class="tip">Descarga las plantillas de ejemplo en la misma página para asegurarte de usar el formato correcto.</div>
+    </section>
+
+  </article>
+</div>
+<footer>SoccerTrack &copy; 2026 · <a href="index.html">Volver al índice</a></footer>
+</body>
+</html>

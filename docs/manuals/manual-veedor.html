@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual Veedor — SoccerTrack</title>
+<style>
+  :root {
+    --green: #3CBC20; --green2: #6DB728;
+    --navy: #0E0C19; --charcoal: #3C3A47; --bg: #f5f7f5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--charcoal); line-height: 1.6; }
+  header { background: var(--navy); color: #fff; padding: 1.5rem 3rem; border-bottom: 4px solid var(--green); display: flex; align-items: center; gap: 1rem; }
+  header .back { color: var(--green); text-decoration: none; font-size: .9rem; }
+  header h1 { font-size: 1.6rem; }
+  header .badge { background: var(--green); color: #fff; border-radius: 20px; padding: .2rem .8rem; font-size: .8rem; margin-left: .5rem; }
+  .layout { display: flex; max-width: 1100px; margin: 2rem auto; padding: 0 1.5rem; gap: 2rem; }
+  nav.sidebar { width: 220px; flex-shrink: 0; }
+  nav.sidebar ul { list-style: none; position: sticky; top: 1rem; }
+  nav.sidebar li a { display: block; padding: .5rem .8rem; border-radius: 6px; text-decoration: none; color: var(--charcoal); font-size: .9rem; transition: background .12s; }
+  nav.sidebar li a:hover { background: #e8f5e4; color: var(--green); }
+  nav.sidebar h3 { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: #999; padding: .6rem .8rem .2rem; margin-top: .8rem; }
+  article { flex: 1; min-width: 0; }
+  section { background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.07); padding: 2rem; margin-bottom: 1.8rem; }
+  section h2 { font-size: 1.3rem; color: var(--navy); margin-bottom: 1rem; border-bottom: 2px solid #e8f5e4; padding-bottom: .5rem; }
+  section h3 { font-size: 1rem; color: var(--green2); margin: 1.2rem 0 .5rem; }
+  p { margin-bottom: .8rem; font-size: .93rem; }
+  ul, ol { padding-left: 1.4rem; margin-bottom: .8rem; font-size: .93rem; }
+  li { margin-bottom: .3rem; }
+  .tip { background: #e8f5e4; border-left: 4px solid var(--green); padding: .8rem 1rem; border-radius: 0 6px 6px 0; font-size: .88rem; margin: .8rem 0; }
+  .warn { background: #fff8e1; border-left: 4px solid #f9a825; padding: .8rem 1rem; border-radius: 0 6px 6px 0; font-size: .88rem; margin: .8rem 0; }
+  .info { background: #e3f2fd; border-left: 4px solid #1976d2; padding: .8rem 1rem; border-radius: 0 6px 6px 0; font-size: .88rem; margin: .8rem 0; }
+  code { background: #f0f0f0; border-radius: 4px; padding: .1rem .4rem; font-family: monospace; font-size: .85rem; }
+  table { width: 100%; border-collapse: collapse; font-size: .88rem; margin: .8rem 0; }
+  th { background: var(--navy); color: #fff; padding: .5rem .8rem; text-align: left; }
+  td { padding: .45rem .8rem; border-bottom: 1px solid #eee; }
+  tr:hover td { background: #fafff9; }
+  .cap-list { display: flex; flex-wrap: wrap; gap: .5rem; margin: .6rem 0; }
+  .cap { background: #e8f5e4; color: var(--green2); border-radius: 12px; padding: .2rem .7rem; font-size: .8rem; font-family: monospace; }
+  .steps { counter-reset: step; list-style: none; padding: 0; }
+  .steps li { counter-increment: step; display: flex; gap: 1rem; margin-bottom: 1rem; align-items: flex-start; }
+  .steps li::before { content: counter(step); background: var(--green); color: #fff; border-radius: 50%; width: 1.6rem; height: 1.6rem; display: flex; align-items: center; justify-content: center; font-size: .85rem; font-weight: bold; flex-shrink: 0; margin-top: .1rem; }
+  footer { text-align: center; padding: 1.5rem; font-size: .8rem; color: #aaa; }
+  footer a { color: var(--green); }
+</style>
+</head>
+<body>
+<header>
+  <a class="back" href="index.html">← Índice</a>
+  <h1>Manual del Veedor de Resultados <span class="badge">📝 ds_veedor</span></h1>
+</header>
+<div class="layout">
+  <nav class="sidebar">
+    <h3>Contenido</h3>
+    <ul>
+      <li><a href="#acceso">Acceso y permisos</a></li>
+      <li><a href="#inicio">Inicio de sesión</a></li>
+      <li><a href="#mis-partidos">Lista de partidos</a></li>
+      <li><a href="#planilla">Abrir planilla</a></li>
+      <li><a href="#marcador">Registrar marcador</a></li>
+      <li><a href="#goles">Registrar goles</a></li>
+      <li><a href="#tarjetas">Registrar tarjetas</a></li>
+      <li><a href="#arbitro">Árbitro y planillero</a></li>
+      <li><a href="#guardar">Guardar resultado</a></li>
+      <li><a href="#faq">Preguntas frecuentes</a></li>
+    </ul>
+  </nav>
+  <article>
+
+    <section id="acceso">
+      <h2>Acceso y permisos</h2>
+      <p>El rol <strong>Veedor de Resultados</strong> (<code>ds_veedor</code>) está diseñado para ingresar resultados de partidos. Tiene acceso exclusivamente a las planillas de partido y a la vista de partidos del torneo.</p>
+
+      <h3>Qué puede hacer</h3>
+      <div class="cap-list">
+        <span class="cap">ds_view_match_sheet</span>
+        <span class="cap">ds_enter_match_incidents</span>
+        <span class="cap">ds_edit_incidents</span>
+        <span class="cap">ds_close_match</span>
+      </div>
+      <ul>
+        <li>Ver y filtrar todos los partidos del sistema.</li>
+        <li>Registrar marcadores, goles y tarjetas.</li>
+        <li>Seleccionar árbitro y planillero del catálogo.</li>
+        <li>Guardar planillas de partido (cierre de acta).</li>
+      </ul>
+
+      <h3>Qué NO puede hacer</h3>
+      <ul>
+        <li>Crear ni editar torneos, equipos o jugadores.</li>
+        <li>Gestionar usuarios del sistema.</li>
+        <li>Acceder a la importación masiva.</li>
+        <li>Reabrir una planilla ya cerrada (solo Coordinador y Administrador).</li>
+      </ul>
+      <div class="info">Si necesitas corregir un resultado ya guardado, comunícate con el Coordinador de Liga.</div>
+    </section>
+
+    <section id="inicio">
+      <h2>Inicio de sesión</h2>
+      <ol class="steps">
+        <li>Abre tu navegador y ve a <code>/wp-login.php</code> (la URL te la proporcionará el Coordinador).</li>
+        <li>Ingresa tu nombre de usuario y contraseña.</li>
+        <li>Haz clic en <strong>Acceder</strong>.</li>
+        <li>Serás redirigido automáticamente al panel de partidos <code>/panel/mis-partidos/</code>.</li>
+      </ol>
+      <div class="tip">Si olvidaste tu contraseña, usa el enlace <em>¿Olvidaste tu contraseña?</em> en la página de inicio de sesión, o comunícate con el Coordinador.</div>
+    </section>
+
+    <section id="mis-partidos">
+      <h2>Lista de Partidos</h2>
+      <p>URL: <code>/panel/mis-partidos/</code></p>
+      <p>Esta es tu pantalla principal de trabajo. Muestra todos los partidos del torneo filtrados por fecha.</p>
+
+      <h3>Filtrar por torneo y fecha</h3>
+      <ol class="steps">
+        <li>En el desplegable <strong>Torneo</strong>, selecciona el torneo activo.</li>
+        <li>En el desplegable <strong>Fecha</strong>, selecciona la jornada que quieres gestionar.</li>
+        <li>La tabla se actualiza mostrando solo los partidos de esa jornada.</li>
+      </ol>
+
+      <h3>Información en la tabla</h3>
+      <table>
+        <thead><tr><th>Columna</th><th>Descripción</th></tr></thead>
+        <tbody>
+          <tr><td>Partido</td><td>Equipos local y visitante.</td></tr>
+          <tr><td>Fecha / Hora</td><td>Fecha y hora programada del partido.</td></tr>
+          <tr><td>Recinto</td><td>Cancha o estadio donde se juega.</td></tr>
+          <tr><td>Estado</td><td>Programado, En curso o Finalizado.</td></tr>
+          <tr><td>Acciones</td><td>Botón <strong>Ver planilla</strong> para abrir el acta.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="planilla">
+      <h2>Abrir una Planilla</h2>
+      <ol class="steps">
+        <li>En la lista de partidos, ubica el partido al que quieres cargar el resultado.</li>
+        <li>Haz clic en el botón <strong>Ver planilla</strong>.</li>
+        <li>Se abre la pantalla del partido (<code>/panel/partido/{id}/</code>) con los equipos, sus nóminas y el formulario de resultado.</li>
+      </ol>
+      <div class="warn">Solo puedes ingresar resultados de partidos en estado <em>Programado</em>. Los partidos ya <em>Finalizados</em> mostrarán el resultado guardado y no podrán editarse desde este rol.</div>
+    </section>
+
+    <section id="marcador">
+      <h2>Registrar el Marcador Final</h2>
+      <p>En la sección <strong>Resultado</strong> de la planilla:</p>
+      <ol class="steps">
+        <li>Ingresa los goles del equipo local en el campo de la izquierda.</li>
+        <li>Ingresa los goles del equipo visitante en el campo de la derecha.</li>
+      </ol>
+      <div class="tip">El marcador debe coincidir con la suma de goles individuales que registres en la sección siguiente. El sistema validará esto al guardar.</div>
+    </section>
+
+    <section id="goles">
+      <h2>Registrar Goles</h2>
+      <p>En la sección <strong>Eventos del partido</strong>:</p>
+      <ol class="steps">
+        <li>Selecciona el <strong>jugador</strong> que anotó el gol desde el desplegable (lista de la nómina del equipo).</li>
+        <li>Ingresa el <strong>minuto</strong> en que se marcó el gol.</li>
+        <li>Selecciona el <strong>tipo</strong>: Gol, Penal o Gol en propio.</li>
+        <li>Haz clic en <strong>+ Agregar gol</strong>.</li>
+        <li>El gol aparece en el resumen. Repite para cada anotación.</li>
+      </ol>
+      <p>Para eliminar un gol mal ingresado, haz clic en el ícono de papelera junto al evento.</p>
+    </section>
+
+    <section id="tarjetas">
+      <h2>Registrar Tarjetas</h2>
+      <p>En la misma sección de <strong>Eventos del partido</strong>:</p>
+      <ol class="steps">
+        <li>Selecciona el <strong>jugador</strong> que recibió la amonestación.</li>
+        <li>Ingresa el <strong>minuto</strong> de la tarjeta.</li>
+        <li>Selecciona el <strong>tipo</strong>: Tarjeta amarilla o Tarjeta roja.</li>
+        <li>Haz clic en <strong>+ Agregar tarjeta</strong>.</li>
+      </ol>
+      <div class="warn">Las tarjetas rojas y la acumulación de amarillas generan suspensiones automáticas. Verifica que el jugador y el tipo estén correctos antes de guardar.</div>
+      <div class="info">Si un jugador aparece marcado como <em>Suspendido</em> en la nómina, no puede ser seleccionado para eventos. Comunícalo al Coordinador si crees que es un error.</div>
+    </section>
+
+    <section id="arbitro">
+      <h2>Árbitro y Planillero</h2>
+      <p>Al final del formulario hay campos para registrar el personal del partido:</p>
+      <ul>
+        <li><strong>Árbitro:</strong> selecciona desde el catálogo desplegable o escribe el nombre manualmente.</li>
+        <li><strong>Planillero:</strong> ídem.</li>
+      </ul>
+      <p>Estos campos son informativos y no afectan el cálculo de posiciones ni suspensiones.</p>
+      <div class="tip">Si el árbitro o planillero no aparecen en el catálogo, puedes escribir el nombre directamente en el campo de texto. El Coordinador puede agregar personas al catálogo desde <code>/panel/usuarios/</code>.</div>
+    </section>
+
+    <section id="guardar">
+      <h2>Guardar el Resultado</h2>
+      <ol class="steps">
+        <li>Revisa que el marcador, los goles y las tarjetas sean correctos.</li>
+        <li>Haz clic en el botón <strong>Guardar resultado</strong> (aparece al final del formulario).</li>
+        <li>El botón mostrará <em>Guardando…</em> mientras procesa.</li>
+        <li>Al terminar, verás un mensaje de confirmación y serás redirigido automáticamente a <code>/panel/mis-partidos/</code> mostrando la misma jornada.</li>
+      </ol>
+      <div class="tip">Después de guardar, el partido pasa a estado <em>Finalizado</em> y la tabla de posiciones se actualiza automáticamente.</div>
+      <div class="warn">Si el botón no responde o muestra un error, verifica tu conexión a internet y vuelve a intentarlo. Si el problema persiste, contacta al Coordinador.</div>
+
+      <h3>¿Qué pasa al guardar?</h3>
+      <ul>
+        <li>El partido cambia de estado a <em>Finalizado</em>.</li>
+        <li>Se actualizan puntos, goles y diferencia de gol en la tabla de posiciones.</li>
+        <li>Se evalúan suspensiones disciplinarias basadas en tarjetas acumuladas.</li>
+        <li>Los datos quedan visibles en el portal público del torneo.</li>
+      </ul>
+    </section>
+
+    <section id="faq">
+      <h2>Preguntas Frecuentes</h2>
+
+      <h3>¿Qué hago si me equivoqué al guardar un resultado?</h3>
+      <p>Comunícate con el Coordinador de Liga o el Administrador. Ellos pueden reabrir la planilla y corregir el resultado.</p>
+
+      <h3>¿Por qué no aparece un jugador en la nómina?</h3>
+      <p>El jugador puede estar suspendido por acumulación de tarjetas o por resolución del tribunal. Verifica con el Coordinador.</p>
+
+      <h3>¿Puedo cargar resultados desde un celular?</h3>
+      <p>Sí, el sistema es responsive y funciona en dispositivos móviles. Accede desde el navegador del celular a la misma URL.</p>
+
+      <h3>¿Qué significa cada estado de partido?</h3>
+      <table>
+        <thead><tr><th>Estado</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td>Programado</td><td>El partido está en el fixture pero aún no se ha jugado.</td></tr>
+          <tr><td>En curso</td><td>El partido está siendo jugado en este momento.</td></tr>
+          <tr><td>Finalizado</td><td>El resultado ya fue ingresado y guardado.</td></tr>
+          <tr><td>Suspendido</td><td>El partido fue suspendido (lluvia, etc.). No se ingresa resultado.</td></tr>
+          <tr><td>Aplazado</td><td>El partido fue reprogramado para otra fecha.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>¿El portal público se actualiza solo?</h3>
+      <p>Sí. Al guardar la planilla, la tabla de posiciones y el fixture del portal público se actualizan en tiempo real.</p>
+    </section>
+
+  </article>
+</div>
+<footer>SoccerTrack &copy; 2026 · <a href="index.html">Volver al índice</a></footer>
+</body>
+</html>
