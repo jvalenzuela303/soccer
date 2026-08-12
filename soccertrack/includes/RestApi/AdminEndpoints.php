@@ -317,7 +317,15 @@ final class AdminEndpoints {
 				'methods'             => \WP_REST_Server::CREATABLE,
 				'callback'            => [ self::class, 'post_generate_playoffs' ],
 				'permission_callback' => static fn() => current_user_can( 'ds_generate_fixture' ),
-				'args'                => [ 'id' => $tid_arg, 'venue_id' => $venue_arg ],
+				'args'                => [
+					'id'         => $tid_arg,
+					'venue_id'   => $venue_arg,
+					'bracket_id' => [
+						'required'          => false,
+						'validate_callback' => static fn( mixed $v ): bool => is_numeric( $v ) && (int) $v > 0,
+						'sanitize_callback' => 'absint',
+					],
+				],
 			]
 		);
 
@@ -329,7 +337,117 @@ final class AdminEndpoints {
 				'methods'             => \WP_REST_Server::CREATABLE,
 				'callback'            => [ self::class, 'post_generate_finals' ],
 				'permission_callback' => static fn() => current_user_can( 'ds_generate_fixture' ),
-				'args'                => [ 'id' => $tid_arg, 'venue_id' => $venue_arg ],
+				'args'                => [
+					'id'         => $tid_arg,
+					'venue_id'   => $venue_arg,
+					'bracket_id' => [
+						'required'          => false,
+						'validate_callback' => static fn( mixed $v ): bool => is_numeric( $v ) && (int) $v > 0,
+						'sanitize_callback' => 'absint',
+					],
+				],
+			]
+		);
+
+		self::register_bracket_routes();
+	}
+
+	private static function register_bracket_routes(): void {
+		$tid_arg = [
+			'validate_callback' => static fn( mixed $v ): bool => is_numeric( $v ) && (int) $v > 0,
+			'sanitize_callback' => 'absint',
+		];
+		$bid_arg = [
+			'validate_callback' => static fn( mixed $v ): bool => is_numeric( $v ) && (int) $v > 0,
+			'sanitize_callback' => 'absint',
+		];
+
+		// POST + GET /admin/tournament/{id}/brackets
+		register_rest_route(
+			self::NAMESPACE,
+			'/admin/tournament/(?P<id>\d+)/brackets',
+			[
+				[
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => [ self::class, 'post_bracket' ],
+					'permission_callback' => static fn() => current_user_can( 'ds_generate_fixture' ),
+					'args'                => [
+						'id'         => $tid_arg,
+						'name'       => [
+							'required'          => true,
+							'validate_callback' => static fn( mixed $v ): bool => is_string( $v ) && strlen( trim( $v ) ) > 0,
+							'sanitize_callback' => 'sanitize_text_field',
+						],
+						'rank_from'  => [
+							'required'          => true,
+							'validate_callback' => static fn( mixed $v ): bool => is_numeric( $v ) && (int) $v >= 1,
+							'sanitize_callback' => 'absint',
+						],
+						'rank_to'    => [
+							'required'          => true,
+							'validate_callback' => static fn( mixed $v ): bool => is_numeric( $v ) && (int) $v >= 1,
+							'sanitize_callback' => 'absint',
+						],
+						'sort_order' => [
+							'required'          => false,
+							'default'           => 0,
+							'validate_callback' => static fn( mixed $v ): bool => is_numeric( $v ) && (int) $v >= 0,
+							'sanitize_callback' => 'absint',
+						],
+					],
+				],
+				[
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => [ self::class, 'get_brackets' ],
+					'permission_callback' => static fn() => current_user_can( 'ds_generate_fixture' ),
+					'args'                => [ 'id' => $tid_arg ],
+				],
+			]
+		);
+
+		// PATCH + DELETE /admin/tournament/{id}/brackets/{bid}
+		register_rest_route(
+			self::NAMESPACE,
+			'/admin/tournament/(?P<id>\d+)/brackets/(?P<bid>\d+)',
+			[
+				[
+					'methods'             => 'PATCH',
+					'callback'            => [ self::class, 'patch_bracket' ],
+					'permission_callback' => static fn() => current_user_can( 'ds_generate_fixture' ),
+					'args'                => [
+						'id'         => $tid_arg,
+						'bid'        => $bid_arg,
+						'name'       => [
+							'required'          => false,
+							'validate_callback' => static fn( mixed $v ): bool => is_string( $v ) && strlen( trim( $v ) ) > 0,
+							'sanitize_callback' => 'sanitize_text_field',
+						],
+						'rank_from'  => [
+							'required'          => false,
+							'validate_callback' => static fn( mixed $v ): bool => is_numeric( $v ) && (int) $v >= 1,
+							'sanitize_callback' => 'absint',
+						],
+						'rank_to'    => [
+							'required'          => false,
+							'validate_callback' => static fn( mixed $v ): bool => is_numeric( $v ) && (int) $v >= 1,
+							'sanitize_callback' => 'absint',
+						],
+						'sort_order' => [
+							'required'          => false,
+							'validate_callback' => static fn( mixed $v ): bool => is_numeric( $v ) && (int) $v >= 0,
+							'sanitize_callback' => 'absint',
+						],
+					],
+				],
+				[
+					'methods'             => \WP_REST_Server::DELETABLE,
+					'callback'            => [ self::class, 'delete_bracket' ],
+					'permission_callback' => static fn() => current_user_can( 'ds_generate_fixture' ),
+					'args'                => [
+						'id'  => $tid_arg,
+						'bid' => $bid_arg,
+					],
+				],
 			]
 		);
 	}
@@ -1275,7 +1393,29 @@ final class AdminEndpoints {
 			return new \WP_Error( 'tournament_not_found', __( 'Torneo no encontrado.', 'soccertrack' ), [ 'status' => 404 ] );
 		}
 
-		$result = ( new FixtureGenerator() )->generate_playoffs( $tournament, $venue_id );
+		// Verificar si el torneo tiene brackets configurados.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$has_brackets = (bool) (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$wpdb->prefix}ds_playoff_brackets WHERE tournament_id = %d",
+				$tid
+			)
+		);
+
+		$bracket_id = isset( $request['bracket_id'] ) ? (int) $request['bracket_id'] : 0;
+
+		if ( $has_brackets ) {
+			if ( ! $bracket_id ) {
+				return new \WP_Error(
+					'bracket_id_required',
+					__( 'Este torneo tiene brackets configurados. Debes especificar bracket_id.', 'soccertrack' ),
+					[ 'status' => 400 ]
+				);
+			}
+			$result = ( new FixtureGenerator() )->generate_bracket_playoffs( $tournament, $bracket_id, $venue_id );
+		} else {
+			$result = ( new FixtureGenerator() )->generate_playoffs( $tournament, $venue_id );
+		}
 
 		if ( ! empty( $result['error'] ) ) {
 			return new \WP_Error( 'playoffs_error', $result['error'], [ 'status' => 409 ] );
@@ -1314,7 +1454,28 @@ final class AdminEndpoints {
 			return new \WP_Error( 'tournament_not_found', __( 'Torneo no encontrado.', 'soccertrack' ), [ 'status' => 404 ] );
 		}
 
-		$result = ( new FixtureGenerator() )->generate_finals( $tournament, $venue_id );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$has_brackets = (bool) (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$wpdb->prefix}ds_playoff_brackets WHERE tournament_id = %d",
+				$tid
+			)
+		);
+
+		$bracket_id = isset( $request['bracket_id'] ) ? (int) $request['bracket_id'] : 0;
+
+		if ( $has_brackets ) {
+			if ( ! $bracket_id ) {
+				return new \WP_Error(
+					'bracket_id_required',
+					__( 'Este torneo tiene brackets configurados. Debes especificar bracket_id.', 'soccertrack' ),
+					[ 'status' => 400 ]
+				);
+			}
+			$result = ( new FixtureGenerator() )->generate_bracket_finals( $tournament, $bracket_id, $venue_id );
+		} else {
+			$result = ( new FixtureGenerator() )->generate_finals( $tournament, $venue_id );
+		}
 
 		if ( ! empty( $result['error'] ) ) {
 			return new \WP_Error( 'finals_error', $result['error'], [ 'status' => 409 ] );
@@ -1326,6 +1487,247 @@ final class AdminEndpoints {
 			'matches_created' => count( $result['match_ids'] ),
 			'match_ids'       => $result['match_ids'],
 		] );
+	}
+
+	/**
+	 * Verifica si el rango [from, to] se solapa con brackets existentes del torneo.
+	 * Excluye opcionalmente un bracket (para ediciones).
+	 *
+	 * @param  int      $tournament_id
+	 * @param  int      $rank_from
+	 * @param  int      $rank_to
+	 * @param  int|null $exclude_id  ID del bracket a excluir (PATCH).
+	 * @return bool  true si hay solapamiento.
+	 */
+	private static function brackets_overlap( int $tournament_id, int $rank_from, int $rank_to, ?int $exclude_id = null ): bool {
+		global $wpdb;
+
+		$exclude_sql = $exclude_id ? $wpdb->prepare( ' AND id != %d', $exclude_id ) : '';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared
+		$count = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$wpdb->prefix}ds_playoff_brackets
+				 WHERE tournament_id = %d
+				   AND rank_from <= %d
+				   AND rank_to   >= %d" . $exclude_sql, // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$tournament_id,
+				$rank_to,
+				$rank_from
+			)
+		);
+
+		return $count > 0;
+	}
+
+	/**
+	 * Un bracket está bloqueado si ya tiene partidos generados.
+	 */
+	private static function bracket_is_locked( int $bracket_id ): bool {
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		return (bool) (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches WHERE bracket_id = %d",
+				$bracket_id
+			)
+		);
+	}
+
+	public static function post_bracket( \WP_REST_Request $request ): \WP_REST_Response|\WP_Error {
+		global $wpdb;
+
+		$tid        = (int) $request['id'];
+		$name       = (string) $request['name'];
+		$rank_from  = (int) $request['rank_from'];
+		$rank_to    = (int) $request['rank_to'];
+		$sort_order = (int) ( $request['sort_order'] ?? 0 );
+
+		// Verificar que el torneo existe.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$tournament_exists = (bool) (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
+				$tid
+			)
+		);
+
+		if ( ! $tournament_exists ) {
+			return new \WP_Error( 'tournament_not_found', __( 'Torneo no encontrado.', 'soccertrack' ), [ 'status' => 404 ] );
+		}
+
+		if ( $rank_from >= $rank_to ) {
+			return new \WP_Error( 'invalid_range', __( 'rank_from debe ser menor que rank_to.', 'soccertrack' ), [ 'status' => 422 ] );
+		}
+
+		if ( ( $rank_to - $rank_from + 1 ) !== 4 ) {
+			return new \WP_Error(
+				'invalid_bracket_size',
+				__( 'El bracket debe contener exactamente 4 equipos (rank_to - rank_from + 1 = 4).', 'soccertrack' ),
+				[ 'status' => 422 ]
+			);
+		}
+
+		if ( self::brackets_overlap( $tid, $rank_from, $rank_to ) ) {
+			return new \WP_Error( 'bracket_overlap', __( 'El rango se solapa con un bracket existente.', 'soccertrack' ), [ 'status' => 409 ] );
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->insert(
+			"{$wpdb->prefix}ds_playoff_brackets",
+			[
+				'tournament_id' => $tid,
+				'name'          => $name,
+				'rank_from'     => $rank_from,
+				'rank_to'       => $rank_to,
+				'sort_order'    => $sort_order,
+			],
+			[ '%d', '%s', '%d', '%d', '%d' ]
+		);
+
+		$bracket_id = (int) $wpdb->insert_id;
+		if ( ! $bracket_id ) {
+			return new \WP_Error( 'db_error', __( 'Error al crear el bracket.', 'soccertrack' ), [ 'status' => 500 ] );
+		}
+
+		return rest_ensure_response( [
+			'id'         => $bracket_id,
+			'name'       => $name,
+			'rank_from'  => $rank_from,
+			'rank_to'    => $rank_to,
+			'sort_order' => $sort_order,
+		] );
+	}
+
+	public static function get_brackets( \WP_REST_Request $request ): \WP_REST_Response {
+		global $wpdb;
+
+		$tid = (int) $request['id'];
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT b.id, b.name, b.rank_from, b.rank_to, b.sort_order,
+				        COUNT(m.id) > 0 AS locked
+				 FROM {$wpdb->prefix}ds_playoff_brackets b
+				 LEFT JOIN {$wpdb->prefix}ds_matches m ON m.bracket_id = b.id
+				 WHERE b.tournament_id = %d
+				 GROUP BY b.id
+				 ORDER BY b.sort_order ASC, b.rank_from ASC",
+				$tid
+			),
+			ARRAY_A
+		) ?: [];
+
+		return rest_ensure_response(
+			array_map( static fn( array $r ): array => [
+				'id'         => (int) $r['id'],
+				'name'       => $r['name'],
+				'rank_from'  => (int) $r['rank_from'],
+				'rank_to'    => (int) $r['rank_to'],
+				'sort_order' => (int) $r['sort_order'],
+				'locked'     => (bool) (int) $r['locked'],
+			], $rows )
+		);
+	}
+
+	public static function patch_bracket( \WP_REST_Request $request ): \WP_REST_Response|\WP_Error {
+		global $wpdb;
+
+		$tid = (int) $request['id'];
+		$bid = (int) $request['bid'];
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$bracket = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT id, tournament_id, name, rank_from, rank_to, sort_order
+				 FROM {$wpdb->prefix}ds_playoff_brackets
+				 WHERE id = %d AND tournament_id = %d",
+				$bid,
+				$tid
+			),
+			ARRAY_A
+		);
+
+		if ( ! $bracket ) {
+			return new \WP_Error( 'bracket_not_found', __( 'Bracket no encontrado.', 'soccertrack' ), [ 'status' => 404 ] );
+		}
+
+		if ( self::bracket_is_locked( $bid ) ) {
+			return new \WP_Error( 'bracket_locked', __( 'El bracket ya tiene partidos generados y no puede ser editado.', 'soccertrack' ), [ 'status' => 409 ] );
+		}
+
+		$name       = isset( $request['name'] )       ? (string) $request['name']       : $bracket['name'];
+		$rank_from  = isset( $request['rank_from'] )  ? (int) $request['rank_from']     : (int) $bracket['rank_from'];
+		$rank_to    = isset( $request['rank_to'] )    ? (int) $request['rank_to']       : (int) $bracket['rank_to'];
+		$sort_order = isset( $request['sort_order'] ) ? (int) $request['sort_order']    : (int) $bracket['sort_order'];
+
+		if ( $rank_from >= $rank_to ) {
+			return new \WP_Error( 'invalid_range', __( 'rank_from debe ser menor que rank_to.', 'soccertrack' ), [ 'status' => 422 ] );
+		}
+
+		if ( ( $rank_to - $rank_from + 1 ) !== 4 ) {
+			return new \WP_Error(
+				'invalid_bracket_size',
+				__( 'El bracket debe contener exactamente 4 equipos (rank_to - rank_from + 1 = 4).', 'soccertrack' ),
+				[ 'status' => 422 ]
+			);
+		}
+
+		if ( self::brackets_overlap( $tid, $rank_from, $rank_to, $bid ) ) {
+			return new \WP_Error( 'bracket_overlap', __( 'El rango se solapa con un bracket existente.', 'soccertrack' ), [ 'status' => 409 ] );
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->update(
+			"{$wpdb->prefix}ds_playoff_brackets",
+			[
+				'name'       => $name,
+				'rank_from'  => $rank_from,
+				'rank_to'    => $rank_to,
+				'sort_order' => $sort_order,
+			],
+			[ 'id' => $bid ],
+			[ '%s', '%d', '%d', '%d' ],
+			[ '%d' ]
+		);
+
+		return rest_ensure_response( [
+			'id'         => $bid,
+			'name'       => $name,
+			'rank_from'  => $rank_from,
+			'rank_to'    => $rank_to,
+			'sort_order' => $sort_order,
+		] );
+	}
+
+	public static function delete_bracket( \WP_REST_Request $request ): \WP_REST_Response|\WP_Error {
+		global $wpdb;
+
+		$tid = (int) $request['id'];
+		$bid = (int) $request['bid'];
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$exists = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$wpdb->prefix}ds_playoff_brackets WHERE id = %d AND tournament_id = %d",
+				$bid,
+				$tid
+			)
+		);
+
+		if ( ! $exists ) {
+			return new \WP_Error( 'bracket_not_found', __( 'Bracket no encontrado.', 'soccertrack' ), [ 'status' => 404 ] );
+		}
+
+		if ( self::bracket_is_locked( $bid ) ) {
+			return new \WP_Error( 'bracket_locked', __( 'El bracket ya tiene partidos generados y no puede ser eliminado.', 'soccertrack' ), [ 'status' => 409 ] );
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->delete( "{$wpdb->prefix}ds_playoff_brackets", [ 'id' => $bid ], [ '%d' ] );
+
+		return rest_ensure_response( [ 'deleted' => true, 'id' => $bid ] );
 	}
 
 	/**

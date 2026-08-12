@@ -164,6 +164,9 @@
 			}
 
 			// ── Rows ────────────────────────────────────────────────────────────
+			// Detectar si algún equipo tiene bracket_name.
+			const hasBrackets = rows.some( r => r.bracket_name );
+
 			const trs = rows.map( ( r, idx ) => {
 				const pos  = idx + 1;
 				const zone = pos <= playoffCut ? 'playoff' : ( pos > total - 2 && total > 4 ? 'danger' : '' );
@@ -176,6 +179,10 @@
 					const lbl = result === 'W' ? 'V' : result === 'D' ? 'E' : 'D';
 					return `<span class="st-form-bubble st-form-bubble--${ cls }">${ lbl }</span>`;
 				} ).join( '' );
+
+				const bracketCell = hasBrackets
+					? `<td class="st-bracket-cell">${ r.bracket_name ? escHtml( r.bracket_name ) : '—' }</td>`
+					: '';
 
 				return `
 				<tr${ zone ? ` data-zone="${ zone }"` : '' }>
@@ -191,6 +198,7 @@
 					<td class="st-pts">${ r.pts }</td>
 					<td class="st-winrate">${ winRate }${ r.pj > 0 ? '%' : '' }</td>
 					<td class="st-form">${ formBubbles }</td>
+					${ bracketCell }
 				</tr>`;
 			} ).join( '' );
 
@@ -248,6 +256,10 @@
 				</div>`;
 			}
 
+			const bracketHeader = hasBrackets
+				? `<th title="Copa / Bracket">Copa</th>`
+				: '';
+
 			container.innerHTML = `
 				<h2 class="st-section-title">${ i18n.standings_title ?? 'Tabla de Posiciones' }</h2>
 				${ leaderCardsHtml }
@@ -267,6 +279,7 @@
 								<th title="${ i18n.pts ?? 'Puntos' }">PTS</th>
 								<th title="% victorias">%</th>
 								<th title="${ escHtml( i18n.form ?? 'Últimos 5 partidos' ) }">Forma</th>
+								${ bracketHeader }
 							</tr>
 						</thead>
 						<tbody>${ trs }</tbody>
@@ -374,30 +387,41 @@
 					</div>`;
 			}
 
-			// ── Bracket de play-offs ────────────────────────────────────────────
+			// ── Bracket de play-offs — agrupado por bracket ──────────────────────
 			if ( playoffMatches.length ) {
-				const sfMatches    = playoffMatches.filter( m => m.phase === 'semifinal' );
-				const thirdMatches = playoffMatches.filter( m => m.phase === 'third_place' );
-				const finalMatches = playoffMatches.filter( m => m.phase === 'final' );
-
 				const phaseTitle = {
 					semifinal:   i18n.phase_semifinal   ?? 'Semi-finales',
 					third_place: i18n.phase_third_place ?? '3.er Puesto',
 					final:       i18n.phase_final       ?? 'Final',
 				};
 
-				html += `<div class="st-playoffs-bracket">
-					<h2 class="st-section-title">${ i18n.playoffs_title ?? 'Play-offs' }</h2>`;
+				// Agrupar por bracket_name (null → 'Play-offs' genérico para torneos sin brackets).
+				const bracketMap = new Map();
+				for ( const m of playoffMatches ) {
+					const key = m.bracket_name ?? '__generic__';
+					if ( ! bracketMap.has( key ) ) bracketMap.set( key, { name: m.bracket_name ?? ( i18n.playoffs_title ?? 'Play-offs' ), matches: [] } );
+					bracketMap.get( key ).matches.push( m );
+				}
 
-				for ( const [ phase, group ] of [ [ 'semifinal', sfMatches ], [ 'third_place', thirdMatches ], [ 'final', finalMatches ] ] ) {
-					if ( ! group.length ) continue;
-					html += `
-					<div class="st-bracket-round">
-						<h3 class="st-bracket-round-title">${ phaseTitle[ phase ] }</h3>
-						<div class="st-bracket-matches">
-							${ group.map( matchCard ).join( '' ) }
-						</div>
-					</div>`;
+				html += `<div class="st-playoffs-bracket">`;
+
+				for ( const [ , bracket ] of bracketMap ) {
+					html += `<h2 class="st-section-title">${ escHtml( bracket.name ) }</h2>`;
+
+					const sfMatches    = bracket.matches.filter( m => m.phase === 'semifinal' );
+					const thirdMatches = bracket.matches.filter( m => m.phase === 'third_place' );
+					const finalMatches = bracket.matches.filter( m => m.phase === 'final' );
+
+					for ( const [ phase, group ] of [ [ 'semifinal', sfMatches ], [ 'third_place', thirdMatches ], [ 'final', finalMatches ] ] ) {
+						if ( ! group.length ) continue;
+						html += `
+						<div class="st-bracket-round">
+							<h3 class="st-bracket-round-title">${ phaseTitle[ phase ] }</h3>
+							<div class="st-bracket-matches">
+								${ group.map( matchCard ).join( '' ) }
+							</div>
+						</div>`;
+					}
 				}
 
 				html += `</div>`;
