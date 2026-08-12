@@ -1543,6 +1543,19 @@ final class AdminEndpoints {
 		$rank_to    = (int) $request['rank_to'];
 		$sort_order = (int) ( $request['sort_order'] ?? 0 );
 
+		// Verificar que el torneo existe.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$tournament_exists = (bool) (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
+				$tid
+			)
+		);
+
+		if ( ! $tournament_exists ) {
+			return new \WP_Error( 'tournament_not_found', __( 'Torneo no encontrado.', 'soccertrack' ), [ 'status' => 404 ] );
+		}
+
 		if ( $rank_from >= $rank_to ) {
 			return new \WP_Error( 'invalid_range', __( 'rank_from debe ser menor que rank_to.', 'soccertrack' ), [ 'status' => 422 ] );
 		}
@@ -1586,10 +1599,13 @@ final class AdminEndpoints {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT id, name, rank_from, rank_to, sort_order
-				 FROM {$wpdb->prefix}ds_playoff_brackets
-				 WHERE tournament_id = %d
-				 ORDER BY sort_order ASC, rank_from ASC",
+				"SELECT b.id, b.name, b.rank_from, b.rank_to, b.sort_order,
+				        COUNT(m.id) > 0 AS locked
+				 FROM {$wpdb->prefix}ds_playoff_brackets b
+				 LEFT JOIN {$wpdb->prefix}ds_matches m ON m.bracket_id = b.id
+				 WHERE b.tournament_id = %d
+				 GROUP BY b.id
+				 ORDER BY b.sort_order ASC, b.rank_from ASC",
 				$tid
 			),
 			ARRAY_A
@@ -1602,7 +1618,7 @@ final class AdminEndpoints {
 				'rank_from'  => (int) $r['rank_from'],
 				'rank_to'    => (int) $r['rank_to'],
 				'sort_order' => (int) $r['sort_order'],
-				'locked'     => self::bracket_is_locked( (int) $r['id'] ),
+				'locked'     => (bool) (int) $r['locked'],
 			], $rows )
 		);
 	}
