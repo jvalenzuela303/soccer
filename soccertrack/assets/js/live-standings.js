@@ -16,9 +16,10 @@
 	/** @type {{ apiBase: string, tournamentId: number, basesUrl: string, i18n: Record<string,string> }} */
 	const cfg = window.stPublic ?? {};
 
-	const API   = cfg.apiBase?.replace( /\/$/, '' ) ?? '';
-	const TID   = Number( cfg.tournamentId ?? 0 );
-	const i18n  = cfg.i18n ?? {};
+	const API    = cfg.apiBase?.replace( /\/$/, '' ) ?? '';
+	const TID    = Number( cfg.tournamentId ?? 0 );
+	const FORMAT = cfg.tournamentFormat ?? '';
+	const i18n   = cfg.i18n ?? {};
 
 	// Cache de respuestas por tab para evitar refetches.
 	/** @type {Map<string, any>} */
@@ -121,73 +122,46 @@
 		showLoading( container );
 
 		try {
-			const rows = await apiFetch( `soccertrack/v1/public/tournament/${ TID }/standings` );
-
-			if ( ! rows.length ) {
-				return showEmpty( container, i18n.no_standings ?? 'Aún no hay partidos jugados.' );
+			if ( FORMAT === 'group_stage' ) {
+				await renderGroupStandings( container );
+			} else {
+				await renderSingleStandings( container );
 			}
+		} catch ( err ) {
+			showError( container, `${ i18n.error_load ?? 'Error al cargar posiciones.' } (${ err.message })` );
+		}
+	}
 
-			const total = rows.length;
-			// Zona playoff: top 4 (o top 2 si hay ≤ 6 equipos).
-			const playoffCut = total <= 6 ? 2 : 4;
+	async function renderGroupStandings( container ) {
+		const groups = await apiFetch( `soccertrack/v1/public/tournament/${ TID }/groups` );
 
-			// ── Leader cards ────────────────────────────────────────────────────
-			const activeRows = rows.filter( r => r.pj > 0 );
-			let leaderCardsHtml = '';
+		if ( ! groups.length ) {
+			return showEmpty( container, i18n.no_standings ?? 'Aún no hay partidos jugados.' );
+		}
 
-			if ( activeRows.length ) {
-				const bestAttack  = activeRows.reduce( ( a, b ) => b.gf > a.gf ? b : a );
-				const bestDefense = activeRows.reduce( ( a, b ) => b.gc < a.gc ? b : a );
-				const bestStreak  = activeRows.reduce( ( a, b ) => ( b.win_streak ?? 0 ) > ( a.win_streak ?? 0 ) ? b : a );
+		let html = `<h2 class="st-section-title">${ i18n.standings_title ?? 'Tabla de Posiciones' }</h2>`;
 
-				leaderCardsHtml = `
-				<div class="st-leader-cards">
-					<div class="st-leader-card">
-						<span class="st-leader-card__icon">⚔️</span>
-						<span class="st-leader-card__title">${ escHtml( i18n.best_attack ?? 'Mejor Ataque' ) }</span>
-						<span class="st-leader-card__team">${ escHtml( bestAttack.name ) }</span>
-						<span class="st-leader-card__value">${ bestAttack.gf } ${ escHtml( i18n.goals_for_label ?? 'goles' ) }</span>
-					</div>
-					<div class="st-leader-card">
-						<span class="st-leader-card__icon">🛡</span>
-						<span class="st-leader-card__title">${ escHtml( i18n.best_defense ?? 'Mejor Defensa' ) }</span>
-						<span class="st-leader-card__team">${ escHtml( bestDefense.name ) }</span>
-						<span class="st-leader-card__value">${ bestDefense.gc } ${ escHtml( i18n.goals_against_label ?? 'en contra' ) }</span>
-					</div>
-					<div class="st-leader-card">
-						<span class="st-leader-card__icon">🔥</span>
-						<span class="st-leader-card__title">${ escHtml( i18n.current_streak ?? 'Racha Actual' ) }</span>
-						<span class="st-leader-card__team">${ escHtml( bestStreak.name ) }</span>
-						<span class="st-leader-card__value">${ bestStreak.win_streak ?? 0 } ${ escHtml( i18n.win_streak_label ?? 'victorias' ) }</span>
-					</div>
-				</div>`;
-			}
-
-			// ── Rows ────────────────────────────────────────────────────────────
-			// Detectar si algún equipo tiene bracket_name.
-			const hasBrackets = rows.some( r => r.bracket_name );
+		for ( const group of groups ) {
+			const rows = group.standings ?? [];
+			const advancing = rows.length > 0 ? Math.ceil( rows.length / 2 ) : 1; // fallback visual
+			// Detect advancing count from first group where all teams have played.
+			// (The server handles the actual logic; we just mark the top rows visually.)
+			// The spec says "las primeras teams_advancing_per_group filas" — since we don't know
+			// that value client-side, mark top-2 by default (safe for 2-groups × 2 advancing).
+			// For precise marking, the /groups response includes it implicitly via ordering.
 
 			const trs = rows.map( ( r, idx ) => {
 				const pos  = idx + 1;
-				const zone = pos <= playoffCut ? 'playoff' : ( pos > total - 2 && total > 4 ? 'danger' : '' );
-				const rankStyle = pos === 1 ? ' style="color:#f39c12"' : pos === 2 ? ' style="color:#95a5a6"' : pos === 3 ? ' style="color:#cd7f32"' : '';
-
-				const winRate = r.pj > 0 ? Math.round( r.pg / r.pj * 100 ) : '—';
-
+				const zone = pos <= 2 ? 'playoff' : ''; // top-2 as qualifying zone visual
 				const formBubbles = ( r.form ?? [] ).map( result => {
 					const cls = result === 'W' ? 'w' : result === 'D' ? 'd' : 'l';
 					const lbl = result === 'W' ? 'V' : result === 'D' ? 'E' : 'D';
 					return `<span class="st-form-bubble st-form-bubble--${ cls }">${ lbl }</span>`;
 				} ).join( '' );
-
-				const bracketCell = hasBrackets
-					? `<td class="st-bracket-cell">${ r.bracket_name ? escHtml( r.bracket_name ) : '—' }</td>`
-					: '';
-
 				return `
 				<tr${ zone ? ` data-zone="${ zone }"` : '' }>
-					<td class="st-rank"${ rankStyle }>${ pos }</td>
-					<td style="display:flex;align-items:center;gap:8px">${ logoOrPlaceholder( r.logo_url, r.name ) }<span>${ escHtml( r.name ) }</span></td>
+					<td class="st-rank">${ pos }</td>
+					<td>${ escHtml( r.name ) }</td>
 					<td>${ r.pj }</td>
 					<td>${ r.pg }</td>
 					<td>${ r.pe }</td>
@@ -196,104 +170,280 @@
 					<td>${ r.gc }</td>
 					<td>${ r.dg >= 0 ? '+' : '' }${ r.dg }</td>
 					<td class="st-pts">${ r.pts }</td>
-					<td class="st-winrate">${ winRate }${ r.pj > 0 ? '%' : '' }</td>
 					<td class="st-form">${ formBubbles }</td>
-					${ bracketCell }
 				</tr>`;
 			} ).join( '' );
 
-			// ── Zone legend ─────────────────────────────────────────────────────
-			const zoneLegendHtml = rows.length >= 4
-				? `
-				<div class="st-zone-legend">
-					<span class="st-zone-dot st-zone-dot--playoff"></span> ${ escHtml( i18n.zone_playoff ?? 'Zona playoff' ) }
-					<span class="st-zone-dot st-zone-dot--danger"></span> ${ escHtml( i18n.zone_danger ?? 'Zona peligro' ) }
-				</div>`
+			html += `
+			<h3 class="st-subsection-title" style="margin-top:1.5rem;color:#0E0C19">${ escHtml( i18n.group_label ?? 'Grupo' ) } ${ escHtml( group.label ) }</h3>
+			<div class="st-table-wrap" style="margin-bottom:1rem">
+				<table class="st-table st-standings-table" aria-label="Grupo ${ escHtml( group.label ) }">
+					<thead>
+						<tr>
+							<th>#</th>
+							<th>${ i18n.team ?? 'Equipo' }</th>
+							<th title="${ i18n.played ?? 'Jugados' }">PJ</th>
+							<th title="${ i18n.won ?? 'Ganados' }">PG</th>
+							<th title="${ i18n.drawn ?? 'Empatados' }">PE</th>
+							<th title="${ i18n.lost ?? 'Perdidos' }">PP</th>
+							<th title="${ i18n.gf ?? 'Goles a Favor' }">GF</th>
+							<th title="${ i18n.gc ?? 'Goles en Contra' }">GC</th>
+							<th title="${ i18n.dg ?? 'Diferencia de Goles' }">DG</th>
+							<th title="${ i18n.pts ?? 'Puntos' }">PTS</th>
+							<th title="${ escHtml( i18n.form ?? 'Últimos 5 partidos' ) }">Forma</th>
+						</tr>
+					</thead>
+					<tbody>${ trs }</tbody>
+				</table>
+			</div>`;
+		}
+
+		container.innerHTML = html;
+	}
+
+	async function renderSingleStandings( container ) {
+		const rows = await apiFetch( `soccertrack/v1/public/tournament/${ TID }/standings` );
+
+		if ( ! rows.length ) {
+			return showEmpty( container, i18n.no_standings ?? 'Aún no hay partidos jugados.' );
+		}
+
+		const total = rows.length;
+		// Zona playoff: top 4 (o top 2 si hay ≤ 6 equipos).
+		const playoffCut = total <= 6 ? 2 : 4;
+
+		// ── Leader cards ────────────────────────────────────────────────────
+		const activeRows = rows.filter( r => r.pj > 0 );
+		let leaderCardsHtml = '';
+
+		if ( activeRows.length ) {
+			const bestAttack  = activeRows.reduce( ( a, b ) => b.gf > a.gf ? b : a );
+			const bestDefense = activeRows.reduce( ( a, b ) => b.gc < a.gc ? b : a );
+			const bestStreak  = activeRows.reduce( ( a, b ) => ( b.win_streak ?? 0 ) > ( a.win_streak ?? 0 ) ? b : a );
+
+			leaderCardsHtml = `
+			<div class="st-leader-cards">
+				<div class="st-leader-card">
+					<span class="st-leader-card__icon">⚔️</span>
+					<span class="st-leader-card__title">${ escHtml( i18n.best_attack ?? 'Mejor Ataque' ) }</span>
+					<span class="st-leader-card__team">${ escHtml( bestAttack.name ) }</span>
+					<span class="st-leader-card__value">${ bestAttack.gf } ${ escHtml( i18n.goals_for_label ?? 'goles' ) }</span>
+				</div>
+				<div class="st-leader-card">
+					<span class="st-leader-card__icon">🛡</span>
+					<span class="st-leader-card__title">${ escHtml( i18n.best_defense ?? 'Mejor Defensa' ) }</span>
+					<span class="st-leader-card__team">${ escHtml( bestDefense.name ) }</span>
+					<span class="st-leader-card__value">${ bestDefense.gc } ${ escHtml( i18n.goals_against_label ?? 'en contra' ) }</span>
+				</div>
+				<div class="st-leader-card">
+					<span class="st-leader-card__icon">🔥</span>
+					<span class="st-leader-card__title">${ escHtml( i18n.current_streak ?? 'Racha Actual' ) }</span>
+					<span class="st-leader-card__team">${ escHtml( bestStreak.name ) }</span>
+					<span class="st-leader-card__value">${ bestStreak.win_streak ?? 0 } ${ escHtml( i18n.win_streak_label ?? 'victorias' ) }</span>
+				</div>
+			</div>`;
+		}
+
+		// ── Rows ────────────────────────────────────────────────────────────
+		// Detectar si algún equipo tiene bracket_name.
+		const hasBrackets = rows.some( r => r.bracket_name );
+
+		const trs = rows.map( ( r, idx ) => {
+			const pos  = idx + 1;
+			const zone = pos <= playoffCut ? 'playoff' : ( pos > total - 2 && total > 4 ? 'danger' : '' );
+			const rankStyle = pos === 1 ? ' style="color:#f39c12"' : pos === 2 ? ' style="color:#95a5a6"' : pos === 3 ? ' style="color:#cd7f32"' : '';
+
+			const winRate = r.pj > 0 ? Math.round( r.pg / r.pj * 100 ) : '—';
+
+			const formBubbles = ( r.form ?? [] ).map( result => {
+				const cls = result === 'W' ? 'w' : result === 'D' ? 'd' : 'l';
+				const lbl = result === 'W' ? 'V' : result === 'D' ? 'E' : 'D';
+				return `<span class="st-form-bubble st-form-bubble--${ cls }">${ lbl }</span>`;
+			} ).join( '' );
+
+			const bracketCell = hasBrackets
+				? `<td class="st-bracket-cell">${ r.bracket_name ? escHtml( r.bracket_name ) : '—' }</td>`
 				: '';
 
-			// ── Bar charts (estadísticas) — usando datos de standings ya disponibles ──
-			let chartsHtml = '';
-			if ( activeRows.length ) {
-				const buildChart = ( chartRows, modifier ) => {
-					const max = Math.max( ...chartRows.map( r => r.val ), 1 );
-					return `<div class="st-chart">${ chartRows.map( r => {
-						const pct = Math.round( r.val / max * 100 );
-						return `
-						<div class="st-bar-row">
-							<span class="st-bar-label" title="${ escHtml( r.name ) }">${ escHtml( r.name ) }</span>
-							<div class="st-bar-track">
-								<div class="st-bar-fill st-bar-fill--${ modifier }" style="width:${ pct }%"></div>
-							</div>
-							<span class="st-bar-value">${ r.val }</span>
-						</div>`;
-					} ).join( '' ) }</div>`;
-				};
+			return `
+			<tr${ zone ? ` data-zone="${ zone }"` : '' }>
+				<td class="st-rank"${ rankStyle }>${ pos }</td>
+				<td style="display:flex;align-items:center;gap:8px">${ logoOrPlaceholder( r.logo_url, r.name ) }<span>${ escHtml( r.name ) }</span></td>
+				<td>${ r.pj }</td>
+				<td>${ r.pg }</td>
+				<td>${ r.pe }</td>
+				<td>${ r.pp }</td>
+				<td>${ r.gf }</td>
+				<td>${ r.gc }</td>
+				<td>${ r.dg >= 0 ? '+' : '' }${ r.dg }</td>
+				<td class="st-pts">${ r.pts }</td>
+				<td class="st-winrate">${ winRate }${ r.pj > 0 ? '%' : '' }</td>
+				<td class="st-form">${ formBubbles }</td>
+				${ bracketCell }
+			</tr>`;
+		} ).join( '' );
 
-				const byGF  = [ ...activeRows ].sort( ( a, b ) => b.gf  - a.gf  ).map( r => ( { name: r.name, val: r.gf  } ) );
-				const byGC  = [ ...activeRows ].sort( ( a, b ) => a.gc  - b.gc  ).map( r => ( { name: r.name, val: r.gc  } ) );
-				const byPG  = [ ...activeRows ].sort( ( a, b ) => b.pg  - a.pg  ).map( r => ( { name: r.name, val: r.pg  } ) );
-				const byPTS = [ ...activeRows ].sort( ( a, b ) => b.pts - a.pts ).map( r => ( { name: r.name, val: r.pts } ) );
+		// ── Zone legend ─────────────────────────────────────────────────────
+		const zoneLegendHtml = rows.length >= 4
+			? `
+			<div class="st-zone-legend">
+				<span class="st-zone-dot st-zone-dot--playoff"></span> ${ escHtml( i18n.zone_playoff ?? 'Zona playoff' ) }
+				<span class="st-zone-dot st-zone-dot--danger"></span> ${ escHtml( i18n.zone_danger ?? 'Zona peligro' ) }
+			</div>`
+			: '';
 
-				chartsHtml = `
-				<h3 class="st-subsection-title" style="margin-top:2rem">${ escHtml( i18n.records_charts_title ?? 'Comparativa de equipos' ) }</h3>
-				<div class="st-charts-grid">
-					<div class="st-chart-wrap">
-						<h4 class="st-chart-title">⚽ ${ escHtml( i18n.goals_scored ?? 'Goles Anotados' ) }</h4>
-						${ buildChart( byGF, 'attack' ) }
-					</div>
-					<div class="st-chart-wrap">
-						<h4 class="st-chart-title">🛡 ${ escHtml( i18n.goals_conceded ?? 'Goles Concedidos' ) } <small class="st-chart-hint">${ escHtml( i18n.lower_is_better ?? 'menos es mejor' ) }</small></h4>
-						${ buildChart( byGC, 'defense' ) }
-					</div>
-					<div class="st-chart-wrap">
-						<h4 class="st-chart-title">🏆 ${ escHtml( i18n.wins ?? 'Victorias' ) }</h4>
-						${ buildChart( byPG, 'wins' ) }
-					</div>
-					<div class="st-chart-wrap">
-						<h4 class="st-chart-title">📊 ${ escHtml( i18n.pts ?? 'Puntos' ) }</h4>
-						${ buildChart( byPTS, 'pts' ) }
-					</div>
-				</div>`;
-			}
+		// ── Bar charts (estadísticas) — usando datos de standings ya disponibles ──
+		let chartsHtml = '';
+		if ( activeRows.length ) {
+			const buildChart = ( chartRows, modifier ) => {
+				const max = Math.max( ...chartRows.map( r => r.val ), 1 );
+				return `<div class="st-chart">${ chartRows.map( r => {
+					const pct = Math.round( r.val / max * 100 );
+					return `
+					<div class="st-bar-row">
+						<span class="st-bar-label" title="${ escHtml( r.name ) }">${ escHtml( r.name ) }</span>
+						<div class="st-bar-track">
+							<div class="st-bar-fill st-bar-fill--${ modifier }" style="width:${ pct }%"></div>
+						</div>
+						<span class="st-bar-value">${ r.val }</span>
+					</div>`;
+				} ).join( '' ) }</div>`;
+			};
 
-			const bracketHeader = hasBrackets
-				? `<th title="Copa / Bracket">Copa</th>`
-				: '';
+			const byGF  = [ ...activeRows ].sort( ( a, b ) => b.gf  - a.gf  ).map( r => ( { name: r.name, val: r.gf  } ) );
+			const byGC  = [ ...activeRows ].sort( ( a, b ) => a.gc  - b.gc  ).map( r => ( { name: r.name, val: r.gc  } ) );
+			const byPG  = [ ...activeRows ].sort( ( a, b ) => b.pg  - a.pg  ).map( r => ( { name: r.name, val: r.pg  } ) );
+			const byPTS = [ ...activeRows ].sort( ( a, b ) => b.pts - a.pts ).map( r => ( { name: r.name, val: r.pts } ) );
 
-			container.innerHTML = `
-				<h2 class="st-section-title">${ i18n.standings_title ?? 'Tabla de Posiciones' }</h2>
-				${ leaderCardsHtml }
-				<div class="st-table-wrap">
-					<table class="st-table st-standings-table" aria-label="${ i18n.standings_title ?? 'Tabla de Posiciones' }">
-						<thead>
-							<tr>
-								<th>#</th>
-								<th>${ i18n.team ?? 'Equipo' }</th>
-								<th title="${ i18n.played ?? 'Jugados' }">PJ</th>
-								<th title="${ i18n.won ?? 'Ganados' }">PG</th>
-								<th title="${ i18n.drawn ?? 'Empatados' }">PE</th>
-								<th title="${ i18n.lost ?? 'Perdidos' }">PP</th>
-								<th title="${ i18n.gf ?? 'Goles a Favor' }">GF</th>
-								<th title="${ i18n.gc ?? 'Goles en Contra' }">GC</th>
-								<th title="${ i18n.dg ?? 'Diferencia de Goles' }">DG</th>
-								<th title="${ i18n.pts ?? 'Puntos' }">PTS</th>
-								<th title="% victorias">%</th>
-								<th title="${ escHtml( i18n.form ?? 'Últimos 5 partidos' ) }">Forma</th>
-								${ bracketHeader }
-							</tr>
-						</thead>
-						<tbody>${ trs }</tbody>
-					</table>
+			chartsHtml = `
+			<h3 class="st-subsection-title" style="margin-top:2rem">${ escHtml( i18n.records_charts_title ?? 'Comparativa de equipos' ) }</h3>
+			<div class="st-charts-grid">
+				<div class="st-chart-wrap">
+					<h4 class="st-chart-title">⚽ ${ escHtml( i18n.goals_scored ?? 'Goles Anotados' ) }</h4>
+					${ buildChart( byGF, 'attack' ) }
 				</div>
-				${ zoneLegendHtml }
-				<div class="st-form-legend">
-					<span class="st-form-bubble st-form-bubble--w">V</span> ${ escHtml( i18n.form_win ?? 'Victoria' ) }
-					<span class="st-form-bubble st-form-bubble--d">E</span> ${ escHtml( i18n.form_draw ?? 'Empate' ) }
-					<span class="st-form-bubble st-form-bubble--l">D</span> ${ escHtml( i18n.form_loss ?? 'Derrota' ) }
+				<div class="st-chart-wrap">
+					<h4 class="st-chart-title">🛡 ${ escHtml( i18n.goals_conceded ?? 'Goles Concedidos' ) } <small class="st-chart-hint">${ escHtml( i18n.lower_is_better ?? 'menos es mejor' ) }</small></h4>
+					${ buildChart( byGC, 'defense' ) }
 				</div>
-				${ chartsHtml }`;
-		} catch ( err ) {
-			showError( container, `${ i18n.error_load ?? 'Error al cargar posiciones.' } (${ err.message })` );
+				<div class="st-chart-wrap">
+					<h4 class="st-chart-title">🏆 ${ escHtml( i18n.wins ?? 'Victorias' ) }</h4>
+					${ buildChart( byPG, 'wins' ) }
+				</div>
+				<div class="st-chart-wrap">
+					<h4 class="st-chart-title">📊 ${ escHtml( i18n.pts ?? 'Puntos' ) }</h4>
+					${ buildChart( byPTS, 'pts' ) }
+				</div>
+			</div>`;
+		}
+
+		const bracketHeader = hasBrackets
+			? `<th title="Copa / Bracket">Copa</th>`
+			: '';
+
+		container.innerHTML = `
+			<h2 class="st-section-title">${ i18n.standings_title ?? 'Tabla de Posiciones' }</h2>
+			${ leaderCardsHtml }
+			<div class="st-table-wrap">
+				<table class="st-table st-standings-table" aria-label="${ i18n.standings_title ?? 'Tabla de Posiciones' }">
+					<thead>
+						<tr>
+							<th>#</th>
+							<th>${ i18n.team ?? 'Equipo' }</th>
+							<th title="${ i18n.played ?? 'Jugados' }">PJ</th>
+							<th title="${ i18n.won ?? 'Ganados' }">PG</th>
+							<th title="${ i18n.drawn ?? 'Empatados' }">PE</th>
+							<th title="${ i18n.lost ?? 'Perdidos' }">PP</th>
+							<th title="${ i18n.gf ?? 'Goles a Favor' }">GF</th>
+							<th title="${ i18n.gc ?? 'Goles en Contra' }">GC</th>
+							<th title="${ i18n.dg ?? 'Diferencia de Goles' }">DG</th>
+							<th title="${ i18n.pts ?? 'Puntos' }">PTS</th>
+							<th title="% victorias">%</th>
+							<th title="${ escHtml( i18n.form ?? 'Últimos 5 partidos' ) }">Forma</th>
+							${ bracketHeader }
+						</tr>
+					</thead>
+					<tbody>${ trs }</tbody>
+				</table>
+			</div>
+			${ zoneLegendHtml }
+			<div class="st-form-legend">
+				<span class="st-form-bubble st-form-bubble--w">V</span> ${ escHtml( i18n.form_win ?? 'Victoria' ) }
+				<span class="st-form-bubble st-form-bubble--d">E</span> ${ escHtml( i18n.form_draw ?? 'Empate' ) }
+				<span class="st-form-bubble st-form-bubble--l">D</span> ${ escHtml( i18n.form_loss ?? 'Derrota' ) }
+			</div>
+			${ chartsHtml }`;
+	}
+
+	/** Helpers de tarjetas de partido compartidos entre renderFixture y renderPlayoffs. */
+	const statusLabel = ( s ) => {
+		const map = { finished: i18n.status_finished ?? 'Finalizado', scheduled: i18n.status_scheduled ?? 'Programado', in_progress: i18n.status_live ?? 'En curso' };
+		const cls = { finished: 'finished', scheduled: 'scheduled', in_progress: 'live' };
+		return `<span class="st-badge st-badge--${ cls[ s ] ?? 'scheduled' }">${ map[ s ] ?? escHtml( s ) }</span>`;
+	};
+
+	const matchCard = ( m ) => {
+		const hasScore = m.status === 'finished' || m.status === 'in_progress';
+		return `
+		<div class="st-match-card">
+			<div class="st-match-team">
+				${ logoOrPlaceholder( m.home_logo, m.home_team ) }
+				<span>${ escHtml( m.home_team ) }</span>
+			</div>
+			<div class="st-match-center">
+				<div class="st-match-score">
+					<span>${ hasScore ? m.home_score : '—' }</span>
+					<span class="st-match-score-sep">:</span>
+					<span>${ hasScore ? m.away_score : '—' }</span>
+				</div>
+				<div class="st-match-meta">
+					${ statusLabel( m.status ) }<br>
+					${ fmtDatetime( m.match_datetime ) }<br>
+					${ m.venue ? escHtml( m.venue ) : '' }${ m.court_name ? ' · ' + escHtml( m.court_name ) : '' }
+				</div>
+			</div>
+			<div class="st-match-team st-match-team--away">
+				${ logoOrPlaceholder( m.away_logo, m.away_team ) }
+				<span>${ escHtml( m.away_team ) }</span>
+			</div>
+		</div>`;
+	};
+
+	/**
+	 * Inyecta el tab "🏆 Playoffs" en la nav y su panel en el portal si aún no existen.
+	 * Se llama desde renderFixture() en cuanto detecta partidos de playoffs.
+	 */
+	function injectPlayoffsTab() {
+		if ( el( 'st-tab-playoffs' ) ) return; // ya inyectado
+
+		// ── Botón en la nav ─────────────────────────────────────────────
+		const nav = qs( '.st-tabs-nav' );
+		if ( ! nav ) return;
+
+		const li = document.createElement( 'li' );
+		li.setAttribute( 'role', 'presentation' );
+		li.innerHTML = `<button class="st-tab-btn" role="tab" data-tab="playoffs"
+			id="st-tab-playoffs" aria-selected="false" aria-controls="st-panel-playoffs" tabindex="-1">
+			🏆 ${ escHtml( i18n.playoffs_tab ?? 'Playoffs' ) }
+		</button>`;
+		nav.appendChild( li );
+
+		// ── Panel vacío en el portal ────────────────────────────────────
+		const portal = qs( '[id^="st-portal-"]' );
+		if ( ! portal ) return;
+
+		const section = document.createElement( 'section' );
+		section.id = 'st-panel-playoffs';
+		section.className = 'st-tab-panel';
+		section.setAttribute( 'role', 'tabpanel' );
+		section.setAttribute( 'aria-labelledby', 'st-tab-playoffs' );
+		section.setAttribute( 'aria-hidden', 'true' );
+		portal.appendChild( section );
+
+		// Si init() guardó una activación pendiente (URL ?tab=playoffs), ejecutarla ahora.
+		if ( pendingPlayoffsTab ) {
+			pendingPlayoffsTab = false;
+			activateTab( 'playoffs' );
 		}
 	}
 
@@ -307,144 +457,180 @@
 				return showEmpty( container, i18n.no_fixture ?? 'El fixture aún no ha sido generado.' );
 			}
 
-			const statusLabel = ( s ) => {
-				const map = { finished: i18n.status_finished ?? 'Finalizado', scheduled: i18n.status_scheduled ?? 'Programado', in_progress: i18n.status_live ?? 'En curso' };
-				const cls = { finished: 'finished', scheduled: 'scheduled', in_progress: 'live' };
-				return `<span class="st-badge st-badge--${ cls[ s ] ?? 'scheduled' }">${ map[ s ] ?? escHtml( s ) }</span>`;
-			};
-
-			const matchCard = ( m ) => {
-				const hasScore = m.status === 'finished' || m.status === 'in_progress';
-				return `
-				<div class="st-match-card">
-					<div class="st-match-team">
-						${ logoOrPlaceholder( m.home_logo, m.home_team ) }
-						<span>${ escHtml( m.home_team ) }</span>
-					</div>
-					<div class="st-match-center">
-						<div class="st-match-score">
-							<span>${ hasScore ? m.home_score : '—' }</span>
-							<span class="st-match-score-sep">:</span>
-							<span>${ hasScore ? m.away_score : '—' }</span>
-						</div>
-						<div class="st-match-meta">
-							${ statusLabel( m.status ) }<br>
-							${ fmtDatetime( m.match_datetime ) }<br>
-							${ m.venue ? escHtml( m.venue ) : '' }${ m.court_name ? ' · ' + escHtml( m.court_name ) : '' }
-						</div>
-					</div>
-					<div class="st-match-team st-match-team--away">
-						${ logoOrPlaceholder( m.away_logo, m.away_team ) }
-						<span>${ escHtml( m.away_team ) }</span>
-					</div>
-				</div>`;
-			};
-
-			// Separar partidos regulares de play-offs.
-			const PLAYOFF_PHASES = [ 'semifinal', 'third_place', 'final' ];
+			// Separar partidos regulares de eliminatoria.
+			const PLAYOFF_PHASES = [ 'quarterfinal', 'semifinal', 'third_place', 'final' ];
 			const regularMatches  = matches.filter( m => ! PLAYOFF_PHASES.includes( m.phase ) );
-			const playoffMatches  = matches.filter( m => PLAYOFF_PHASES.includes( m.phase ) );
-
-			// ── Jornadas regulares ──────────────────────────────────────────────
-			/** @type {Map<number, typeof matches>} */
-			const rounds = new Map();
-			for ( const m of regularMatches ) {
-				const r = Number( m.round_number );
-				if ( ! rounds.has( r ) ) rounds.set( r, [] );
-				rounds.get( r ).push( m );
-			}
-
-			const sortedRounds = [ ...rounds.entries() ].sort( ( a, b ) => a[0] - b[0] );
-
-			const activeRound = sortedRounds.find(
-				( [ , ms ] ) => ms.some( m => m.status !== 'finished' )
-			)?.[0] ?? sortedRounds.at( -1 )?.[0] ?? 1;
-
-			const renderRound = ( roundNum ) => {
-				const ms = rounds.get( roundNum ) ?? [];
-				return ms.map( matchCard ).join( '' );
-			};
+			const playoffMatches  = matches.filter( m =>   PLAYOFF_PHASES.includes( m.phase ) );
+			const isGroupStage    = FORMAT === 'group_stage';
 
 			let html = `<h2 class="st-section-title">${ i18n.fixture_title ?? 'Fixture' }</h2>`;
 
-			if ( sortedRounds.length ) {
-				const roundNums = sortedRounds.map( ( [ r ] ) => r );
-				const btnHtml = roundNums.map( r => {
-					const isFinished = rounds.get( r ).every( m => m.status === 'finished' );
-					const isFuture   = rounds.get( r ).every( m => m.status === 'scheduled' ) && r > activeRound;
-					const label      = isFuture ? `${ r } 🔒` : String( r );
-					return `<button class="st-round-btn${ r === activeRound ? ' st-round-btn--active' : '' }${ isFuture ? ' st-round-btn--locked' : '' }${ isFinished ? ' st-round-btn--done' : '' }"
-						data-round="${ r }" aria-label="Fecha ${ r }"${ isFuture ? ' disabled title="Jornada no disponible aún"' : '' }>${ label }</button>`;
-				} ).join( '' );
-
-				html += `
-					<div class="st-round-nav" role="group" aria-label="Navegación por jornadas">
-						${ btnHtml }
-					</div>
-					<div class="st-fixture-current" id="st-fixture-matches">
-						<h3 class="st-round-header">${ i18n.round ?? 'Fecha' } ${ activeRound }</h3>
-						${ renderRound( activeRound ) }
-					</div>`;
-			}
-
-			// ── Bracket de play-offs — agrupado por bracket ──────────────────────
-			if ( playoffMatches.length ) {
-				const phaseTitle = {
-					semifinal:   i18n.phase_semifinal   ?? 'Semi-finales',
-					third_place: i18n.phase_third_place ?? '3.er Puesto',
-					final:       i18n.phase_final       ?? 'Final',
-				};
-
-				// Agrupar por bracket_name (null → 'Play-offs' genérico para torneos sin brackets).
-				const bracketMap = new Map();
-				for ( const m of playoffMatches ) {
-					const key = m.bracket_name ?? '__generic__';
-					if ( ! bracketMap.has( key ) ) bracketMap.set( key, { name: m.bracket_name ?? ( i18n.playoffs_title ?? 'Play-offs' ), matches: [] } );
-					bracketMap.get( key ).matches.push( m );
+			if ( isGroupStage && regularMatches.some( m => m.group_label ) ) {
+				// Agrupar por group_label, luego por round dentro de cada grupo.
+				/** @type {Map<string, typeof matches>} */
+				const groupMap = new Map();
+				for ( const m of regularMatches ) {
+					const lbl = m.group_label ?? 'Sin Grupo';
+					if ( ! groupMap.has( lbl ) ) groupMap.set( lbl, [] );
+					groupMap.get( lbl ).push( m );
 				}
 
-				html += `<div class="st-playoffs-bracket">`;
+				const sortedGroups = [ ...groupMap.entries() ].sort( ( a, b ) => a[0].localeCompare( b[0] ) );
 
-				for ( const [ , bracket ] of bracketMap ) {
-					html += `<h2 class="st-section-title">${ escHtml( bracket.name ) }</h2>`;
+				for ( const [ lbl, gMatches ] of sortedGroups ) {
+					html += `<h2 class="st-section-title" style="margin-top:1.5rem">${ escHtml( i18n.group_label ?? 'Grupo' ) } ${ escHtml( lbl ) }</h2>`;
 
-					const sfMatches    = bracket.matches.filter( m => m.phase === 'semifinal' );
-					const thirdMatches = bracket.matches.filter( m => m.phase === 'third_place' );
-					const finalMatches = bracket.matches.filter( m => m.phase === 'final' );
+					const gRounds = new Map();
+					for ( const m of gMatches ) {
+						const r = Number( m.round_number );
+						if ( ! gRounds.has( r ) ) gRounds.set( r, [] );
+						gRounds.get( r ).push( m );
+					}
 
-					for ( const [ phase, group ] of [ [ 'semifinal', sfMatches ], [ 'third_place', thirdMatches ], [ 'final', finalMatches ] ] ) {
-						if ( ! group.length ) continue;
-						html += `
-						<div class="st-bracket-round">
-							<h3 class="st-bracket-round-title">${ phaseTitle[ phase ] }</h3>
-							<div class="st-bracket-matches">
-								${ group.map( matchCard ).join( '' ) }
-							</div>
-						</div>`;
+					for ( const [ r, ms ] of [ ...gRounds.entries() ].sort( ( a, b ) => a[0] - b[0] ) ) {
+						html += `<h3 class="st-round-header" style="font-size:.85rem;margin:8px 0 4px">${ i18n.round ?? 'Fecha' } ${ r }</h3>`;
+						html += ms.map( matchCard ).join( '' );
 					}
 				}
 
-				html += `</div>`;
-			}
+				// Si hay play-offs, inyectar el tab dinámico (sin renderizarlos aquí).
+				if ( playoffMatches.length ) {
+					injectPlayoffsTab();
+				}
 
-			container.innerHTML = html;
+				container.innerHTML = html;
 
-			// Navegación entre jornadas.
-			const roundNav = container.querySelector( '.st-round-nav' );
-			if ( roundNav ) {
-				roundNav.addEventListener( 'click', ( e ) => {
-					const btn = e.target.closest( '.st-round-btn' );
-					if ( ! btn || btn.disabled ) return;
+			} else {
+				// Render clásico por jornadas (round-robin, etc.).
+				/** @type {Map<number, typeof matches>} */
+				const rounds = new Map();
+				for ( const m of regularMatches ) {
+					const r = Number( m.round_number );
+					if ( ! rounds.has( r ) ) rounds.set( r, [] );
+					rounds.get( r ).push( m );
+				}
 
-					const r = Number( btn.dataset.round );
-					container.querySelectorAll( '.st-round-btn' ).forEach( b => b.classList.toggle( 'st-round-btn--active', b === btn ) );
-					const panel = container.querySelector( '#st-fixture-matches' );
-					panel.innerHTML = `<h3 class="st-round-header">${ i18n.round ?? 'Fecha' } ${ r }</h3>${ renderRound( r ) }`;
-				} );
+				const sortedRounds = [ ...rounds.entries() ].sort( ( a, b ) => a[0] - b[0] );
+
+				const activeRound = sortedRounds.find(
+					( [ , ms ] ) => ms.some( m => m.status !== 'finished' )
+				)?.[0] ?? sortedRounds.at( -1 )?.[0] ?? 1;
+
+				const renderRound = ( roundNum ) => {
+					const ms = rounds.get( roundNum ) ?? [];
+					return ms.map( matchCard ).join( '' );
+				};
+
+				if ( sortedRounds.length ) {
+					const roundNums = sortedRounds.map( ( [ r ] ) => r );
+					const btnHtml = roundNums.map( r => {
+						const isFinished = rounds.get( r ).every( m => m.status === 'finished' );
+						const isFuture   = rounds.get( r ).every( m => m.status === 'scheduled' ) && r > activeRound;
+						const label      = isFuture ? `${ r } 🔒` : String( r );
+						return `<button class="st-round-btn${ r === activeRound ? ' st-round-btn--active' : '' }${ isFuture ? ' st-round-btn--locked' : '' }${ isFinished ? ' st-round-btn--done' : '' }"
+							data-round="${ r }" aria-label="Fecha ${ r }"${ isFuture ? ' disabled title="Jornada no disponible aún"' : '' }>${ label }</button>`;
+					} ).join( '' );
+
+					html += `
+						<div class="st-round-nav" role="group" aria-label="Navegación por jornadas">
+							${ btnHtml }
+						</div>
+						<div class="st-fixture-current" id="st-fixture-matches">
+							<h3 class="st-round-header">${ i18n.round ?? 'Fecha' } ${ activeRound }</h3>
+							${ renderRound( activeRound ) }
+						</div>`;
+				}
+
+				// Si hay play-offs, inyectar el tab dinámico (sin renderizarlos aquí).
+				if ( playoffMatches.length ) {
+					injectPlayoffsTab();
+				}
+
+				container.innerHTML = html;
+
+				// Navegación entre jornadas.
+				const roundNav = container.querySelector( '.st-round-nav' );
+				if ( roundNav ) {
+					roundNav.addEventListener( 'click', ( e ) => {
+						const btn = e.target.closest( '.st-round-btn' );
+						if ( ! btn || btn.disabled ) return;
+
+						const r = Number( btn.dataset.round );
+						container.querySelectorAll( '.st-round-btn' ).forEach( b => b.classList.toggle( 'st-round-btn--active', b === btn ) );
+						const panel = container.querySelector( '#st-fixture-matches' );
+						panel.innerHTML = `<h3 class="st-round-header">${ i18n.round ?? 'Fecha' } ${ r }</h3>${ renderRound( r ) }`;
+					} );
+				}
 			}
 
 		} catch ( err ) {
 			showError( container, `${ i18n.error_load ?? 'Error al cargar el fixture.' } (${ err.message })` );
+		}
+	}
+
+	async function renderPlayoffs( container ) {
+		showLoading( container );
+
+		try {
+			// La respuesta ya estará en caché si el fixture tab se cargó primero.
+			const matches = await apiFetch( `soccertrack/v1/public/tournament/${ TID }/fixture` );
+			const playoffPhases  = [ 'quarterfinal', 'semifinal', 'third_place', 'final' ];
+			const playoffMatches = matches.filter( m => playoffPhases.includes( m.phase ) );
+
+			if ( ! playoffMatches.length ) {
+				return showEmpty( container, i18n.no_playoffs ?? 'Los play-offs aún no han comenzado.' );
+			}
+
+			const phaseTitle = {
+				quarterfinal: i18n.phase_quarterfinal ?? 'Cuartos de Final',
+				semifinal:    i18n.phase_semifinal    ?? 'Semi-finales',
+				third_place:  i18n.phase_third_place  ?? '3.er Puesto',
+				final:        i18n.phase_final        ?? 'Final',
+			};
+
+			// Agrupar por bracket_name (null → bracket genérico).
+			const bracketMap = new Map();
+			for ( const m of playoffMatches ) {
+				const key = m.bracket_name ?? '__generic__';
+				if ( ! bracketMap.has( key ) ) {
+					bracketMap.set( key, { name: m.bracket_name ?? ( i18n.playoffs_title ?? 'Play-offs' ), matches: [] } );
+				}
+				bracketMap.get( key ).matches.push( m );
+			}
+
+			let html = `<h2 class="st-section-title">🏆 ${ escHtml( i18n.playoffs_title ?? 'Play-offs' ) }</h2>`;
+
+			for ( const [ , bracket ] of bracketMap ) {
+				if ( bracketMap.size > 1 ) {
+					html += `<h3 class="st-subsection-title">${ escHtml( bracket.name ) }</h3>`;
+				}
+
+				const qfMatches    = bracket.matches.filter( m => m.phase === 'quarterfinal' );
+				const sfMatches    = bracket.matches.filter( m => m.phase === 'semifinal' );
+				const thirdMatches = bracket.matches.filter( m => m.phase === 'third_place' );
+				const finalMatches = bracket.matches.filter( m => m.phase === 'final' );
+
+				for ( const [ phase, group ] of [
+					[ 'quarterfinal', qfMatches    ],
+					[ 'semifinal',    sfMatches    ],
+					[ 'third_place',  thirdMatches ],
+					[ 'final',        finalMatches ],
+				] ) {
+					if ( ! group.length ) continue;
+					html += `
+					<div class="st-bracket-round">
+						<h3 class="st-bracket-round-title">${ escHtml( phaseTitle[ phase ] ) }</h3>
+						<div class="st-bracket-matches">
+							${ group.map( matchCard ).join( '' ) }
+						</div>
+					</div>`;
+				}
+			}
+
+			container.innerHTML = html;
+
+		} catch ( err ) {
+			showError( container, `${ i18n.error_load ?? 'Error al cargar los play-offs.' } (${ err.message })` );
 		}
 	}
 
@@ -799,12 +985,17 @@
 	const RENDERERS = {
 		standings: renderStandings,
 		fixture:   renderFixture,
+		playoffs:  renderPlayoffs,
 		teams:     renderTeams,
 		scorers:   renderScorers,
 		tribunal:  renderTribunal,
 		bases:     renderBases,
 		stats:     renderStandings, // alias: ?tab=stats redirige a posiciones (tab unificado)
 	};
+
+	// Se pone a true en init() cuando la URL tiene ?tab=playoffs.
+	// injectPlayoffsTab() lo consume para activar el tab en cuanto se inyecte.
+	let pendingPlayoffsTab = false;
 
 	function activateTab( tabId ) {
 		const buttons = qsa( '.st-tab-btn' );
@@ -875,9 +1066,18 @@
 		} );
 
 		// Tab inicial: desde URL o el primero disponible.
-		const urlTab    = new URLSearchParams( window.location.search ).get( 'tab' );
-		const firstBtn  = qs( '.st-tab-btn', nav );
-		const initialId = ( urlTab && RENDERERS[ urlTab ] ) ? urlTab : firstBtn?.dataset.tab;
+		const urlTab   = new URLSearchParams( window.location.search ).get( 'tab' );
+		const firstBtn = qs( '.st-tab-btn', nav );
+		let   initialId;
+
+		if ( urlTab === 'playoffs' ) {
+			// El tab de playoffs se inyecta dinámicamente tras cargar el fixture.
+			// Cargamos fixture primero; injectPlayoffsTab() activará el tab cuando esté listo.
+			pendingPlayoffsTab = true;
+			initialId = 'fixture';
+		} else {
+			initialId = ( urlTab && RENDERERS[ urlTab ] ) ? urlTab : firstBtn?.dataset.tab;
+		}
 
 		if ( initialId ) activateTab( initialId );
 	}

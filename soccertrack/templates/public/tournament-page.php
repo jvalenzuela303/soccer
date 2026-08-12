@@ -40,6 +40,11 @@
 	</div>
 </header>
 
+<?php
+// Formatos que incluyen fase de play-offs.
+$has_playoffs_tab = in_array( $tournament['format'] ?? '', [ 'round_robin_playoffs', 'group_stage', 'knockout' ], true );
+?>
+
 <?php /* ── Portal de pestañas ────────────────────────────────────────── */ ?>
 <div class="st-portal" id="st-portal-<?php echo esc_attr( (string) $tournament['id'] ); ?>">
 
@@ -57,6 +62,14 @@
 					📅 <?php esc_html_e( 'Fixture', 'soccertrack' ); ?>
 				</button>
 			</li>
+			<?php if ( $has_playoffs_tab ) : ?>
+			<li role="presentation">
+				<button class="st-tab-btn" role="tab" data-tab="playoffs"
+					id="st-tab-playoffs" aria-selected="false" aria-controls="st-panel-playoffs" tabindex="-1">
+					🏆 <?php esc_html_e( 'Playoffs', 'soccertrack' ); ?>
+				</button>
+			</li>
+			<?php endif; ?>
 			<li role="presentation">
 				<button class="st-tab-btn" role="tab" data-tab="teams"
 					id="st-tab-teams" aria-selected="false" aria-controls="st-panel-teams" tabindex="-1">
@@ -88,6 +101,9 @@
 
 	<section id="st-panel-standings" class="st-tab-panel" role="tabpanel" aria-labelledby="st-tab-standings" aria-hidden="true"></section>
 	<section id="st-panel-fixture"   class="st-tab-panel" role="tabpanel" aria-labelledby="st-tab-fixture"   aria-hidden="true"></section>
+	<?php if ( $has_playoffs_tab ) : ?>
+	<section id="st-panel-playoffs"  class="st-tab-panel" role="tabpanel" aria-labelledby="st-tab-playoffs"  aria-hidden="true"></section>
+	<?php endif; ?>
 	<section id="st-panel-teams"     class="st-tab-panel" role="tabpanel" aria-labelledby="st-tab-teams"     aria-hidden="true"></section>
 	<section id="st-panel-scorers"   class="st-tab-panel" role="tabpanel" aria-labelledby="st-tab-scorers"   aria-hidden="true"></section>
 	<section id="st-panel-tribunal"  class="st-tab-panel" role="tabpanel" aria-labelledby="st-tab-tribunal"  aria-hidden="true"></section>
@@ -113,6 +129,7 @@ window.stPublic = <?php echo wp_json_encode( [
 	'apiBase'      => esc_url_raw( get_rest_url() ),
 	'tournamentId' => (int) $tournament['id'],
 	'basesUrl'     => ! empty( $tournament['bases_pdf_url'] ) ? esc_url_raw( $tournament['bases_pdf_url'] ) : '',
+	'tournamentFormat' => $tournament['format'] ?? '',
 	'i18n'         => [
 		'loading'          => __( 'Cargando…', 'soccertrack' ),
 		'error_load'       => __( 'Error al cargar los datos.', 'soccertrack' ),
@@ -153,6 +170,14 @@ window.stPublic = <?php echo wp_json_encode( [
 		'clean_sheets_label'   => __( 'porterías a 0', 'soccertrack' ),
 		'goals_against_label'  => __( 'goles en contra', 'soccertrack' ),
 		'goals_for_label'      => __( 'goles a favor', 'soccertrack' ),
+		'playoffs_tab'     => __( 'Playoffs', 'soccertrack' ),
+		'playoffs_title'   => __( 'Play-offs', 'soccertrack' ),
+		'no_playoffs'      => __( 'Los play-offs aún no han comenzado.', 'soccertrack' ),
+		'group_label'        => __( 'Grupo', 'soccertrack' ),
+		'phase_quarterfinal' => __( 'Cuartos de Final', 'soccertrack' ),
+		'phase_semifinal'    => __( 'Semi-finales', 'soccertrack' ),
+		'phase_third_place'  => __( '3.er Puesto', 'soccertrack' ),
+		'phase_final'        => __( 'Final', 'soccertrack' ),
 		'bases_title'      => __( 'Bases del Torneo', 'soccertrack' ),
 		'bases_download'   => __( 'Descargar Bases en PDF', 'soccertrack' ),
 		'bases_desc'       => __( 'Descarga el reglamento oficial del torneo en formato PDF.', 'soccertrack' ),
