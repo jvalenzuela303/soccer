@@ -3,7 +3,7 @@
  * Plugin Name:       SportManager — Gestión de Torneos
  * Plugin URI:        https://neurolabs.cl/
  * Description:       Motor de gestión multi-torneos: fixture Round-Robin, tribunal disciplinario, planilla digital, portal público con pestañas.
- * Version:           1.8.4
+ * Version:           1.9.3
  * Requires at least: 7.0
  * Requires PHP:      8.2
  * Author:            Neurolabs
