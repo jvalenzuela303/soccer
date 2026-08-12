@@ -361,6 +361,114 @@
 	</form>
 </div>
 
+<?php /* ── Brackets de Playoffs ──────────────────────────────────────── */ ?>
+<div class="st-card" style="margin-bottom:20px" id="st-brackets-card">
+	<div class="st-card-header">
+		<h2 class="st-card-title">🏅 <?php esc_html_e( 'Brackets de Playoffs', 'soccertrack' ); ?></h2>
+		<span style="font-size:.78rem;color:#999">
+			<?php esc_html_e( 'Ej: Copa de Oro (pos 1–4), Copa de Plata (pos 5–8). Exactamente 4 equipos por bracket.', 'soccertrack' ); ?>
+		</span>
+	</div>
+
+	<div id="st-brackets-notice"></div>
+
+	<?php if ( ! empty( $brackets ) ) : ?>
+	<div class="st-table-wrap" style="margin-bottom:16px">
+		<table class="st-table" style="min-width:500px">
+			<thead>
+				<tr>
+					<th><?php esc_html_e( 'Nombre', 'soccertrack' ); ?></th>
+					<th style="text-align:center"><?php esc_html_e( 'Posiciones', 'soccertrack' ); ?></th>
+					<th style="text-align:center"><?php esc_html_e( 'Estado', 'soccertrack' ); ?></th>
+					<th><?php esc_html_e( 'Acciones', 'soccertrack' ); ?></th>
+				</tr>
+			</thead>
+			<tbody id="st-brackets-tbody">
+			<?php foreach ( $brackets as $b ) : ?>
+				<tr id="st-bracket-row-<?php echo esc_attr( (string) $b['id'] ); ?>">
+					<td>
+						<strong><?php echo esc_html( $b['name'] ); ?></strong>
+					</td>
+					<td style="text-align:center">
+						<?php echo esc_html( $b['rank_from'] . '° – ' . $b['rank_to'] . '°' ); ?>
+					</td>
+					<td style="text-align:center">
+						<?php if ( $b['locked'] ) : ?>
+							<span class="st-badge" style="background:#e8f4e8;color:#2a7a2a">
+								🔒 <?php esc_html_e( 'Bloqueado', 'soccertrack' ); ?>
+							</span>
+						<?php else : ?>
+							<span class="st-badge" style="background:#f5f5f5;color:#666">
+								✏️ <?php esc_html_e( 'Editable', 'soccertrack' ); ?>
+							</span>
+						<?php endif; ?>
+					</td>
+					<td style="display:flex;gap:6px;flex-wrap:wrap">
+						<?php if ( ! $b['locked'] ) : ?>
+						<button
+							class="st-btn st-btn--sm st-btn--secondary st-bracket-edit-btn"
+							data-id="<?php echo esc_attr( (string) $b['id'] ); ?>"
+							data-name="<?php echo esc_attr( $b['name'] ); ?>"
+							data-from="<?php echo esc_attr( (string) $b['rank_from'] ); ?>"
+							data-to="<?php echo esc_attr( (string) $b['rank_to'] ); ?>"
+							data-order="<?php echo esc_attr( (string) $b['sort_order'] ); ?>"
+							data-tournament="<?php echo esc_attr( (string) $tournament['id'] ); ?>"
+							data-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>"
+						>✏️ <?php esc_html_e( 'Editar', 'soccertrack' ); ?></button>
+						<button
+							class="st-btn st-btn--sm st-btn--danger st-bracket-delete-btn"
+							data-id="<?php echo esc_attr( (string) $b['id'] ); ?>"
+							data-name="<?php echo esc_attr( $b['name'] ); ?>"
+							data-tournament="<?php echo esc_attr( (string) $tournament['id'] ); ?>"
+							data-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>"
+						>🗑 <?php esc_html_e( 'Eliminar', 'soccertrack' ); ?></button>
+						<?php else : ?>
+						<span style="font-size:.78rem;color:#aaa;padding:4px 6px">
+							<?php esc_html_e( 'Con partidos generados', 'soccertrack' ); ?>
+						</span>
+						<?php endif; ?>
+					</td>
+				</tr>
+			<?php endforeach; ?>
+			</tbody>
+		</table>
+	</div>
+	<?php endif; ?>
+
+	<?php /* Formulario agregar/editar */ ?>
+	<div id="st-bracket-form-wrap" style="background:#f9f9f9;border:1px solid #e5e7eb;border-radius:8px;padding:16px">
+		<p class="st-label" style="margin:0 0 10px;font-weight:600" id="st-bracket-form-title">
+			➕ <?php esc_html_e( 'Agregar bracket', 'soccertrack' ); ?>
+		</p>
+		<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+			<input type="hidden" id="st-bracket-edit-id" value="">
+			<div class="st-field">
+				<label class="st-label" style="font-size:.78rem"><?php esc_html_e( 'Nombre', 'soccertrack' ); ?></label>
+				<input type="text" id="st-bracket-name" class="st-input" placeholder="<?php esc_attr_e( 'Ej: Copa de Oro', 'soccertrack' ); ?>" style="max-width:180px">
+			</div>
+			<div class="st-field">
+				<label class="st-label" style="font-size:.78rem"><?php esc_html_e( 'Pos. desde', 'soccertrack' ); ?></label>
+				<input type="number" id="st-bracket-from" class="st-input" placeholder="1" min="1" max="50" style="max-width:70px;text-align:center">
+			</div>
+			<div class="st-field">
+				<label class="st-label" style="font-size:.78rem"><?php esc_html_e( 'Pos. hasta', 'soccertrack' ); ?></label>
+				<input type="number" id="st-bracket-to" class="st-input" placeholder="4" min="2" max="50" style="max-width:70px;text-align:center">
+			</div>
+			<div style="display:flex;gap:6px">
+				<button
+					class="st-btn st-btn--primary st-btn--sm"
+					id="st-bracket-save-btn"
+					data-tournament="<?php echo esc_attr( (string) $tournament['id'] ); ?>"
+					data-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>"
+				>💾 <?php esc_html_e( 'Guardar', 'soccertrack' ); ?></button>
+				<button class="st-btn st-btn--sm" id="st-bracket-cancel-btn" style="display:none">
+					<?php esc_html_e( 'Cancelar', 'soccertrack' ); ?>
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
 <?php /* ── Recintos del torneo ─────────────────────────────────────── */ ?>
 <div class="st-card" style="margin-bottom:20px">
 	<div class="st-card-header">
@@ -662,8 +770,14 @@
 	<?php endif; ?>
 </div>
 
-<?php /* ── Play-offs (solo para formato round_robin_playoffs) ───────── */ ?>
+<?php /* ── Play-offs ───────────────────────────────────────────────────── */ ?>
 <?php if ( ! empty( $playoffs_status['is_playoffs_format'] ) ) : ?>
+<?php
+$venues_for_select ??= ! empty( $tournament_venue_ids )
+	? array_values( array_filter( $venues, fn( $v ) => in_array( (int) $v['id'], $tournament_venue_ids, true ) ) )
+	: $venues;
+$has_brackets = ! empty( $brackets );
+?>
 <div class="st-card">
 	<div class="st-card-header">
 		<h2 class="st-card-title">🏆 <?php esc_html_e( 'Play-offs', 'soccertrack' ); ?></h2>
@@ -671,75 +785,123 @@
 
 	<div id="st-playoffs-notice"></div>
 
-	<?php if ( ! $playoffs_status['has_semifinals'] ) : ?>
-		<?php if ( $playoffs_status['all_regular_done'] ) : ?>
+	<?php if ( ! $playoffs_status['all_regular_done'] ) : ?>
+		<p class="st-empty-msg"><?php esc_html_e( 'Las semi-finales estarán disponibles cuando todos los partidos de la fase regular estén finalizados.', 'soccertrack' ); ?></p>
+
+	<?php elseif ( $has_brackets ) : ?>
+		<?php /* Modo brackets: un bloque por bracket */ ?>
+		<?php if ( empty( $venues_for_select ) ) : ?>
+			<p><a href="<?php echo esc_url( home_url( '/panel/recintos/' ) ); ?>"><?php esc_html_e( '→ Crea un recinto primero', 'soccertrack' ); ?></a></p>
+		<?php else : ?>
+		<p style="margin-bottom:16px;color:#3C3A47">
+			<?php esc_html_e( 'Fase regular finalizada. Genera los playoffs por bracket.', 'soccertrack' ); ?>
+		</p>
+		<div style="display:flex;flex-direction:column;gap:14px">
+		<?php foreach ( $brackets as $b ) : ?>
+			<div style="background:#f9f9f9;border:1px solid #e5e7eb;border-radius:8px;padding:14px 16px">
+				<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+					<div>
+						<strong style="font-size:1rem"><?php echo esc_html( $b['name'] ); ?></strong>
+						<span style="font-size:.78rem;color:#888;margin-left:8px">
+							(<?php echo esc_html( $b['rank_from'] . '° – ' . $b['rank_to'] . '°' ); ?>)
+						</span>
+					</div>
+					<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+						<?php if ( $b['has_finals'] ) : ?>
+							<span style="color:#3CBC20;font-weight:600">✅ <?php esc_html_e( 'Completo', 'soccertrack' ); ?></span>
+						<?php elseif ( $b['has_semis'] && ! $b['semis_done'] ) : ?>
+							<span style="font-size:.85rem;color:#888">
+								<?php esc_html_e( 'Semi-finales en curso…', 'soccertrack' ); ?>
+							</span>
+						<?php elseif ( $b['semis_done'] ) : ?>
+							<select class="st-input st-bracket-venue-select" style="max-width:200px" data-bracket="<?php echo esc_attr( (string) $b['id'] ); ?>">
+								<option value=""><?php esc_html_e( '— Recinto —', 'soccertrack' ); ?></option>
+								<?php foreach ( $venues_for_select as $v ) : ?>
+									<option value="<?php echo esc_attr( (string) $v['id'] ); ?>"><?php echo esc_html( $v['name'] ); ?></option>
+								<?php endforeach; ?>
+							</select>
+							<button
+								class="st-btn st-btn--primary st-bracket-gen-btn"
+								data-tournament="<?php echo esc_attr( (string) $tournament['id'] ); ?>"
+								data-bracket="<?php echo esc_attr( (string) $b['id'] ); ?>"
+								data-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>"
+								data-endpoint="finals"
+							>🏆 <?php esc_html_e( 'Generar Final y 3.er Puesto', 'soccertrack' ); ?></button>
+						<?php else : ?>
+							<select class="st-input st-bracket-venue-select" style="max-width:200px" data-bracket="<?php echo esc_attr( (string) $b['id'] ); ?>">
+								<option value=""><?php esc_html_e( '— Recinto —', 'soccertrack' ); ?></option>
+								<?php foreach ( $venues_for_select as $v ) : ?>
+									<option value="<?php echo esc_attr( (string) $v['id'] ); ?>"><?php echo esc_html( $v['name'] ); ?></option>
+								<?php endforeach; ?>
+							</select>
+							<button
+								class="st-btn st-btn--primary st-bracket-gen-btn"
+								data-tournament="<?php echo esc_attr( (string) $tournament['id'] ); ?>"
+								data-bracket="<?php echo esc_attr( (string) $b['id'] ); ?>"
+								data-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>"
+								data-endpoint="playoffs"
+							>⚡ <?php esc_html_e( 'Generar Semi-finales', 'soccertrack' ); ?></button>
+						<?php endif; ?>
+					</div>
+				</div>
+			</div>
+		<?php endforeach; ?>
+		</div>
+		<?php endif; ?>
+
+	<?php else : ?>
+		<?php /* Modo clásico (sin brackets) */ ?>
+		<?php if ( ! $playoffs_status['has_semifinals'] ) : ?>
 			<p style="margin-bottom:12px;color:#3C3A47">
 				<?php esc_html_e( 'Fase regular finalizada. Puedes generar las semi-finales con los 4 mejores equipos de la tabla.', 'soccertrack' ); ?>
 			</p>
-			<?php
-			$venues_for_select ??= ! empty( $tournament_venue_ids )
-				? array_values( array_filter( $venues, fn( $v ) => in_array( (int) $v['id'], $tournament_venue_ids, true ) ) )
-				: $venues;
-			?>
 			<?php if ( ! empty( $venues_for_select ) ) : ?>
 			<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
 				<select id="st-playoff-venue-select" class="st-input" style="max-width:220px">
 					<option value=""><?php esc_html_e( '— Seleccionar recinto —', 'soccertrack' ); ?></option>
 					<?php foreach ( $venues_for_select as $v ) : ?>
-						<option value="<?php echo esc_attr( (string) $v['id'] ); ?>">
-							<?php echo esc_html( $v['name'] ); ?>
-						</option>
+						<option value="<?php echo esc_attr( (string) $v['id'] ); ?>"><?php echo esc_html( $v['name'] ); ?></option>
 					<?php endforeach; ?>
 				</select>
-				<button
-					class="st-btn st-btn--primary"
-					id="st-gen-playoffs-btn"
+				<button class="st-btn st-btn--primary" id="st-gen-playoffs-btn"
 					data-tournament="<?php echo esc_attr( (string) $tournament['id'] ); ?>"
 					data-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>"
-					data-endpoint="playoffs"
-				>
+					data-endpoint="playoffs">
 					⚡ <?php esc_html_e( 'Generar Semi-finales', 'soccertrack' ); ?>
 				</button>
 			</div>
 			<?php else : ?>
 				<p><a href="<?php echo esc_url( home_url( '/panel/recintos/' ) ); ?>"><?php esc_html_e( '→ Crea un recinto primero', 'soccertrack' ); ?></a></p>
 			<?php endif; ?>
-		<?php else : ?>
-			<p class="st-empty-msg"><?php esc_html_e( 'Las semi-finales estarán disponibles cuando todos los partidos de la fase regular estén finalizados.', 'soccertrack' ); ?></p>
-		<?php endif; ?>
 
-	<?php elseif ( ! $playoffs_status['has_finals'] ) : ?>
-		<?php if ( $playoffs_status['both_sf_done'] ) : ?>
-			<p style="margin-bottom:12px;color:#3C3A47">
-				<?php esc_html_e( 'Semi-finales finalizadas. Puedes generar la Final y el partido por el 3.er puesto.', 'soccertrack' ); ?>
-			</p>
-			<?php if ( ! empty( $venues_for_select ) ) : ?>
-			<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-				<select id="st-playoff-venue-select" class="st-input" style="max-width:220px">
-					<option value=""><?php esc_html_e( '— Seleccionar recinto —', 'soccertrack' ); ?></option>
-					<?php foreach ( $venues_for_select as $v ) : ?>
-						<option value="<?php echo esc_attr( (string) $v['id'] ); ?>">
-							<?php echo esc_html( $v['name'] ); ?>
-						</option>
-					<?php endforeach; ?>
-				</select>
-				<button
-					class="st-btn st-btn--primary"
-					id="st-gen-playoffs-btn"
-					data-tournament="<?php echo esc_attr( (string) $tournament['id'] ); ?>"
-					data-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>"
-					data-endpoint="finals"
-				>
-					🏆 <?php esc_html_e( 'Generar Final y 3.er Puesto', 'soccertrack' ); ?>
-				</button>
-			</div>
+		<?php elseif ( ! $playoffs_status['has_finals'] ) : ?>
+			<?php if ( $playoffs_status['both_sf_done'] ) : ?>
+				<p style="margin-bottom:12px;color:#3C3A47">
+					<?php esc_html_e( 'Semi-finales finalizadas. Puedes generar la Final y el partido por el 3.er puesto.', 'soccertrack' ); ?>
+				</p>
+				<?php if ( ! empty( $venues_for_select ) ) : ?>
+				<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+					<select id="st-playoff-venue-select" class="st-input" style="max-width:220px">
+						<option value=""><?php esc_html_e( '— Seleccionar recinto —', 'soccertrack' ); ?></option>
+						<?php foreach ( $venues_for_select as $v ) : ?>
+							<option value="<?php echo esc_attr( (string) $v['id'] ); ?>"><?php echo esc_html( $v['name'] ); ?></option>
+						<?php endforeach; ?>
+					</select>
+					<button class="st-btn st-btn--primary" id="st-gen-playoffs-btn"
+						data-tournament="<?php echo esc_attr( (string) $tournament['id'] ); ?>"
+						data-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>"
+						data-endpoint="finals">
+						🏆 <?php esc_html_e( 'Generar Final y 3.er Puesto', 'soccertrack' ); ?>
+					</button>
+				</div>
+				<?php endif; ?>
+			<?php else : ?>
+				<p class="st-empty-msg"><?php esc_html_e( 'La Final estará disponible cuando ambas semi-finales estén finalizadas.', 'soccertrack' ); ?></p>
 			<?php endif; ?>
-		<?php else : ?>
-			<p class="st-empty-msg"><?php esc_html_e( 'La Final estará disponible cuando ambas semi-finales estén finalizadas.', 'soccertrack' ); ?></p>
-		<?php endif; ?>
 
-	<?php else : ?>
-		<p style="color:#3CBC20;font-weight:600">✅ <?php esc_html_e( 'Play-offs completos. Final y 3.er puesto generados.', 'soccertrack' ); ?></p>
+		<?php else : ?>
+			<p style="color:#3CBC20;font-weight:600">✅ <?php esc_html_e( 'Play-offs completos. Final y 3.er puesto generados.', 'soccertrack' ); ?></p>
+		<?php endif; ?>
 	<?php endif; ?>
 </div>
 <?php endif; ?>
@@ -887,6 +1049,159 @@
 			notice.innerHTML = `<div class="st-alert st-alert--error">${e.message}</div>`;
 			btn.disabled = false;
 		}
+	} );
+} )();
+
+/* ── Brackets CRUD ────────────────────────────────────────────────── */
+( () => {
+	const REST_BASE = '<?php echo esc_js( get_rest_url() ); ?>soccertrack/v1/admin/tournament/<?php echo esc_js( (string) $tournament['id'] ); ?>/brackets';
+	const notice    = document.getElementById( 'st-brackets-notice' );
+	const saveBtn   = document.getElementById( 'st-bracket-save-btn' );
+	const cancelBtn = document.getElementById( 'st-bracket-cancel-btn' );
+	const editIdIn  = document.getElementById( 'st-bracket-edit-id' );
+	const nameIn    = document.getElementById( 'st-bracket-name' );
+	const fromIn    = document.getElementById( 'st-bracket-from' );
+	const toIn      = document.getElementById( 'st-bracket-to' );
+	const formTitle = document.getElementById( 'st-bracket-form-title' );
+
+	function showNotice( html ) {
+		notice.innerHTML = html;
+		notice.scrollIntoView( { behavior: 'smooth', block: 'nearest' } );
+	}
+
+	function resetForm() {
+		editIdIn.value = '';
+		nameIn.value   = '';
+		fromIn.value   = '';
+		toIn.value     = '';
+		formTitle.textContent = '➕ <?php esc_html_e( 'Agregar bracket', 'soccertrack' ); ?>';
+		cancelBtn.style.display = 'none';
+	}
+
+	/* Guardar (crear o editar) */
+	if ( saveBtn ) {
+		saveBtn.addEventListener( 'click', async () => {
+			const name  = nameIn.value.trim();
+			const from  = parseInt( fromIn.value, 10 );
+			const to    = parseInt( toIn.value, 10 );
+			const eid   = editIdIn.value;
+			const nonce = saveBtn.dataset.nonce;
+
+			if ( ! name || ! from || ! to ) {
+				showNotice( '<div class="st-alert st-alert--error"><?php esc_html_e( 'Completa nombre y posiciones.', 'soccertrack' ); ?></div>' );
+				return;
+			}
+
+			saveBtn.disabled = true;
+			try {
+				const url    = eid ? `${REST_BASE}/${eid}` : REST_BASE;
+				const method = eid ? 'PATCH' : 'POST';
+				const resp   = await fetch( url, {
+					method,
+					credentials: 'include',
+					headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': nonce },
+					body: JSON.stringify( { name, rank_from: from, rank_to: to, sort_order: eid ? undefined : 0 } ),
+				} );
+				const data = await resp.json();
+				if ( ! resp.ok ) {
+					showNotice( `<div class="st-alert st-alert--error">${data.message ?? 'Error'}</div>` );
+				} else {
+					showNotice( '<div class="st-alert st-alert--success"><?php esc_html_e( 'Bracket guardado. Recargando…', 'soccertrack' ); ?></div>' );
+					setTimeout( () => location.reload(), 900 );
+				}
+			} catch ( e ) {
+				showNotice( `<div class="st-alert st-alert--error">${e.message}</div>` );
+			}
+			saveBtn.disabled = false;
+		} );
+	}
+
+	/* Cancelar edición */
+	if ( cancelBtn ) cancelBtn.addEventListener( 'click', resetForm );
+
+	/* Editar */
+	document.querySelectorAll( '.st-bracket-edit-btn' ).forEach( btn => {
+		btn.addEventListener( 'click', () => {
+			editIdIn.value = btn.dataset.id;
+			nameIn.value   = btn.dataset.name;
+			fromIn.value   = btn.dataset.from;
+			toIn.value     = btn.dataset.to;
+			formTitle.textContent = '✏️ <?php esc_html_e( 'Editar bracket', 'soccertrack' ); ?>';
+			cancelBtn.style.display = '';
+			document.getElementById( 'st-bracket-form-wrap' ).scrollIntoView( { behavior: 'smooth', block: 'nearest' } );
+		} );
+	} );
+
+	/* Eliminar */
+	document.querySelectorAll( '.st-bracket-delete-btn' ).forEach( btn => {
+		btn.addEventListener( 'click', async () => {
+			if ( ! confirm( `<?php esc_html_e( '¿Eliminar el bracket', 'soccertrack' ); ?> "${btn.dataset.name}"?` ) ) return;
+			btn.disabled = true;
+			try {
+				const resp = await fetch( `${REST_BASE}/${btn.dataset.id}`, {
+					method: 'DELETE',
+					credentials: 'include',
+					headers: { 'X-WP-Nonce': btn.dataset.nonce },
+				} );
+				if ( resp.ok ) {
+					document.getElementById( `st-bracket-row-${btn.dataset.id}` )?.remove();
+					showNotice( '<div class="st-alert st-alert--success"><?php esc_html_e( 'Bracket eliminado.', 'soccertrack' ); ?></div>' );
+				} else {
+					const d = await resp.json();
+					showNotice( `<div class="st-alert st-alert--error">${d.message ?? 'Error'}</div>` );
+					btn.disabled = false;
+				}
+			} catch ( e ) {
+				showNotice( `<div class="st-alert st-alert--error">${e.message}</div>` );
+				btn.disabled = false;
+			}
+		} );
+	} );
+} )();
+
+/* ── Generar playoffs por bracket ─────────────────────────────────── */
+( () => {
+	const notice = document.getElementById( 'st-playoffs-notice' );
+	document.querySelectorAll( '.st-bracket-gen-btn' ).forEach( btn => {
+		btn.addEventListener( 'click', async () => {
+			const tid      = btn.dataset.tournament;
+			const bid      = btn.dataset.bracket;
+			const nonce    = btn.dataset.nonce;
+			const endpoint = btn.dataset.endpoint;
+			const venueEl  = document.querySelector( `.st-bracket-venue-select[data-bracket="${bid}"]` );
+			const venueId  = parseInt( venueEl?.value ?? '0', 10 );
+
+			if ( ! venueId ) {
+				notice.innerHTML = '<div class="st-alert st-alert--error"><?php esc_html_e( 'Selecciona un recinto.', 'soccertrack' ); ?></div>';
+				return;
+			}
+
+			btn.disabled = true;
+			const orig = btn.textContent;
+			btn.textContent = '<?php esc_html_e( 'Generando…', 'soccertrack' ); ?>';
+
+			try {
+				const resp = await fetch( `<?php echo esc_js( get_rest_url() ); ?>soccertrack/v1/admin/tournament/${tid}/${endpoint}`, {
+					method: 'POST',
+					credentials: 'include',
+					headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': nonce },
+					body: JSON.stringify( { bracket_id: parseInt( bid, 10 ), venue_id: venueId } ),
+				} );
+				const data = await resp.json();
+				if ( ! resp.ok ) {
+					notice.innerHTML = `<div class="st-alert st-alert--error">${data.message ?? 'Error'}</div>`;
+					btn.disabled = false;
+					btn.textContent = orig;
+				} else {
+					notice.innerHTML = `<div class="st-alert st-alert--success"><?php esc_html_e( 'Partidos generados:', 'soccertrack' ); ?> ${data.matches_created}. <?php esc_html_e( 'Recargando…', 'soccertrack' ); ?></div>`;
+					setTimeout( () => location.reload(), 1500 );
+				}
+			} catch ( e ) {
+				notice.innerHTML = `<div class="st-alert st-alert--error">${e.message}</div>`;
+				btn.disabled = false;
+				btn.textContent = orig;
+			}
+		} );
 	} );
 } )();
 </script>
