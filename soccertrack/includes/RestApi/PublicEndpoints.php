@@ -43,6 +43,7 @@ final class PublicEndpoints {
 			'scorers'   => [ self::class, 'get_scorers' ],
 			'stats'     => [ self::class, 'get_stats' ],
 			'brackets'  => [ self::class, 'get_public_brackets' ],
+			'groups'    => [ self::class, 'get_groups' ],
 		];
 
 		foreach ( $routes as $suffix => $callback ) {
@@ -73,7 +74,7 @@ final class PublicEndpoints {
 	 * Invalida todos los transients públicos de un torneo (llamar al cerrar un partido).
 	 */
 	public static function invalidate_cache( int $tournament_id ): void {
-		foreach ( [ 'standings', 'fixture', 'scorers', 'tribunal', 'teams', 'stats', 'brackets' ] as $s ) {
+		foreach ( [ 'standings', 'fixture', 'scorers', 'tribunal', 'teams', 'stats', 'brackets', 'groups' ] as $s ) {
 			delete_transient( self::cache_key( $tournament_id, $s ) );
 		}
 	}
@@ -175,6 +176,7 @@ final class PublicEndpoints {
 				    COALESCE(m.phase, 'regular') AS phase,
 				    m.bracket_id,
 				    b.name                      AS bracket_name,
+				    m.group_label,
 				    m.match_datetime,
 				    m.home_score,
 				    m.away_score,
@@ -591,5 +593,88 @@ final class PublicEndpoints {
 
 		set_transient( $key, $result, self::CACHE_TTL );
 		return rest_ensure_response( $result );
+	}
+
+	/**
+	 * GET /public/tournament/{id}/groups
+	 *
+	 * Retorna standings y partidos por grupo para torneos en Fase de Grupos.
+	 * Sin autenticación. Caché 60 s.
+	 */
+	public static function get_groups( \WP_REST_Request $request ): \WP_REST_Response {
+		global $wpdb;
+
+		$tid = (int) $request['id'];
+		$key = self::cache_key( $tid, 'groups' );
+
+		$cached = get_transient( $key );
+		if ( false !== $cached ) {
+			return rest_ensure_response( $cached );
+		}
+
+		// Standings por grupo.
+		$standings_by_group = ( new \SportsLeague\Core\StandingsCalculator() )->recalculate_by_group( $tid );
+
+		if ( empty( $standings_by_group ) ) {
+			set_transient( $key, [], self::CACHE_TTL );
+			return rest_ensure_response( [] );
+		}
+
+		// Partidos de fase regular con group_label.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$matches_raw = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT m.id, m.round_number, m.group_label, m.match_datetime,
+				        m.home_score, m.away_score, m.status,
+				        ht.name AS home_team, at.name AS away_team,
+				        ht.logo_url AS home_logo, at.logo_url AS away_logo,
+				        v.name AS venue, c.court_name
+				 FROM {$wpdb->prefix}ds_matches m
+				 JOIN {$wpdb->prefix}ds_teams ht ON ht.id = m.home_team_id
+				 JOIN {$wpdb->prefix}ds_teams at ON at.id = m.away_team_id
+				 LEFT JOIN {$wpdb->prefix}ds_venues v ON v.id = m.venue_id
+				 LEFT JOIN {$wpdb->prefix}ds_courts c ON c.id = m.court_id
+				 WHERE m.tournament_id = %d AND m.phase = 'regular' AND m.group_label IS NOT NULL
+				 ORDER BY m.group_label ASC, m.round_number ASC, m.match_datetime ASC",
+				$tid
+			),
+			ARRAY_A
+		);
+
+		// Agrupar partidos por group_label.
+		$matches_by_group = [];
+		foreach ( $matches_raw as $m ) {
+			$lbl = (string) $m['group_label'];
+			if ( ! isset( $matches_by_group[ $lbl ] ) ) {
+				$matches_by_group[ $lbl ] = [];
+			}
+			$matches_by_group[ $lbl ][] = [
+				'id'             => (int) $m['id'],
+				'round_number'   => (int) $m['round_number'],
+				'match_datetime' => $m['match_datetime'],
+				'home_team'      => $m['home_team'],
+				'away_team'      => $m['away_team'],
+				'home_logo'      => $m['home_logo'],
+				'away_logo'      => $m['away_logo'],
+				'home_score'     => (int) $m['home_score'],
+				'away_score'     => (int) $m['away_score'],
+				'status'         => $m['status'],
+				'venue'          => $m['venue'],
+				'court_name'     => $m['court_name'],
+			];
+		}
+
+		// Construir respuesta final.
+		$data = [];
+		foreach ( $standings_by_group as $label => $rows ) {
+			$data[] = [
+				'label'     => $label,
+				'standings' => $rows,
+				'matches'   => $matches_by_group[ $label ] ?? [],
+			];
+		}
+
+		set_transient( $key, $data, self::CACHE_TTL );
+		return rest_ensure_response( $data );
 	}
 }
