@@ -823,6 +823,13 @@ $has_brackets = ! empty( $brackets );
 									<option value="<?php echo esc_attr( (string) $v['id'] ); ?>"><?php echo esc_html( $v['name'] ); ?></option>
 								<?php endforeach; ?>
 							</select>
+							<input
+								type="date"
+								class="st-input st-bracket-date-input"
+								data-bracket="<?php echo esc_attr( (string) $b['id'] ); ?>"
+								style="max-width:140px"
+								title="<?php esc_attr_e( 'Fecha del partido (opcional)', 'soccertrack' ); ?>"
+							>
 							<button
 								class="st-btn st-btn--primary st-bracket-gen-btn"
 								data-tournament="<?php echo esc_attr( (string) $tournament['id'] ); ?>"
@@ -837,6 +844,13 @@ $has_brackets = ! empty( $brackets );
 									<option value="<?php echo esc_attr( (string) $v['id'] ); ?>"><?php echo esc_html( $v['name'] ); ?></option>
 								<?php endforeach; ?>
 							</select>
+							<input
+								type="date"
+								class="st-input st-bracket-date-input"
+								data-bracket="<?php echo esc_attr( (string) $b['id'] ); ?>"
+								style="max-width:140px"
+								title="<?php esc_attr_e( 'Fecha del partido (opcional)', 'soccertrack' ); ?>"
+							>
 							<button
 								class="st-btn st-btn--primary st-bracket-gen-btn"
 								data-tournament="<?php echo esc_attr( (string) $tournament['id'] ); ?>"
@@ -1173,6 +1187,8 @@ $has_brackets = ! empty( $brackets );
 			const endpoint = btn.dataset.endpoint;
 			const venueEl  = document.querySelector( `.st-bracket-venue-select[data-bracket="${bid}"]` );
 			const venueId  = parseInt( venueEl?.value ?? '0', 10 );
+			const dateEl   = document.querySelector( `.st-bracket-date-input[data-bracket="${bid}"]` );
+			const matchDate = dateEl?.value || null;
 
 			if ( ! venueId ) {
 				notice.innerHTML = '<div class="st-alert st-alert--error"><?php esc_html_e( 'Selecciona un recinto.', 'soccertrack' ); ?></div>';
@@ -1188,7 +1204,7 @@ $has_brackets = ! empty( $brackets );
 					method: 'POST',
 					credentials: 'include',
 					headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': nonce },
-					body: JSON.stringify( { bracket_id: parseInt( bid, 10 ), venue_id: venueId } ),
+					body: JSON.stringify( Object.assign( { bracket_id: parseInt( bid, 10 ), venue_id: venueId }, matchDate ? { match_date: matchDate } : {} ) ),
 				} );
 				const data = await resp.json();
 				if ( ! resp.ok ) {

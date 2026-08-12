@@ -88,6 +88,23 @@ final class FixtureGenerator {
 	}
 
 	/**
+	 * Construye un datetime a partir de una fecha elegida ('Y-m-d') y la hora del torneo,
+	 * aplicando el desplazamiento de franja (batch_offset × duration).
+	 *
+	 * @param string $date           Fecha en formato 'Y-m-d'.
+	 * @param string $time           Hora en formato 'H:i:s'.
+	 * @param int    $batch_offset   Franja (0 = primer partido, 1 = segundo, …).
+	 * @param int    $duration_minutes Duración de cada franja en minutos.
+	 */
+	private function datetime_from_date( string $date, string $time, int $batch_offset, int $duration_minutes ): string {
+		[ $h, $m, $s ]  = array_map( 'intval', explode( ':', $time . ':00' ) );
+		$start_minutes   = $h * 60 + $m + $batch_offset * $duration_minutes;
+		$dt              = new \DateTimeImmutable( $date );
+		$dt              = $dt->setTime( intdiv( $start_minutes, 60 ) % 24, $start_minutes % 60, $s );
+		return $dt->format( 'Y-m-d H:i:s' );
+	}
+
+	/**
 	 * Devuelve la duración del partido en minutos (mínimo 30, máximo 180).
 	 */
 	private function duration_from_tournament( array $tournament ): int {
@@ -525,11 +542,12 @@ final class FixtureGenerator {
 	 * Requiere que todos los partidos 'regular' del torneo estén 'finished'.
 	 *
 	 * @param  array{id:int,match_weekday:int,match_weekdays:string,match_time:string,match_duration:int} $tournament
-	 * @param  int $bracket_id  ID del bracket en ds_playoff_brackets.
-	 * @param  int $venue_id    Recinto donde se disputarán las semi-finales.
+	 * @param  int         $bracket_id  ID del bracket en ds_playoff_brackets.
+	 * @param  int         $venue_id    Recinto donde se disputarán las semi-finales.
+	 * @param  string|null $match_date  Fecha elegida por el coordinador ('Y-m-d'). Si null, usa el próximo día hábil del torneo.
 	 * @return array{match_ids: int[], error?: string}
 	 */
-	public function generate_bracket_playoffs( array $tournament, int $bracket_id, int $venue_id ): array {
+	public function generate_bracket_playoffs( array $tournament, int $bracket_id, int $venue_id, ?string $match_date = null ): array {
 		global $wpdb;
 
 		$tournament_id = (int) $tournament['id'];
@@ -600,8 +618,13 @@ final class FixtureGenerator {
 		$third  = (int) $bracket_teams[ $num_teams - 2 ]['team_id'];
 		$last   = (int) $bracket_teams[ $num_teams - 1 ]['team_id'];
 
-		$dt_sf1 = $this->next_match_datetime( $weekdays, $time, 0, 0, $duration );
-		$dt_sf2 = $this->next_match_datetime( $weekdays, $time, 1, 0, $duration );
+		if ( $match_date ) {
+			$dt_sf1 = $this->datetime_from_date( $match_date, $time, 0, $duration );
+			$dt_sf2 = $this->datetime_from_date( $match_date, $time, 1, $duration );
+		} else {
+			$dt_sf1 = $this->next_match_datetime( $weekdays, $time, 0, 0, $duration );
+			$dt_sf2 = $this->next_match_datetime( $weekdays, $time, 1, 0, $duration );
+		}
 
 		$ids = [];
 
@@ -644,11 +667,12 @@ final class FixtureGenerator {
 	 * En caso de empate en semi: gana el equipo local (misma regla que generate_finals()).
 	 *
 	 * @param  array{id:int,match_weekday:int,match_weekdays:string,match_time:string,match_duration:int} $tournament
-	 * @param  int $bracket_id
-	 * @param  int $venue_id
+	 * @param  int         $bracket_id
+	 * @param  int         $venue_id
+	 * @param  string|null $match_date  Fecha elegida por el coordinador ('Y-m-d'). Si null, usa el próximo día hábil del torneo.
 	 * @return array{match_ids: int[], error?: string}
 	 */
-	public function generate_bracket_finals( array $tournament, int $bracket_id, int $venue_id ): array {
+	public function generate_bracket_finals( array $tournament, int $bracket_id, int $venue_id, ?string $match_date = null ): array {
 		global $wpdb;
 
 		$tournament_id = (int) $tournament['id'];
@@ -702,8 +726,13 @@ final class FixtureGenerator {
 		$sf1 = $resolve( $semis[0] );
 		$sf2 = $resolve( $semis[1] );
 
-		$dt_3rd   = $this->next_match_datetime( $weekdays, $time, 0, 0, $duration );
-		$dt_final = $this->next_match_datetime( $weekdays, $time, 1, 0, $duration );
+		if ( $match_date ) {
+			$dt_3rd   = $this->datetime_from_date( $match_date, $time, 0, $duration );
+			$dt_final = $this->datetime_from_date( $match_date, $time, 1, $duration );
+		} else {
+			$dt_3rd   = $this->next_match_datetime( $weekdays, $time, 0, 0, $duration );
+			$dt_final = $this->next_match_datetime( $weekdays, $time, 1, 0, $duration );
+		}
 
 		$ids = [];
 
