@@ -394,6 +394,7 @@ final class TournamentPage {
 		// Cambiar estado del torneo.
 		$notice       = '';
 		$status_error = '';
+		$error        = '';
 		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_change_status'] ) ) {
 			check_admin_referer( 'st_change_status' );
 			$tid        = absint( $_POST['tournament_id'] ?? 0 );
@@ -430,24 +431,35 @@ final class TournamentPage {
 		// Crear torneo.
 		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_create_tournament'] ) ) {
 			check_admin_referer( 'st_create_tournament' );
-			$name = sanitize_text_field( $_POST['name'] ?? '' );
+			$name       = sanitize_text_field( $_POST['name'] ?? '' );
+			$start_date = sanitize_text_field( $_POST['start_date'] ?? '' );
 
-			if ( $name ) {
-				$reg_mode = 'realtime';
+			if ( ! $name ) {
+				$error = __( 'El nombre del torneo es obligatorio.', 'soccertrack' );
+			} elseif ( ! $start_date ) {
+				$error = __( 'La fecha de inicio es obligatoria para poder generar el fixture.', 'soccertrack' );
+			} else {
+				$format        = sanitize_text_field( $_POST['format'] ?? 'round_robin' );
+				$group_count   = 'group_stage' === $format ? max( 2, min( 8, (int) ( $_POST['group_count'] ?? 2 ) ) ) : 2;
+				$teams_adv     = 'group_stage' === $format ? max( 1, min( 4, (int) ( $_POST['teams_advancing_per_group'] ?? 2 ) ) ) : 2;
+				$has_3rd       = 'group_stage' === $format ? ( isset( $_POST['has_third_place'] ) ? 1 : 0 ) : 1;
 
 				$wpdb->insert( // phpcs:ignore
 					"{$wpdb->prefix}ds_tournaments",
 					[
-						'name'              => $name,
-						'season'            => sanitize_text_field( $_POST['season'] ?? gmdate( 'Y' ) ),
-						'start_date'        => sanitize_text_field( $_POST['start_date'] ?? '' ) ?: null,
-						'end_date'          => sanitize_text_field( $_POST['end_date'] ?? '' ) ?: null,
-						'format'            => sanitize_text_field( $_POST['format'] ?? 'round_robin' ),
-						'status'            => 'draft',
-						'registration_mode' => $reg_mode,
+						'name'                      => $name,
+						'season'                    => sanitize_text_field( $_POST['season'] ?? gmdate( 'Y' ) ),
+						'start_date'                => $start_date,
+						'end_date'                  => sanitize_text_field( $_POST['end_date'] ?? '' ) ?: null,
+						'format'                    => $format,
+						'status'                    => 'draft',
+						'registration_mode'         => 'realtime',
+						'group_count'               => $group_count,
+						'teams_advancing_per_group' => $teams_adv,
+						'has_third_place'           => $has_3rd,
 						// Días, horario y liberación de jornada se configuran en la ficha del torneo.
 					],
-					[ '%s', '%s', '%s', '%s', '%s', '%s', '%s' ]
+					[ '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d' ]
 				);
 				$notice = 'created';
 			}
@@ -464,7 +476,7 @@ final class TournamentPage {
 		);
 
 		$page_title = __( 'Torneos', 'soccertrack' );
-		self::render( 'torneos', compact( 'tournaments', 'notice', 'status_error', 'page_title' ) );
+		self::render( 'torneos', compact( 'tournaments', 'notice', 'status_error', 'error', 'page_title' ) );
 	}
 
 	private static function view_torneo( int $id ): void {

@@ -14,6 +14,10 @@
 <div class="st-alert st-alert--error">⚠️ <?php echo esc_html( $status_error ); ?></div>
 <?php endif; ?>
 
+<?php if ( ! empty( $error ?? '' ) ) : ?>
+<div class="st-alert st-alert--error">⚠️ <?php echo esc_html( $error ); ?></div>
+<?php endif; ?>
+
 <?php /* ── Formulario crear torneo ─────────────────────────────────── */ ?>
 <div class="st-card">
 	<h2 class="st-card-title"><?php esc_html_e( 'Nuevo torneo', 'soccertrack' ); ?></h2>
@@ -26,8 +30,8 @@
 			<input type="text" name="name" class="st-input" required placeholder="<?php esc_attr_e( 'Ej: Liga Corporativa 2026', 'soccertrack' ); ?>">
 		</div>
 		<div class="st-field">
-			<label class="st-label"><?php esc_html_e( 'Inicio', 'soccertrack' ); ?></label>
-			<input type="date" name="start_date" class="st-input">
+			<label class="st-label"><?php esc_html_e( 'Inicio', 'soccertrack' ); ?> *</label>
+			<input type="date" name="start_date" class="st-input" required>
 		</div>
 		<div class="st-field">
 			<label class="st-label">
@@ -47,12 +51,38 @@
 			</select>
 		</div>
 
+		<div id="st-group-stage-options" style="display:none">
+			<div class="st-field">
+				<label class="st-label"><?php esc_html_e( 'Número de grupos', 'soccertrack' ); ?></label>
+				<input type="number" name="group_count" class="st-input" value="2" min="2" max="8" style="max-width:80px">
+			</div>
+			<div class="st-field">
+				<label class="st-label"><?php esc_html_e( 'Equipos que clasifican por grupo', 'soccertrack' ); ?></label>
+				<input type="number" name="teams_advancing_per_group" class="st-input" value="2" min="1" max="4" style="max-width:80px">
+			</div>
+			<div class="st-field">
+				<label class="st-label" style="display:flex;align-items:center;gap:8px">
+					<input type="checkbox" name="has_third_place" value="1" checked>
+					<?php esc_html_e( 'Partido por 3.er puesto', 'soccertrack' ); ?>
+				</label>
+			</div>
+		</div>
+
 		<input type="hidden" name="registration_mode" value="realtime">
 
 		<button type="submit" class="st-btn st-btn--primary">
 			<?php esc_html_e( '+ Crear torneo', 'soccertrack' ); ?>
 		</button>
 	</form>
+	<script>
+	(function() {
+		var fmt   = document.querySelector('select[name="format"]');
+		var opts  = document.getElementById('st-group-stage-options');
+		function toggle() { opts.style.display = fmt.value === 'group_stage' ? '' : 'none'; }
+		fmt.addEventListener('change', toggle);
+		toggle();
+	}());
+	</script>
 </div>
 
 <?php /* ── Lista de torneos ─────────────────────────────────────────── */ ?>
