@@ -619,6 +619,7 @@ final class TournamentPage {
 							$wpdb->prepare(
 								"SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches
 								 WHERE referee_user_id = %d AND id != %d
+								   AND status NOT IN ('finished', 'suspended')
 								   AND match_datetime BETWEEN DATE_SUB( %s, INTERVAL 90 MINUTE )
 								                          AND DATE_ADD( %s, INTERVAL 90 MINUTE )",
 								$referee_id, $match_id, $match_dt, $match_dt
@@ -683,6 +684,7 @@ final class TournamentPage {
 							$wpdb->prepare(
 								"SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches
 								 WHERE planillero_user_id = %d AND id != %d
+								   AND status NOT IN ('finished', 'suspended')
 								   AND match_datetime BETWEEN DATE_SUB( %s, INTERVAL 90 MINUTE )
 								                         AND DATE_ADD( %s, INTERVAL 90 MINUTE )",
 								$planillero_id, $match_id, $match_dt, $match_dt
@@ -732,6 +734,7 @@ final class TournamentPage {
 					$wpdb->prepare(
 						"SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches
 						 WHERE court_id = %d AND id != %d
+						   AND status NOT IN ('finished', 'suspended')
 						   AND match_datetime BETWEEN DATE_SUB( %s, INTERVAL 90 MINUTE )
 						                         AND DATE_ADD( %s, INTERVAL 90 MINUTE )",
 						$new_court, $match_id, $existing_match['match_datetime'], $existing_match['match_datetime']
@@ -787,6 +790,7 @@ final class TournamentPage {
 							$wpdb->prepare(
 								"SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches
 								 WHERE court_id = %d AND id != %d
+								   AND status NOT IN ('finished', 'suspended')
 								   AND match_datetime BETWEEN DATE_SUB( %s, INTERVAL 90 MINUTE )
 								                         AND DATE_ADD( %s, INTERVAL 90 MINUTE )",
 								$court_id, $match_id, $new_datetime, $new_datetime

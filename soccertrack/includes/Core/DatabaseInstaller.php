@@ -523,6 +523,34 @@ final class DatabaseInstaller {
 			$wpdb->query( "ALTER TABLE {$prefix}ds_team_players ADD KEY idx_player_team (player_id, team_id)" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		}
 
+		// v1.9.3 — ds_match_events: índice cubriente para COUNT de tarjetas amarillas por jugador/torneo.
+		// La query de acumulación filtra por (tournament_id, player_id, event_type); el índice
+		// idx_scorers sólo cubre (tournament_id, player_id, team_id), obligando a acceso a fila
+		// para filtrar event_type. Este índice lo resuelve completamente desde el índice.
+		$has_scorers_event = $wpdb->get_var( "SHOW INDEX FROM {$prefix}ds_match_events WHERE Key_name = 'idx_scorers_event'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( ! $has_scorers_event ) {
+			$wpdb->query( "ALTER TABLE {$prefix}ds_match_events ADD KEY idx_scorers_event (tournament_id, player_id, event_type)" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		}
+
+		// v1.9.3 — ds_disciplinary_sanctions: backfill de team_id IS NULL.
+		// Sanciones registradas antes de v1.3.2 no tienen team_id. Asignar retroactivamente
+		// el primer equipo del jugador en ese torneo para eliminar las subqueries correlacionadas
+		// del tribunal que resuelven el nombre del equipo fila a fila.
+		$null_team_count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$prefix}ds_disciplinary_sanctions WHERE team_id IS NULL" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( $null_team_count > 0 ) {
+			$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				"UPDATE {$prefix}ds_disciplinary_sanctions ds
+				 JOIN (
+				     SELECT tp.player_id, t.tournament_id, MIN(t.id) AS team_id
+				     FROM {$prefix}ds_team_players tp
+				     JOIN {$prefix}ds_teams t ON t.id = tp.team_id
+				     GROUP BY tp.player_id, t.tournament_id
+				 ) best ON best.player_id = ds.player_id AND best.tournament_id = ds.tournament_id
+				 SET ds.team_id = best.team_id
+				 WHERE ds.team_id IS NULL"
+			);
+		}
+
 		// v1.9.2 — ds_tournaments: número de amarillas que acumulan una suspensión automática.
 		$has_yellows_col = $wpdb->get_var( "SHOW COLUMNS FROM {$prefix}ds_tournaments LIKE 'yellows_per_suspension'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		if ( ! $has_yellows_col ) {
