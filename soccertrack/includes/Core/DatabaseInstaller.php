@@ -591,6 +591,44 @@ final class DatabaseInstaller {
 				 ADD KEY idx_bracket (bracket_id)"
 			);
 		}
+
+		// v2.0.0 — ds_tournaments: columnas de configuración de fase de grupos.
+		$has_group_count = $wpdb->get_var( "SHOW COLUMNS FROM {$prefix}ds_tournaments LIKE 'group_count'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( ! $has_group_count ) {
+			$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				"ALTER TABLE {$prefix}ds_tournaments
+				 ADD COLUMN group_count               TINYINT UNSIGNED NOT NULL DEFAULT 2 AFTER fixture_release_days,
+				 ADD COLUMN teams_advancing_per_group TINYINT UNSIGNED NOT NULL DEFAULT 2 AFTER group_count,
+				 ADD COLUMN has_third_place           TINYINT(1)       NOT NULL DEFAULT 1 AFTER teams_advancing_per_group"
+			);
+		}
+
+		// v2.0.0 — ds_teams: etiqueta de grupo para formato fase de grupos.
+		$has_team_group = $wpdb->get_var( "SHOW COLUMNS FROM {$prefix}ds_teams LIKE 'group_label'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( ! $has_team_group ) {
+			$wpdb->query( "ALTER TABLE {$prefix}ds_teams ADD COLUMN group_label VARCHAR(5) NULL DEFAULT NULL" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		}
+
+		// v2.0.0 — ds_matches: etiqueta de grupo (NULL en partidos de eliminatoria).
+		$has_match_group = $wpdb->get_var( "SHOW COLUMNS FROM {$prefix}ds_matches LIKE 'group_label'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( ! $has_match_group ) {
+			$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				"ALTER TABLE {$prefix}ds_matches
+				 ADD COLUMN group_label VARCHAR(5) NULL DEFAULT NULL AFTER bracket_id,
+				 ADD KEY idx_group_label (tournament_id, group_label)"
+			);
+		}
+
+		// v2.0.0 — ds_matches: ampliar ENUM phase para incluir 'quarterfinal'.
+		// El MODIFY COLUMN es idempotente en MariaDB si el ENUM ya incluye el valor.
+		$phase_col = $wpdb->get_row( "SHOW COLUMNS FROM {$prefix}ds_matches LIKE 'phase'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( $phase_col && ! str_contains( (string) $phase_col->Type, 'quarterfinal' ) ) {
+			$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				"ALTER TABLE {$prefix}ds_matches
+				 MODIFY COLUMN phase ENUM('regular','quarterfinal','semifinal','third_place','final')
+				                     NOT NULL DEFAULT 'regular'"
+			);
+		}
 	}
 
 	/**
