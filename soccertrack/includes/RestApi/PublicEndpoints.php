@@ -162,7 +162,8 @@ final class PublicEndpoints {
 			}
 
 			$placeholders  = implode( ', ', array_fill( 0, count( $visible_rounds ), '%d' ) );
-			$round_filter  = $wpdb->prepare( " AND m.round_number IN ( {$placeholders} )", ...$visible_rounds ); // phpcs:ignore
+			// Los partidos de playoffs (phase != 'regular') siempre se muestran; el filtro de jornadas aplica solo a la fase regular.
+			$round_filter  = $wpdb->prepare( " AND ( m.phase != 'regular' OR m.round_number IN ( {$placeholders} ) )", ...$visible_rounds ); // phpcs:ignore
 		}
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
