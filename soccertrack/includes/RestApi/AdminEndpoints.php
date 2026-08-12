@@ -14,7 +14,6 @@
  * POST /admin/tournament/{id}/playoffs         — Generar semi-finales (coordinador)
  * POST /admin/tournament/{id}/finals           — Generar final y 3.er puesto (coordinador)
  * POST /admin/player/sanction                  — Sancionar jugador (coordinador)
- * POST /admin/import/teams                     — Importar equipos CSV/XLSX (coordinador)
  * POST /admin/import/players                   — Importar jugadores CSV/XLSX (coordinador)
  *
  * @package SoccerTrack
@@ -267,17 +266,6 @@ final class AdminEndpoints {
 			]
 		);
 
-		// POST /admin/import/teams
-		register_rest_route(
-			self::NAMESPACE,
-			'/admin/import/teams',
-			[
-				'methods'             => \WP_REST_Server::CREATABLE,
-				'callback'            => [ self::class, 'post_import_teams' ],
-				'permission_callback' => static fn() => current_user_can( 'ds_load_excel' ),
-			]
-		);
-
 		// POST /admin/import/players
 		register_rest_route(
 			self::NAMESPACE,
@@ -363,7 +351,7 @@ final class AdminEndpoints {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$match = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT id, tournament_id, home_team_id, away_team_id, status, referee_user_id
+				"SELECT id, tournament_id, home_team_id, away_team_id, status, referee_user_id, round_number
 				 FROM {$wpdb->prefix}ds_matches WHERE id = %d",
 				$match_id
 			),
@@ -406,6 +394,44 @@ final class AdminEndpoints {
 		// Decrementar sanciones solo si el partido NO estaba ya cerrado (evitar doble decremento).
 		if ( ! $was_finished ) {
 			( new TribunalManager() )->decrement_after_match( $tournament_id, $home_team_id, $away_team_id );
+
+			// Notificar resultado a los delegados de ambos equipos.
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$teams_data = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT t.id, t.name, t.delegado_correo
+					 FROM {$wpdb->prefix}ds_teams t
+					 WHERE t.id IN (%d, %d)",
+					$home_team_id,
+					$away_team_id
+				),
+				ARRAY_A
+			) ?: [];
+
+			$teams_by_id     = array_column( $teams_data, null, 'id' );
+			$delegate_emails = array_values( array_filter( array_column( $teams_data, 'delegado_correo' ) ) );
+			$home_name       = $teams_by_id[ $home_team_id ]['name'] ?? '';
+			$away_name       = $teams_by_id[ $away_team_id ]['name'] ?? '';
+
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$tournament_name = (string) $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT name FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
+					$tournament_id
+				)
+			);
+
+			if ( ! empty( $delegate_emails ) && $tournament_name ) {
+				( new \SportsLeague\Notifications\MailDispatcher() )->notify_match_result(
+					$delegate_emails,
+					$home_name,
+					$away_name,
+					$home_score,
+					$away_score,
+					(int) $match['round_number'],
+					$tournament_name
+				);
+			}
 		}
 
 		// Recalcular tabla de posiciones.
@@ -539,7 +565,7 @@ final class AdminEndpoints {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$tournament = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT id, match_weekday, match_weekdays, match_time, match_time_weekend, match_duration FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
+				"SELECT id, name, match_weekday, match_weekdays, match_time, match_time_weekend, match_duration FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
 				$tournament_id
 			),
 			ARRAY_A
@@ -586,11 +612,32 @@ final class AdminEndpoints {
 		$team_ids    = array_map( 'intval', $team_ids );
 		$match_ids   = ( new FixtureGenerator() )->generate( $tournament, $team_ids, $venue_id );
 
+		// Notificar a todos los delegados que el fixture está disponible.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$delegate_emails = array_values( array_filter(
+			$wpdb->get_col(
+				$wpdb->prepare(
+					"SELECT delegado_correo FROM {$wpdb->prefix}ds_teams
+					 WHERE tournament_id = %d AND delegado_correo IS NOT NULL AND delegado_correo != ''",
+					$tournament_id
+				)
+			) ?: []
+		) );
+
+		if ( ! empty( $delegate_emails ) ) {
+			( new \SportsLeague\Notifications\MailDispatcher() )->notify_fixture_generated(
+				$delegate_emails,
+				(string) $tournament['name'],
+				count( $match_ids ),
+				home_url( '/?torneo=' . $tournament_id )
+			);
+		}
+
 		return rest_ensure_response(
 			[
-				'tournament_id' => $tournament_id,
+				'tournament_id'   => $tournament_id,
 				'matches_created' => count( $match_ids ),
-				'match_ids'     => $match_ids,
+				'match_ids'       => $match_ids,
 			]
 		);
 	}
@@ -631,6 +678,32 @@ final class AdminEndpoints {
 			$ban_matches
 		);
 
+		// Notificar al delegado del club del jugador sancionado.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$delegate_data = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT t.delegado_correo, tr.name AS tournament_name
+				 FROM {$wpdb->prefix}ds_team_players tp
+				 JOIN {$wpdb->prefix}ds_teams t ON t.id = tp.team_id
+				 JOIN {$wpdb->prefix}ds_tournaments tr ON tr.id = t.tournament_id
+				 WHERE tp.player_id = %d AND t.tournament_id = %d
+				 LIMIT 1",
+				$player_id,
+				$tournament_id
+			),
+			ARRAY_A
+		);
+
+		if ( ! empty( $delegate_data['delegado_correo'] ) ) {
+			( new \SportsLeague\Notifications\MailDispatcher() )->notify_sanction(
+				$delegate_data['delegado_correo'],
+				"{$player['first_name']} {$player['last_name']}",
+				$reason,
+				$ban_matches,
+				$delegate_data['tournament_name']
+			);
+		}
+
 		return rest_ensure_response(
 			[
 				'sanction_id'   => $sanction_id,
@@ -665,34 +738,6 @@ final class AdminEndpoints {
 
 		$result = ( new SpreadsheetImporter() )->import_team_roster( $file, $tournament_id );
 
-		@unlink( $file ); // phpcs:ignore WordPress.PHP.NoSilencedErrors
-
-		return rest_ensure_response( $result );
-	}
-
-	/**
-	 * POST /admin/import/teams
-	 *
-	 * Importa equipos desde un archivo CSV/XLSX subido vía multipart.
-	 * Param POST: tournament_id (int)
-	 * File:       file (CSV o XLSX)
-	 */
-	public static function post_import_teams( \WP_REST_Request $request ): \WP_REST_Response|\WP_Error {
-		$tournament_id = (int) $request->get_param( 'tournament_id' );
-
-		if ( $tournament_id <= 0 ) {
-			return new \WP_Error( 'missing_tournament_id', __( 'Se requiere tournament_id.', 'soccertrack' ), [ 'status' => 422 ] );
-		}
-
-		$file = self::handle_upload( $request );
-
-		if ( is_wp_error( $file ) ) {
-			return $file;
-		}
-
-		$result = ( new SpreadsheetImporter() )->import_teams( $file, $tournament_id );
-
-		// Eliminar archivo temporal.
 		@unlink( $file ); // phpcs:ignore WordPress.PHP.NoSilencedErrors
 
 		return rest_ensure_response( $result );
@@ -874,13 +919,91 @@ final class AdminEndpoints {
 			ARRAY_A
 		);
 
-		$user = get_user_by( 'id', $created_by );
+		$user        = get_user_by( 'id', $created_by );
+		$player_name = $player ? "{$player['first_name']} {$player['last_name']}" : '';
+		$auto_sanction = null;
+
+		// ── Acumulación automática de amarillas: N amarillas = 1 fecha suspendido ──
+		if ( 'yellow_card' === $event_type ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$yellows_threshold = (int) $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COALESCE(yellows_per_suspension, 3)
+					 FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
+					(int) $match['tournament_id']
+				)
+			);
+			if ( $yellows_threshold < 2 ) {
+				$yellows_threshold = 3; // salvaguarda
+			}
+
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$yellow_count = (int) $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(*)
+					 FROM {$wpdb->prefix}ds_match_events
+					 WHERE player_id = %d
+					   AND tournament_id = %d
+					   AND event_type = 'yellow_card'",
+					$player_id,
+					(int) $match['tournament_id']
+				)
+			);
+
+			if ( $yellow_count > 0 && 0 === $yellow_count % $yellows_threshold ) {
+				$reason = sprintf(
+					/* translators: %d: número de amarillas acumuladas */
+					__( 'Acumulación de %d tarjetas amarillas.', 'soccertrack' ),
+					$yellow_count
+				);
+
+				( new TribunalManager() )->sanction(
+					$player_id,
+					(int) $match['tournament_id'],
+					$match_id,
+					$reason,
+					1
+				);
+
+				// Notificar al delegado del club.
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				$delegate = $wpdb->get_row(
+					$wpdb->prepare(
+						"SELECT t.delegado_correo, tr.name AS tournament_name
+						 FROM {$wpdb->prefix}ds_team_players tp
+						 JOIN {$wpdb->prefix}ds_teams t ON t.id = tp.team_id
+						 JOIN {$wpdb->prefix}ds_tournaments tr ON tr.id = t.tournament_id
+						 WHERE tp.player_id = %d AND t.tournament_id = %d
+						 LIMIT 1",
+						$player_id,
+						(int) $match['tournament_id']
+					),
+					ARRAY_A
+				);
+
+				if ( ! empty( $delegate['delegado_correo'] ) ) {
+					( new \SportsLeague\Notifications\MailDispatcher() )->notify_sanction(
+						$delegate['delegado_correo'],
+						$player_name,
+						$reason,
+						1,
+						(string) $delegate['tournament_name']
+					);
+				}
+
+				$auto_sanction = [
+					'reason'       => $reason,
+					'ban_matches'  => 1,
+					'yellow_count' => $yellow_count,
+				];
+			}
+		}
 
 		return rest_ensure_response( [
 			'event_id'         => $event_id,
 			'match_id'         => $match_id,
 			'player_id'        => $player_id,
-			'player_name'      => $player ? "{$player['first_name']} {$player['last_name']}" : '',
+			'player_name'      => $player_name,
 			'team_id'          => $team_id,
 			'event_type'       => $event_type,
 			'minute'           => $minute,
@@ -890,6 +1013,7 @@ final class AdminEndpoints {
 			'updated_by'       => null,
 			'updated_by_name'  => '',
 			'updated_at'       => null,
+			'auto_sanction'    => $auto_sanction,
 		] );
 	}
 

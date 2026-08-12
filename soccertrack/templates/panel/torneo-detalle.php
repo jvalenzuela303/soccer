@@ -13,7 +13,7 @@
 	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Planillero asignado correctamente.', 'soccertrack' ); ?></div>
 <?php endif; ?>
 <?php if ( ( $notice ?? '' ) === 'auto_assigned' ) : ?>
-	<div class="st-alert st-alert--success">📅 <?php esc_html_e( 'Fechas, horarios y canchas asignados según la configuración del torneo. Puedes ajustar individualmente en el fixture.', 'soccertrack' ); ?></div>
+	<div class="st-alert st-alert--success">📅 <?php esc_html_e( 'Fechas y canchas asignadas según horario y recintos del torneo. Puedes ajustar individualmente en el fixture.', 'soccertrack' ); ?></div>
 <?php endif; ?>
 <?php if ( ( $notice ?? '' ) === 'schedule_updated' ) : ?>
 	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Horario del torneo actualizado.', 'soccertrack' ); ?></div>
@@ -24,8 +24,8 @@
 <?php if ( ( $notice ?? '' ) === 'reg_mode_updated' ) : ?>
 	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Modo de registro actualizado.', 'soccertrack' ); ?></div>
 <?php endif; ?>
-<?php if ( ( $notice ?? '' ) === 'release_days_updated' ) : ?>
-	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Liberación de fixture actualizada.', 'soccertrack' ); ?></div>
+<?php if ( ( $notice ?? '' ) === 'tournament_config_updated' ) : ?>
+	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Configuración del torneo actualizada.', 'soccertrack' ); ?></div>
 <?php endif; ?>
 <?php if ( ( $notice ?? '' ) === 'venues_updated' ) : ?>
 	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Recintos del torneo actualizados.', 'soccertrack' ); ?></div>
@@ -288,37 +288,77 @@
 	</script>
 </div>
 
-<?php /* ── Liberación del fixture ──────────────────────────────────────── */ ?>
+<?php /* ── Configuración del torneo ────────────────────────────────── */ ?>
 <div class="st-card" style="margin-bottom:20px">
 	<div class="st-card-header">
-		<h2 class="st-card-title">📅 <?php esc_html_e( 'Liberación del fixture', 'soccertrack' ); ?></h2>
+		<h2 class="st-card-title">⚙️ <?php esc_html_e( 'Configuración del torneo', 'soccertrack' ); ?></h2>
 	</div>
-	<form method="post" action="" class="st-form-inline" style="align-items:flex-end;gap:16px">
-		<?php wp_nonce_field( 'st_update_release_days_' . $tournament['id'] ); ?>
-		<input type="hidden" name="st_update_release_days" value="1">
+	<form method="post" action="">
+		<?php wp_nonce_field( 'st_update_tournament_config_' . $tournament['id'] ); ?>
+		<input type="hidden" name="st_update_tournament_config" value="1">
 
-		<div class="st-field">
-			<label class="st-label"><?php esc_html_e( 'Días tras última fecha', 'soccertrack' ); ?></label>
-			<input
-				type="number"
-				name="fixture_release_days"
-				class="st-input"
-				value="<?php echo esc_attr( (string) (int) ( $tournament['fixture_release_days'] ?? 0 ) ); ?>"
-				min="-7"
-				max="30"
-				style="max-width:100px"
-			>
-		</div>
+		<table style="width:100%;border-collapse:collapse">
+			<thead>
+				<tr style="border-bottom:2px solid #e5e7eb">
+					<th style="text-align:left;padding:8px 12px;font-size:.8rem;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.04em">
+						<?php esc_html_e( 'Parámetro', 'soccertrack' ); ?>
+					</th>
+					<th style="text-align:center;padding:8px 12px;font-size:.8rem;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.04em;width:120px">
+						<?php esc_html_e( 'Valor', 'soccertrack' ); ?>
+					</th>
+					<th style="text-align:left;padding:8px 12px;font-size:.8rem;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.04em">
+						<?php esc_html_e( 'Descripción', 'soccertrack' ); ?>
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr style="border-bottom:1px solid #f0f0f0">
+					<td style="padding:12px;font-weight:600;white-space:nowrap">
+						📅 <?php esc_html_e( 'Liberación del fixture', 'soccertrack' ); ?>
+					</td>
+					<td style="padding:12px;text-align:center">
+						<input
+							type="number"
+							name="fixture_release_days"
+							class="st-input"
+							value="<?php echo esc_attr( (string) (int) ( $tournament['fixture_release_days'] ?? 0 ) ); ?>"
+							min="-7"
+							max="30"
+							style="max-width:80px;text-align:center"
+						>
+					</td>
+					<td style="padding:12px;font-size:.82rem;color:#666">
+						<?php esc_html_e( 'Días tras la última fecha para publicar la siguiente jornada. 0 = todas visibles de inmediato.', 'soccertrack' ); ?>
+					</td>
+				</tr>
+				<tr>
+					<td style="padding:12px;font-weight:600;white-space:nowrap">
+						🟨 <?php esc_html_e( 'Amarillas para suspensión', 'soccertrack' ); ?>
+					</td>
+					<td style="padding:12px;text-align:center">
+						<input
+							type="number"
+							name="yellows_per_suspension"
+							class="st-input"
+							value="<?php echo esc_attr( (string) (int) ( $tournament['yellows_per_suspension'] ?? 3 ) ); ?>"
+							min="2"
+							max="10"
+							style="max-width:80px;text-align:center"
+						>
+					</td>
+					<td style="padding:12px;font-size:.82rem;color:#666">
+						<?php esc_html_e( 'Tarjetas amarillas acumuladas que generan 1 fecha de suspensión automática. Por defecto: 3.', 'soccertrack' ); ?>
+					</td>
+				</tr>
+			</tbody>
+		</table>
 
-		<div class="st-field" style="align-self:flex-end">
+		<div style="padding:12px;border-top:1px solid #f0f0f0;text-align:right">
 			<button type="submit" class="st-btn st-btn--secondary st-btn--sm">
-				💾 <?php esc_html_e( 'Guardar', 'soccertrack' ); ?>
+				💾 <?php esc_html_e( 'Guardar configuración', 'soccertrack' ); ?>
 			</button>
 		</div>
 	</form>
-	<p style="margin:8px 0 0;font-size:.8rem;color:#888">
-		<?php esc_html_e( '0 = todas las jornadas visibles de inmediato. 1 = la siguiente jornada se publica al día siguiente de terminada la anterior.', 'soccertrack' ); ?>
-	</p>
 </div>
 
 <?php /* ── Recintos del torneo ─────────────────────────────────────── */ ?>

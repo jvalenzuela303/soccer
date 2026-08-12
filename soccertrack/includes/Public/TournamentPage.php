@@ -872,24 +872,28 @@ final class TournamentPage {
 			);
 		}
 
-		// ── Actualizar días de liberación del fixture ─────────────────────
-		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_update_release_days'] ) ) {
-			check_admin_referer( 'st_update_release_days_' . $id );
+		// ── Actualizar configuración general del torneo (fixture + amarillas) ──
+		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_update_tournament_config'] ) ) {
+			check_admin_referer( 'st_update_tournament_config_' . $id );
 
 			if ( ! current_user_can( 'ds_manage_tournaments' ) ) {
 				wp_die( esc_html__( 'Sin permiso.', 'soccertrack' ), '', [ 'response' => 403 ] );
 			}
 
 			$release_days = max( -7, min( 30, (int) ( $_POST['fixture_release_days'] ?? 0 ) ) );
+			$yellows      = max( 2, min( 10, (int) ( $_POST['yellows_per_suspension'] ?? 3 ) ) );
 
 			$wpdb->update( // phpcs:ignore
 				"{$wpdb->prefix}ds_tournaments",
-				[ 'fixture_release_days' => $release_days ],
+				[
+					'fixture_release_days'   => $release_days,
+					'yellows_per_suspension' => $yellows,
+				],
 				[ 'id' => $id ],
-				[ '%d' ],
+				[ '%d', '%d' ],
 				[ '%d' ]
 			);
-			$notice = 'release_days_updated';
+			$notice = 'tournament_config_updated';
 
 			$tournament = $wpdb->get_row(
 				$wpdb->prepare( "SELECT * FROM {$wpdb->prefix}ds_tournaments WHERE id = %d", $id ),
@@ -1242,27 +1246,37 @@ final class TournamentPage {
 		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_add_player'] ) ) {
 			check_admin_referer( 'st_add_player_' . $id );
 
-			$rut      = sanitize_text_field( $_POST['rut_id'] ?? '' );
-			$nombre   = sanitize_text_field( $_POST['first_name'] ?? '' );
-			$apellido = sanitize_text_field( $_POST['last_name'] ?? '' );
-			$dorsal   = absint( $_POST['dorsal'] ?? 0 );
+			$rut        = sanitize_text_field( $_POST['rut_id'] ?? '' );
+			$nombre     = sanitize_text_field( $_POST['first_name'] ?? '' );
+			$apellido   = sanitize_text_field( $_POST['last_name'] ?? '' );
+			$apellido_m = sanitize_text_field( $_POST['last_name_m'] ?? '' );
+			$email      = sanitize_email( $_POST['email'] ?? '' );
+			$phone      = sanitize_text_field( $_POST['phone'] ?? '' );
+			$area       = sanitize_text_field( $_POST['area'] ?? '' );
+			$cargo      = sanitize_text_field( $_POST['cargo'] ?? '' );
+			$dorsal     = absint( $_POST['dorsal'] ?? 0 );
 
-			if ( ! $rut || ! $nombre || ! $apellido || ! $dorsal ) {
-				$error = __( 'Todos los campos son obligatorios.', 'soccertrack' );
-			} elseif ( $dorsal < 1 || $dorsal > 99 ) {
+			$dorsal_val = $dorsal > 0 ? $dorsal : null;
+
+			if ( ! $rut || ! $nombre || ! $apellido ) {
+				$error = __( 'RUT, nombre y apellido son obligatorios.', 'soccertrack' );
+			} elseif ( $dorsal > 0 && ( $dorsal < 1 || $dorsal > 99 ) ) {
 				$error = __( 'El dorsal debe estar entre 1 y 99.', 'soccertrack' );
 			} else {
-				// Verificar dorsal no tomado en este equipo.
-				$dorsal_taken = $wpdb->get_var( // phpcs:ignore
-					$wpdb->prepare(
-						"SELECT COUNT(*) FROM {$wpdb->prefix}ds_team_players WHERE team_id = %d AND dorsal = %d",
-						$id, $dorsal
-					)
-				);
+				// Verificar dorsal no tomado en este equipo (solo si se ingresó uno).
+				if ( $dorsal_val !== null ) {
+					$dorsal_taken = $wpdb->get_var( // phpcs:ignore
+						$wpdb->prepare(
+							"SELECT COUNT(*) FROM {$wpdb->prefix}ds_team_players WHERE team_id = %d AND dorsal = %d",
+							$id, $dorsal_val
+						)
+					);
+					if ( $dorsal_taken ) {
+						$error = sprintf( __( 'El dorsal %d ya está asignado en este equipo.', 'soccertrack' ), $dorsal_val );
+					}
+				}
 
-				if ( $dorsal_taken ) {
-					$error = sprintf( __( 'El dorsal %d ya está asignado en este equipo.', 'soccertrack' ), $dorsal );
-				} else {
+				if ( ! $error ) {
 					// Buscar o crear jugador por RUT.
 					$player_id = (int) $wpdb->get_var( // phpcs:ignore
 						$wpdb->prepare( "SELECT id FROM {$wpdb->prefix}ds_players WHERE rut_id = %s", $rut )
@@ -1271,10 +1285,32 @@ final class TournamentPage {
 					if ( ! $player_id ) {
 						$wpdb->insert( // phpcs:ignore
 							"{$wpdb->prefix}ds_players",
-							[ 'rut_id' => $rut, 'first_name' => $nombre, 'last_name' => $apellido ],
-							[ '%s', '%s', '%s' ]
+							[
+								'rut_id'      => $rut,
+								'first_name'  => $nombre,
+								'last_name'   => $apellido,
+								'last_name_m' => $apellido_m,
+								'email'       => $email,
+								'phone'       => $phone,
+							],
+							[ '%s', '%s', '%s', '%s', '%s', '%s' ]
 						);
 						$player_id = (int) $wpdb->insert_id;
+					} else {
+						// Actualizar datos que pudieron cambiar.
+						$wpdb->update( // phpcs:ignore
+							"{$wpdb->prefix}ds_players",
+							[
+								'first_name'  => $nombre,
+								'last_name'   => $apellido,
+								'last_name_m' => $apellido_m,
+								'email'       => $email,
+								'phone'       => $phone,
+							],
+							[ 'id' => $player_id ],
+							[ '%s', '%s', '%s', '%s', '%s' ],
+							[ '%d' ]
+						);
 					}
 
 					// Verificar que no esté ya inscrito en este equipo.
@@ -1316,13 +1352,80 @@ final class TournamentPage {
 						} else {
 							$wpdb->insert( // phpcs:ignore
 								"{$wpdb->prefix}ds_team_players",
-								[ 'team_id' => $id, 'player_id' => $player_id, 'dorsal' => $dorsal ],
-								[ '%d', '%d', '%d' ]
+								[
+									'team_id'   => $id,
+									'player_id' => $player_id,
+									'dorsal'    => $dorsal_val,
+									'area'      => $area,
+									'cargo'     => $cargo,
+								],
+								[ '%d', '%d', null === $dorsal_val ? null : '%d', '%s', '%s' ]
 							);
 							$notice = $conflict_team ? 'added_exception' : 'added';
 						}
 					}
+				} // end if ( ! $error )
+			}
+		}
+
+		// ── Editar jugador de la nómina ──────────────────────────────────
+		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_edit_player'] ) ) {
+			check_admin_referer( 'st_edit_player_' . $id );
+
+			$edit_player_id = absint( $_POST['player_id'] ?? 0 );
+			$edit_tp_id     = absint( $_POST['tp_id'] ?? 0 );
+			$edit_first     = sanitize_text_field( $_POST['first_name'] ?? '' );
+			$edit_last      = sanitize_text_field( $_POST['last_name'] ?? '' );
+			$edit_last_m    = sanitize_text_field( $_POST['last_name_m'] ?? '' );
+			$edit_email     = sanitize_email( $_POST['email'] ?? '' );
+			$edit_phone     = sanitize_text_field( $_POST['phone'] ?? '' );
+			$edit_dorsal    = absint( $_POST['dorsal'] ?? 0 );
+			$edit_area      = sanitize_text_field( $_POST['area'] ?? '' );
+			$edit_cargo     = sanitize_text_field( $_POST['cargo'] ?? '' );
+			$edit_dorsal_val = $edit_dorsal > 0 ? $edit_dorsal : null;
+
+			if ( ! $edit_first || ! $edit_last ) {
+				$error = __( 'Nombre y apellido son obligatorios.', 'soccertrack' );
+			} elseif ( $edit_dorsal_val !== null ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				$dorsal_taken = $wpdb->get_var(
+					$wpdb->prepare(
+						"SELECT COUNT(*) FROM {$wpdb->prefix}ds_team_players
+						 WHERE team_id = %d AND dorsal = %d AND id != %d",
+						$id, $edit_dorsal_val, $edit_tp_id
+					)
+				);
+				if ( $dorsal_taken ) {
+					$error = sprintf( __( 'El dorsal %d ya está asignado a otro jugador.', 'soccertrack' ), $edit_dorsal_val );
 				}
+			}
+
+			if ( ! $error && $edit_player_id && $edit_tp_id ) {
+				$wpdb->update( // phpcs:ignore
+					"{$wpdb->prefix}ds_players",
+					[
+						'first_name'  => $edit_first,
+						'last_name'   => $edit_last,
+						'last_name_m' => $edit_last_m,
+						'email'       => $edit_email,
+						'phone'       => $edit_phone,
+					],
+					[ 'id' => $edit_player_id ],
+					[ '%s', '%s', '%s', '%s', '%s' ],
+					[ '%d' ]
+				);
+				$wpdb->update( // phpcs:ignore
+					"{$wpdb->prefix}ds_team_players",
+					[
+						'dorsal' => $edit_dorsal_val,
+						'area'   => $edit_area,
+						'cargo'  => $edit_cargo,
+					],
+					[ 'id' => $edit_tp_id, 'team_id' => $id ],
+					[ null === $edit_dorsal_val ? null : '%d', '%s', '%s' ],
+					[ '%d', '%d' ]
+				);
+				$notice = 'updated';
 			}
 		}
 
@@ -1379,7 +1482,9 @@ final class TournamentPage {
 
 		$roster = $wpdb->get_results( // phpcs:ignore
 			$wpdb->prepare(
-				"SELECT tp.id AS tp_id, tp.dorsal, tp.is_suspended, p.id AS player_id, p.rut_id, p.first_name, p.last_name
+				"SELECT tp.id AS tp_id, tp.dorsal, tp.area, tp.cargo, tp.is_suspended,
+				        p.id AS player_id, p.rut_id, p.first_name, p.last_name,
+				        p.last_name_m, p.email, p.phone
 				 FROM {$wpdb->prefix}ds_team_players tp
 				 JOIN {$wpdb->prefix}ds_players p ON p.id = tp.player_id
 				 WHERE tp.team_id = %d
@@ -2021,8 +2126,64 @@ final class TournamentPage {
 			}
 		}
 
+		// ── Acumulación de tarjetas amarillas por jugador (torneo actual) ────────
+		$yellow_accumulation   = [];
+		$yellows_per_suspension = 3; // valor por defecto
+		if ( $tournament_id ) {
+			// Leer umbral configurado para el torneo.
+			$thresh = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				$wpdb->prepare(
+					"SELECT COALESCE(yellows_per_suspension, 3) FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
+					$tournament_id
+				)
+			);
+			$yellows_per_suspension = max( 2, $thresh );
+
+			$yel_team_sql    = '';
+			$yel_team_params = [];
+			if ( $team_filter ) {
+				$yel_team_sql    = ' AND e.team_id = %d';
+				$yel_team_params = [ $team_filter ];
+			}
+
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$yel_rows = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT p.id AS player_id, p.first_name, p.last_name,
+					        t.id AS team_id, t.name AS team_name,
+					        COUNT(e.id) AS yellow_count
+					 FROM {$wpdb->prefix}ds_match_events e
+					 JOIN {$wpdb->prefix}ds_players p ON p.id = e.player_id
+					 JOIN {$wpdb->prefix}ds_teams   t ON t.id = e.team_id
+					 WHERE e.tournament_id = %d
+					   AND e.event_type    = 'yellow_card'
+					   {$yel_team_sql}
+					 GROUP BY p.id, t.id
+					 HAVING COUNT(e.id) > 0
+					 ORDER BY yellow_count DESC, p.last_name ASC",
+					$tournament_id,
+					...$yel_team_params
+				),
+				ARRAY_A
+			) ?: [];
+
+			foreach ( $yel_rows as $yr ) {
+				$total    = (int) $yr['yellow_count'];
+				$in_cycle = $total % $yellows_per_suspension;
+				$yellow_accumulation[] = [
+					'player_id'    => (int) $yr['player_id'],
+					'first_name'   => $yr['first_name'],
+					'last_name'    => $yr['last_name'],
+					'team_id'      => (int) $yr['team_id'],
+					'team_name'    => $yr['team_name'],
+					'yellow_count' => $total,
+					'in_cycle'     => $in_cycle,
+				];
+			}
+		}
+
 		$page_title = __( 'Tribunal Disciplinario', 'soccertrack' );
-		self::render( 'tribunal', compact( 'tournaments', 'sanctions', 'tournament_id', 'round_number', 'available_rounds', 'round_events', 'teams_with_players', 'available_teams', 'team_filter', 'notice', 'error', 'form_player_id', 'form_reason', 'form_matches', 'player_history', 'page_title' ) );
+		self::render( 'tribunal', compact( 'tournaments', 'sanctions', 'tournament_id', 'round_number', 'available_rounds', 'round_events', 'teams_with_players', 'available_teams', 'team_filter', 'notice', 'error', 'form_player_id', 'form_reason', 'form_matches', 'player_history', 'yellow_accumulation', 'yellows_per_suspension', 'page_title' ) );
 	}
 
 	private static function view_carga_fecha(): void {
@@ -2278,15 +2439,6 @@ final class TournamentPage {
 				if ( is_wp_error( $result ) ) {
 					$error = $result->get_error_message();
 				} else {
-					$mailer     = new \SportsLeague\Notifications\MailDispatcher();
-					$role_label = \SportsLeague\Core\UserManager::PLUGIN_ROLES[ $role ] ?? $role;
-					$mailer->notify_welcome(
-						$email,
-						$display_name,
-						$role_label,
-						$password,
-						home_url( '/panel/login/' )
-					);
 					$notice           = 'created';
 					$created_password = $password;
 				}

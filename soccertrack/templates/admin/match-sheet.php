@@ -36,7 +36,8 @@ if ( isset( $can_edit ) && false === $can_edit ) {
 }
 
 function st_player_option( array $player ): string {
-	$name = esc_html( "{$player['dorsal']} — {$player['first_name']} {$player['last_name']}" );
+	$dorsal_prefix = ! empty( $player['dorsal'] ) ? $player['dorsal'] . ' — ' : '';
+	$name          = esc_html( $dorsal_prefix . "{$player['first_name']} {$player['last_name']}" );
 	$susp = (int) $player['is_suspended'] ? ' [SUSPENDIDO]' : '';
 	return "<option value=\"{$player['id']}\" " . disabled( (bool) $player['is_suspended'], true, false ) . ">{$name}{$susp}</option>";
 }
@@ -336,7 +337,7 @@ function st_player_option( array $player ): string {
 				<p class="st-roster-title"><?php echo esc_html( $home_team['name'] ); ?></p>
 				<?php foreach ( $home_players as $p ) : ?>
 					<div class="st-player-row">
-						<span class="st-player-dorsal"><?php echo esc_html( (string) $p['dorsal'] ); ?></span>
+						<span class="st-player-dorsal"><?php echo esc_html( ! empty( $p['dorsal'] ) ? (string) $p['dorsal'] : '—' ); ?></span>
 						<span class="st-player-name <?php echo $p['is_suspended'] ? 'st-player-name--suspended' : ''; ?>">
 							<?php echo esc_html( "{$p['first_name']} {$p['last_name']}" ); ?>
 						</span>
@@ -355,7 +356,7 @@ function st_player_option( array $player ): string {
 				<p class="st-roster-title"><?php echo esc_html( $away_team['name'] ); ?></p>
 				<?php foreach ( $away_players as $p ) : ?>
 					<div class="st-player-row">
-						<span class="st-player-dorsal"><?php echo esc_html( (string) $p['dorsal'] ); ?></span>
+						<span class="st-player-dorsal"><?php echo esc_html( ! empty( $p['dorsal'] ) ? (string) $p['dorsal'] : '—' ); ?></span>
 						<span class="st-player-name <?php echo $p['is_suspended'] ? 'st-player-name--suspended' : ''; ?>">
 							<?php echo esc_html( "{$p['first_name']} {$p['last_name']}" ); ?>
 						</span>
@@ -421,7 +422,10 @@ function st_player_option( array $player ): string {
 								data-team-id="<?php echo esc_attr( (string) $p['_team_id'] ); ?>"
 								<?php disabled( (bool) $p['is_suspended'] ); ?>
 							>
-								<?php echo esc_html( "{$p['dorsal']} — {$p['first_name']} {$p['last_name']} ({$p['_team']})" ); ?>
+								<?php
+								$dorsal_lbl = ! empty( $p['dorsal'] ) ? $p['dorsal'] . ' — ' : '';
+								echo esc_html( $dorsal_lbl . "{$p['first_name']} {$p['last_name']} ({$p['_team']})" );
+								?>
 								<?php echo $p['is_suspended'] ? ' [SUSP.]' : ''; ?>
 							</option>
 						<?php endforeach; ?>

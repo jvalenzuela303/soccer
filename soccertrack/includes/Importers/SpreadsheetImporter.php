@@ -54,7 +54,7 @@ final class SpreadsheetImporter {
 	 *   C8  → Nombre del Equipo
 	 *   Fila 10 → Cabecera de jugadores (ignorada)
 	 *   Filas 11–35:
-	 *     A = N° (se usa como dorsal)
+	 *     A = N° de inscripción (número secuencial — no se almacena como dorsal)
 	 *     B = Nombre
 	 *     C = Apellido Paterno
 	 *     D = Apellido Materno
@@ -207,8 +207,7 @@ final class SpreadsheetImporter {
 				$data[] = trim( (string) $cell->getValue() );
 			}
 
-			// Col índices (0-based): A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7, I=8, J=9
-			$dorsal_raw   = $data[0] ?? '';
+			// Col índices (0-based): A=0 (N° inscripción, ignorado), B=1, C=2, D=3, E=4, F=5, G=6, H=7, I=8, J=9
 			$first_name   = $data[1] ?? '';
 			$last_name    = $data[2] ?? '';
 			$last_name_m  = $data[3] ?? '';
@@ -217,7 +216,6 @@ final class SpreadsheetImporter {
 			$phone        = $data[7] ?? '';
 			$area         = $data[8] ?? '';
 			$cargo        = $data[9] ?? '';
-			$dorsal       = (int) $dorsal_raw;
 
 			// Fila vacía → saltar.
 			if ( empty( $first_name ) && empty( $rut ) ) {
@@ -338,11 +336,11 @@ final class SpreadsheetImporter {
 				[
 					'team_id'   => $team_id,
 					'player_id' => $player_id,
-					'dorsal'    => $dorsal > 0 ? $dorsal : 0,
+					'dorsal'    => null,
 					'area'      => sanitize_text_field( $area ),
 					'cargo'     => sanitize_text_field( $cargo ),
 				],
-				[ '%d', '%d', '%d', '%s', '%s' ]
+				[ '%d', '%d', null, '%s', '%s' ]
 			);
 
 			if ( $wpdb->last_error ) {
@@ -364,103 +362,6 @@ final class SpreadsheetImporter {
 			'updated'   => $updated,
 			'skipped'   => $skipped,
 			'errors'    => $errors,
-		];
-	}
-
-	/**
-	 * Importa equipos desde un archivo CSV/XLSX al torneo indicado.
-	 *
-	 * Formato esperado (fila 1 = cabecera ignorada):
-	 *   A: Nombre del equipo
-	 *   B: Ciudad (opcional)
-	 *   C: Colores (opcional)
-	 *   D: Director Técnico (opcional)
-	 *   E: Delegado Nombre (opcional)
-	 *   F: Delegado Correo (opcional)
-	 *   G: Delegado Celular (opcional)
-	 *
-	 * @param  string $file_path    Ruta absoluta al archivo subido (tmp_name).
-	 * @param  int    $tournament_id ID del torneo destino.
-	 * @return array{imported: int, skipped: int, errors: string[]}
-	 */
-	public function import_teams( string $file_path, int $tournament_id ): array {
-		global $wpdb;
-
-		$sheet    = IOFactory::load( $file_path )->getActiveSheet();
-		$errors   = [];
-		$imported = 0;
-		$skipped  = 0;
-
-		foreach ( $sheet->getRowIterator( 2 ) as $row ) { // Fila 1 = cabecera.
-			$cells = $row->getCellIterator();
-			$cells->setIterateOnlyExistingCells( false );
-			$data = [];
-			foreach ( $cells as $cell ) {
-				$data[] = (string) $cell->getValue();
-			}
-
-			[ $name, $city, $colors, $dt_name, $del_nombre, $del_correo, $del_celular ] = array_pad( $data, 7, '' );
-			$name = trim( $name );
-
-			if ( empty( $name ) ) {
-				continue;
-			}
-
-			// Verificar duplicado dentro del mismo torneo.
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
-			$exists = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT id FROM {$wpdb->prefix}ds_teams WHERE tournament_id = %d AND name = %s",
-					$tournament_id,
-					sanitize_text_field( $name )
-				)
-			);
-
-			if ( $exists ) {
-				$skipped++;
-				continue;
-			}
-
-			// Preparar datos de inserción con campos de delegado condicionales.
-			$del_correo_clean = sanitize_email( $del_correo );
-
-			$insert_data    = [
-				'tournament_id' => $tournament_id,
-				'name'          => sanitize_text_field( $name ),
-			];
-			$insert_formats = [ '%d', '%s' ];
-
-			if ( '' !== trim( $del_nombre ) ) {
-				$insert_data['delegado_nombre'] = sanitize_text_field( $del_nombre );
-				$insert_formats[]               = '%s';
-			}
-			if ( '' !== $del_correo_clean ) {
-				$insert_data['delegado_correo'] = $del_correo_clean;
-				$insert_formats[]               = '%s';
-			}
-			if ( '' !== trim( $del_celular ) ) {
-				$insert_data['delegado_celular'] = sanitize_text_field( $del_celular );
-				$insert_formats[]                = '%s';
-			}
-
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
-			$wpdb->insert(
-				"{$wpdb->prefix}ds_teams",
-				$insert_data,
-				$insert_formats
-			);
-
-			if ( $wpdb->last_error ) {
-				$errors[] = "Error al insertar equipo '{$name}': {$wpdb->last_error}";
-			} else {
-				$imported++;
-			}
-		}
-
-		return [
-			'imported' => $imported,
-			'skipped'  => $skipped,
-			'errors'   => $errors,
 		];
 	}
 

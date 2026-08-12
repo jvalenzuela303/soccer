@@ -267,7 +267,7 @@
 				( p.is_suspended ? ' is-suspended' : '' ) +
 				( p.id === modal.selectedId ? ' is-selected' : '' );
 			li.dataset.playerId = p.id;
-			li.textContent = `${ p.dorsal } — ${ p.name }`;
+			li.textContent = p.dorsal ? `${ p.dorsal } — ${ p.name }` : p.name;
 			if ( p.is_suspended ) {
 				li.textContent += ` ${ i18n.suspended_label ?? '[SUSP.]' }`;
 			}
@@ -287,7 +287,7 @@
 	function filterPlayers() {
 		const q = qs( '#st-modal-search', modal.el ).value.toLowerCase();
 		const filtered = modal.players.filter(
-			p => p.name.toLowerCase().includes( q ) || String( p.dorsal ).includes( q )
+			p => p.name.toLowerCase().includes( q ) || ( p.dorsal && String( p.dorsal ).includes( q ) )
 		);
 		renderPlayerList( filtered );
 	}
@@ -768,6 +768,14 @@
 					showNotice(
 						noticeEl,
 						i18n.red_card_tribunal ?? '🔴 Tarjeta roja registrada. El Tribunal de Disciplina determinará la sanción.',
+						'warning'
+					);
+				} else if ( result.auto_sanction ) {
+					// Acumulación de 3 amarillas → suspensión automática.
+					const s = result.auto_sanction;
+					showNotice(
+						noticeEl,
+						`⚠️ ${ escHtml( result.player_name ) } acumula ${ s.yellow_count } amarillas — queda SUSPENDIDO 1 fecha. El delegado ha sido notificado.`,
 						'warning'
 					);
 				} else {

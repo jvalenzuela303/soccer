@@ -42,7 +42,8 @@ final class DatabaseInstaller {
 			match_time          TIME            NOT NULL DEFAULT '19:00:00',
 			match_time_weekend  TIME            NOT NULL DEFAULT '10:00:00',
 			registration_mode   ENUM('realtime','deferred') NOT NULL DEFAULT 'deferred',
-			fixture_release_days TINYINT(1)     NOT NULL DEFAULT 0,
+			fixture_release_days   TINYINT(1)     NOT NULL DEFAULT 0,
+			yellows_per_suspension TINYINT(1)     NOT NULL DEFAULT 3,
 			created_at          DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY       (id),
 			KEY idx_status (status)
@@ -96,7 +97,7 @@ final class DatabaseInstaller {
 			id           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 			team_id      BIGINT UNSIGNED NOT NULL,
 			player_id    BIGINT UNSIGNED NOT NULL,
-			dorsal       INT UNSIGNED    NOT NULL,
+			dorsal       INT UNSIGNED    NULL DEFAULT NULL,
 			is_suspended TINYINT(1)      NOT NULL DEFAULT 0,
 			PRIMARY KEY (id),
 			UNIQUE KEY team_player_dorsal   (team_id, dorsal),
@@ -520,6 +521,24 @@ final class DatabaseInstaller {
 		$has_player_team = $wpdb->get_var( "SHOW INDEX FROM {$prefix}ds_team_players WHERE Key_name = 'idx_player_team'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		if ( ! $has_player_team ) {
 			$wpdb->query( "ALTER TABLE {$prefix}ds_team_players ADD KEY idx_player_team (player_id, team_id)" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		}
+
+		// v1.9.2 — ds_tournaments: número de amarillas que acumulan una suspensión automática.
+		$has_yellows_col = $wpdb->get_var( "SHOW COLUMNS FROM {$prefix}ds_tournaments LIKE 'yellows_per_suspension'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( ! $has_yellows_col ) {
+			$wpdb->query( "ALTER TABLE {$prefix}ds_tournaments ADD COLUMN yellows_per_suspension TINYINT(1) NOT NULL DEFAULT 3" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		}
+
+		// v1.9.1 — ds_team_players: dorsal pasa a NULLable.
+		// El campo era NOT NULL por error de diseño: la columna "N°" del Excel es el número
+		// de inscripción secuencial, no el número de camiseta del jugador.
+		// En MariaDB los NULL no compiten en UNIQUE KEY, por lo que el índice sigue siendo válido.
+		$dorsal_col = $wpdb->get_row( "SHOW COLUMNS FROM {$prefix}ds_team_players LIKE 'dorsal'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( $dorsal_col && str_contains( (string) $dorsal_col->Null, 'NO' ) ) {
+			// Primero convertir dorsales = 0 (valor por defecto de registros sin número de camiseta) a NULL.
+			$wpdb->query( "UPDATE {$prefix}ds_team_players SET dorsal = NULL WHERE dorsal = 0" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			// Cambiar la columna a NULLable.
+			$wpdb->query( "ALTER TABLE {$prefix}ds_team_players MODIFY COLUMN dorsal INT UNSIGNED NULL DEFAULT NULL" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		}
 	}
 

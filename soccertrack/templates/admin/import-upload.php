@@ -50,7 +50,7 @@ defined( 'ABSPATH' ) || exit;
 					</select>
 				</div>
 				<button type="submit" class="st-btn st-btn--secondary">
-					<?php esc_html_e( 'Cambiar', 'soccertrack' ); ?>
+					<?php esc_html_e( 'Cargar', 'soccertrack' ); ?>
 				</button>
 			</div>
 		</form>

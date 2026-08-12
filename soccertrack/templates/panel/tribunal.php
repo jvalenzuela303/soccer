@@ -5,7 +5,8 @@
  * Variables: $tournaments, $sanctions, $tournament_id, $round_number,
  *            $available_rounds, $round_events, $teams_with_players,
  *            $available_teams, $team_filter,
- *            $player_history, $notice, $error, $page_title
+ *            $player_history, $yellow_accumulation, $yellows_per_suspension,
+ *            $notice, $error, $page_title
  */
 defined( 'ABSPATH' ) || exit;
 
@@ -148,6 +149,76 @@ $render_obs = static function ( string $obs, string $player, string $reason ): s
 </div>
 <?php endif; ?>
 
+<?php /* ── Acumulación de tarjetas amarillas ──────────────────────── */ ?>
+<?php if ( $tournament_id && ! empty( $yellow_accumulation ) ) : ?>
+<div class="st-card" style="border-left:4px solid #f39c12;margin-bottom:20px">
+	<div class="st-card-header">
+		<h2 class="st-card-title">
+			🟨 <?php esc_html_e( 'Acumulación de tarjetas amarillas', 'soccertrack' ); ?>
+		</h2>
+		<span style="font-size:.82rem;color:#888">
+			<?php printf(
+				/* translators: %d: número de amarillas configurado */
+				esc_html__( 'Cada %d amarillas = 1 fecha de suspensión automática', 'soccertrack' ),
+				(int) ( $yellows_per_suspension ?? 3 )
+			); ?>
+		</span>
+	</div>
+	<div class="st-table-wrap">
+		<table class="st-table">
+			<thead>
+				<tr>
+					<th><?php esc_html_e( 'Jugador', 'soccertrack' ); ?></th>
+					<th><?php esc_html_e( 'Equipo', 'soccertrack' ); ?></th>
+					<th style="text-align:center"><?php esc_html_e( 'Total amarillas', 'soccertrack' ); ?></th>
+					<th><?php esc_html_e( 'Ciclo actual', 'soccertrack' ); ?></th>
+				</tr>
+			</thead>
+			<tbody>
+			<?php
+			$threshold = max( 2, (int) ( $yellows_per_suspension ?? 3 ) );
+			foreach ( $yellow_accumulation as $ya ) :
+				$in_cycle = (int) $ya['in_cycle'];
+				// 0 in_cycle after at least 1 full cycle means they just completed one
+				$display_cycle = ( $in_cycle === 0 && (int) $ya['yellow_count'] >= $threshold ) ? $threshold : $in_cycle;
+				$pips      = str_repeat( '🟨', $display_cycle ) . str_repeat( '⬜', $threshold - $display_cycle );
+				$danger    = ( $display_cycle >= $threshold - 1 );
+				$row_style = $danger ? 'background:rgba(243,156,18,.06)' : '';
+			?>
+				<tr style="<?php echo esc_attr( $row_style ); ?>">
+					<td>
+						<strong><?php echo esc_html( $ya['first_name'] . ' ' . $ya['last_name'] ); ?></strong>
+					</td>
+					<td><?php echo esc_html( $ya['team_name'] ); ?></td>
+					<td style="text-align:center;font-weight:700">
+						<?php echo esc_html( (string) $ya['yellow_count'] ); ?>
+					</td>
+					<td>
+						<span style="font-size:1.15rem;letter-spacing:2px"><?php echo $pips; // phpcs:ignore ?></span>
+						<span style="font-size:.78rem;color:<?php echo $danger ? '#c0392b' : '#888'; ?>;margin-left:6px;font-weight:<?php echo $danger ? '700' : 'normal'; ?>">
+							<?php echo esc_html( (string) $display_cycle ); ?> / <?php echo esc_html( (string) $threshold ); ?>
+							<?php if ( $display_cycle === $threshold ) : ?>
+							— <em><?php esc_html_e( 'suspensión generada', 'soccertrack' ); ?></em>
+							<?php elseif ( $display_cycle === $threshold - 1 ) : ?>
+							— <em><?php esc_html_e( 'próxima amarilla suspende', 'soccertrack' ); ?></em>
+							<?php endif; ?>
+						</span>
+					</td>
+				</tr>
+			<?php endforeach; ?>
+			</tbody>
+		</table>
+	</div>
+</div>
+<?php elseif ( $tournament_id ) : ?>
+<div class="st-card" style="border-left:4px solid #f39c12;margin-bottom:20px">
+	<div class="st-card-header">
+		<h2 class="st-card-title">🟨 <?php esc_html_e( 'Acumulación de tarjetas amarillas', 'soccertrack' ); ?></h2>
+	</div>
+	<p class="st-empty-msg"><?php esc_html_e( 'Sin tarjetas amarillas registradas en este torneo.', 'soccertrack' ); ?></p>
+</div>
+<?php endif; ?>
+
 <?php /* ── Registrar sanción ──────────────────────────────────────── */ ?>
 <div class="st-card">
 	<div class="st-card-header">
@@ -192,7 +263,10 @@ $render_obs = static function ( string $obs, string $player, string $reason ): s
 									value="<?php echo esc_attr( (string) $p['id'] ); ?>"
 									data-team-id="<?php echo esc_attr( (string) $group['team']['id'] ); ?>"
 									<?php selected( $fp_player_id, (int) $p['id'] ); ?>>
-									<?php echo esc_html( "{$p['dorsal']} — {$p['first_name']} {$p['last_name']}" ); ?>
+									<?php
+									$dorsal_lbl = ! empty( $p['dorsal'] ) ? $p['dorsal'] . ' — ' : '';
+									echo esc_html( $dorsal_lbl . "{$p['first_name']} {$p['last_name']}" );
+									?>
 								</option>
 							<?php endforeach; ?>
 						</optgroup>
