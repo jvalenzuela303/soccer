@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual Administrador — SoccerTrack</title>
+<style>
+  :root {
+    --green: #3CBC20; --green2: #6DB728;
+    --navy: #0E0C19; --charcoal: #3C3A47; --bg: #f5f7f5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--charcoal); line-height: 1.6; }
+  header { background: var(--navy); color: #fff; padding: 1.5rem 3rem; border-bottom: 4px solid var(--green); display: flex; align-items: center; gap: 1rem; }
+  header .back { color: var(--green); text-decoration: none; font-size: .9rem; }
+  header h1 { font-size: 1.6rem; }
+  header .badge { background: var(--green); color: #fff; border-radius: 20px; padding: .2rem .8rem; font-size: .8rem; margin-left: .5rem; }
+  .layout { display: flex; max-width: 1100px; margin: 2rem auto; padding: 0 1.5rem; gap: 2rem; }
+  nav.sidebar { width: 220px; flex-shrink: 0; }
+  nav.sidebar ul { list-style: none; position: sticky; top: 1rem; }
+  nav.sidebar li a { display: block; padding: .5rem .8rem; border-radius: 6px; text-decoration: none; color: var(--charcoal); font-size: .9rem; transition: background .12s; }
+  nav.sidebar li a:hover { background: #e8f5e4; color: var(--green); }
+  nav.sidebar li a.active { background: var(--green); color: #fff; }
+  nav.sidebar h3 { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: #999; padding: .6rem .8rem .2rem; margin-top: .8rem; }
+  article { flex: 1; min-width: 0; }
+  section { background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.07); padding: 2rem; margin-bottom: 1.8rem; }
+  section h2 { font-size: 1.3rem; color: var(--navy); margin-bottom: 1rem; border-bottom: 2px solid #e8f5e4; padding-bottom: .5rem; }
+  section h3 { font-size: 1rem; color: var(--green2); margin: 1.2rem 0 .5rem; }
+  p { margin-bottom: .8rem; font-size: .93rem; }
+  ul, ol { padding-left: 1.4rem; margin-bottom: .8rem; font-size: .93rem; }
+  li { margin-bottom: .3rem; }
+  .tip { background: #e8f5e4; border-left: 4px solid var(--green); padding: .8rem 1rem; border-radius: 0 6px 6px 0; font-size: .88rem; margin: .8rem 0; }
+  .warn { background: #fff8e1; border-left: 4px solid #f9a825; padding: .8rem 1rem; border-radius: 0 6px 6px 0; font-size: .88rem; margin: .8rem 0; }
+  code { background: #f0f0f0; border-radius: 4px; padding: .1rem .4rem; font-family: monospace; font-size: .85rem; }
+  table { width: 100%; border-collapse: collapse; font-size: .88rem; margin: .8rem 0; }
+  th { background: var(--navy); color: #fff; padding: .5rem .8rem; text-align: left; }
+  td { padding: .45rem .8rem; border-bottom: 1px solid #eee; }
+  tr:hover td { background: #fafff9; }
+  footer { text-align: center; padding: 1.5rem; font-size: .8rem; color: #aaa; }
+  footer a { color: var(--green); }
+</style>
+</head>
+<body>
+<header>
+  <a class="back" href="index.html">← Índice</a>
+  <h1>Manual del Administrador <span class="badge">🛡️ administrator</span></h1>
+</header>
+<div class="layout">
+  <nav class="sidebar">
+    <h3>Contenido</h3>
+    <ul>
+      <li><a href="#acceso">Acceso y rol</a></li>
+      <li><a href="#panel">Panel de control</a></li>
+      <li><a href="#torneos">Torneos</a></li>
+      <li><a href="#equipos">Equipos y jugadores</a></li>
+      <li><a href="#fixture">Fixture</a></li>
+      <li><a href="#resultados">Resultados</a></li>
+      <li><a href="#usuarios">Usuarios y roles</a></li>
+      <li><a href="#staff">Personal (árbitros)</a></li>
+      <li><a href="#tribunal">Tribunal</a></li>
+      <li><a href="#importar">Importación masiva</a></li>
+      <li><a href="#recintos">Recintos</a></li>
+    </ul>
+  </nav>
+  <article>
+
+    <section id="acceso">
+      <h2>Acceso y permisos</h2>
+      <p>El rol <strong>Administrador</strong> (<code>administrator</code>) tiene acceso completo e irrestricto a todas las funciones del sistema. Es el único rol que puede:</p>
+      <ul>
+        <li>Crear, editar y eliminar usuarios de cualquier rol.</li>
+        <li>Activar, finalizar y gestionar torneos sin restricciones.</li>
+        <li>Editar planillas de partido ya cerradas (reabrir resultados).</li>
+        <li>Acceder a la configuración avanzada de WordPress.</li>
+      </ul>
+      <div class="tip">Para iniciar sesión accede a <code>/wp-login.php</code> con tus credenciales de administrador, luego navega a <code>/panel/</code> para el panel de torneos.</div>
+    </section>
+
+    <section id="panel">
+      <h2>Panel de control</h2>
+      <p>La URL base del panel es <code>/panel/</code>. Desde el dashboard verás accesos rápidos a:</p>
+      <ul>
+        <li><strong>Torneos</strong> — listado y creación de torneos.</li>
+        <li><strong>Partidos del torneo</strong> — vista de resultados por torneo y fecha.</li>
+        <li><strong>Gestionar usuarios</strong> — alta y baja de coordinadores y veedores.</li>
+        <li><strong>Recintos</strong> — catálogo de canchas/estadios.</li>
+        <li><strong>Importar datos</strong> — carga masiva de equipos y jugadores.</li>
+      </ul>
+    </section>
+
+    <section id="torneos">
+      <h2>Gestión de Torneos</h2>
+      <p>URL: <code>/panel/torneos/</code></p>
+      <h3>Crear un torneo</h3>
+      <ol>
+        <li>Completa el formulario: <em>Nombre</em>, fechas de inicio/fin y formato.</li>
+        <li>Los formatos disponibles son: <em>Todos contra todos</em>, <em>Todos contra todos + Play-offs</em>, <em>Fase de grupos</em> y <em>Eliminación directa</em>.</li>
+        <li>Haz clic en <strong>+ Crear torneo</strong>.</li>
+      </ol>
+      <h3>Estados del torneo</h3>
+      <table>
+        <thead><tr><th>Estado</th><th>Descripción</th><th>Transición</th></tr></thead>
+        <tbody>
+          <tr><td>Borrador</td><td>Configuración inicial, sin partidos públicos.</td><td>→ Activo (requiere ≥ 2 equipos)</td></tr>
+          <tr><td>Activo</td><td>Torneo en curso, partidos visibles al público.</td><td>→ Finalizado</td></tr>
+          <tr><td>Finalizado</td><td>Torneo cerrado, resultados congelados.</td><td>(sin transición)</td></tr>
+        </tbody>
+      </table>
+      <div class="warn">Para activar un torneo debe tener al menos 2 equipos inscritos. Un torneo finalizado no puede retroceder a estados anteriores.</div>
+      <h3>Gestionar un torneo</h3>
+      <p>El botón <strong>Gestionar</strong> abre la ficha del torneo (<code>/panel/torneo/{id}/</code>) con pestañas para: equipos, fixture, posiciones, tribunal y configuración de horario.</p>
+    </section>
+
+    <section id="equipos">
+      <h2>Equipos y Jugadores</h2>
+      <p>Dentro de la ficha del torneo (<code>/panel/torneo/{id}/</code>):</p>
+      <h3>Agregar equipos</h3>
+      <ul>
+        <li>Ingresa el nombre del equipo y haz clic en <strong>Agregar equipo</strong>.</li>
+        <li>O usa la importación masiva (CSV) en <code>/panel/importar/</code>.</li>
+      </ul>
+      <h3>Gestionar jugadores</h3>
+      <ul>
+        <li>Haz clic en el nombre de un equipo para ver y editar su nómina.</li>
+        <li>Añade jugadores con nombre, dorsal y posición.</li>
+        <li>Jugadores con suspensiones activas aparecen bloqueados automáticamente.</li>
+      </ul>
+    </section>
+
+    <section id="fixture">
+      <h2>Fixture</h2>
+      <p>En la ficha del torneo, pestaña <strong>Fixture</strong>:</p>
+      <ol>
+        <li>Haz clic en <strong>Generar Fixture</strong> para crear el calendario automáticamente (round-robin).</li>
+        <li>Los partidos quedan en estado <em>Programado</em>.</li>
+        <li>Puedes editar hora, recinto y árbitro de cada partido desde la planilla (<code>/panel/partido/{id}/</code>).</li>
+      </ol>
+      <div class="tip">El fixture considera los recintos disponibles del torneo. Configúralos primero en <code>/panel/recintos/</code>.</div>
+    </section>
+
+    <section id="resultados">
+      <h2>Ingreso y edición de resultados</h2>
+      <p>URL: <code>/panel/mis-partidos/</code> o directamente en <code>/panel/partido/{id}/</code></p>
+      <ul>
+        <li>Usa los filtros <strong>Torneo</strong> y <strong>Fecha</strong> para navegar a la jornada deseada.</li>
+        <li>Haz clic en <strong>Ver planilla</strong> para abrir un partido.</li>
+        <li>En la planilla puedes registrar: marcador final, goles (con jugador y minuto), tarjetas amarillas/rojas, árbitro y planillero.</li>
+        <li>El botón <strong>Guardar resultado</strong> cierra la planilla y recalcula posiciones.</li>
+      </ul>
+      <div class="tip">Como administrador puedes <strong>reabrir y editar</strong> una planilla ya guardada. El sistema detecta que el partido estaba finalizado y evita doble-descuento de suspensiones.</div>
+    </section>
+
+    <section id="usuarios">
+      <h2>Gestión de Usuarios</h2>
+      <p>URL: <code>/panel/usuarios/</code></p>
+      <h3>Roles disponibles</h3>
+      <table>
+        <thead><tr><th>Rol</th><th>Slug</th><th>Descripción</th></tr></thead>
+        <tbody>
+          <tr><td>Administrador</td><td><code>administrator</code></td><td>Acceso total.</td></tr>
+          <tr><td>Coordinador de Liga</td><td><code>ds_coordinador</code></td><td>Gestión completa de torneos y resultados.</td></tr>
+          <tr><td>Veedor de Resultados</td><td><code>ds_veedor</code></td><td>Solo ingreso de resultados.</td></tr>
+        </tbody>
+      </table>
+      <h3>Crear usuario</h3>
+      <ol>
+        <li>Ingresa nombre de usuario, correo, contraseña y selecciona el rol.</li>
+        <li>Haz clic en <strong>Crear usuario</strong>.</li>
+      </ol>
+      <h3>Eliminar usuario</h3>
+      <p>Haz clic en el botón <strong>Eliminar</strong> junto al usuario. No se puede eliminar el administrador principal.</p>
+    </section>
+
+    <section id="staff">
+      <h2>Personal del Torneo (Árbitros y Planilleros)</h2>
+      <p>URL: <code>/panel/usuarios/</code> → sección <em>Personal del Torneo</em></p>
+      <p>Los árbitros y planilleros son <strong>informativos</strong> (no tienen acceso al sistema). Se gestionan en un catálogo:</p>
+      <ol>
+        <li>Ingresa el nombre completo y selecciona el tipo (Árbitro / Planillero).</li>
+        <li>Haz clic en <strong>Agregar</strong>.</li>
+        <li>Al editar una planilla de partido, podrás seleccionar árbitro y planillero desde este catálogo (o escribir el nombre manualmente).</li>
+      </ol>
+      <p>Puedes eliminar entradas del catálogo con el botón <strong>Eliminar</strong>.</p>
+    </section>
+
+    <section id="tribunal">
+      <h2>Tribunal de Disciplina</h2>
+      <p>URL: <code>/panel/torneo/{id}/</code> → pestaña <strong>Tribunal</strong></p>
+      <ul>
+        <li>Visualiza tarjetas acumuladas por jugador.</li>
+        <li>El sistema aplica suspensiones automáticamente al guardar planillas.</li>
+        <li>Puedes agregar o modificar sanciones manualmente desde esta sección.</li>
+      </ul>
+    </section>
+
+    <section id="importar">
+      <h2>Importación Masiva</h2>
+      <p>URL: <code>/panel/importar/</code></p>
+      <p>Importa equipos y jugadores desde archivos CSV:</p>
+      <ul>
+        <li><strong>Equipos:</strong> columnas <code>nombre</code>, <code>ciudad</code> (opcional).</li>
+        <li><strong>Jugadores:</strong> columnas <code>nombre</code>, <code>dorsal</code>, <code>posicion</code>, <code>equipo</code>.</li>
+      </ul>
+      <div class="tip">Descarga la plantilla CSV de ejemplo antes de preparar tu archivo.</div>
+    </section>
+
+    <section id="recintos">
+      <h2>Recintos</h2>
+      <p>URL: <code>/panel/recintos/</code></p>
+      <ul>
+        <li>Agrega canchas o estadios con nombre y dirección.</li>
+        <li>Asocia recintos al torneo desde la ficha del torneo.</li>
+        <li>El generador de fixture usará los recintos asignados al distribuir partidos.</li>
+      </ul>
+    </section>
+
+  </article>
+</div>
+<footer>SoccerTrack &copy; 2026 · <a href="index.html">Volver al índice</a></footer>
+</body>
+</html>

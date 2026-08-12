@@ -181,6 +181,19 @@ final class DatabaseInstaller {
 			KEY idx_tourn_status_player   (tournament_id, status, player_id)
 		) ENGINE=InnoDB {$c};" );
 
+		// 10. Brackets de play-offs (configuración de copas por torneo).
+		dbDelta( "CREATE TABLE {$wpdb->prefix}ds_playoff_brackets (
+			id            BIGINT UNSIGNED  NOT NULL AUTO_INCREMENT,
+			tournament_id BIGINT UNSIGNED  NOT NULL,
+			name          VARCHAR(100)     NOT NULL,
+			rank_from     TINYINT UNSIGNED NOT NULL,
+			rank_to       TINYINT UNSIGNED NOT NULL,
+			sort_order    TINYINT UNSIGNED NOT NULL DEFAULT 0,
+			created_at    DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (id),
+			KEY idx_tournament (tournament_id)
+		) ENGINE=InnoDB {$c};" );
+
 		update_option( 'soccertrack_db_version', SOCCERTRACK_DB_VERSION );
 
 		// Aplicar migraciones de índices que dbDelta no puede modificar (drop+add).
@@ -567,6 +580,16 @@ final class DatabaseInstaller {
 			$wpdb->query( "UPDATE {$prefix}ds_team_players SET dorsal = NULL WHERE dorsal = 0" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			// Cambiar la columna a NULLable.
 			$wpdb->query( "ALTER TABLE {$prefix}ds_team_players MODIFY COLUMN dorsal INT UNSIGNED NULL DEFAULT NULL" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		}
+
+		// v1.9.4 — ds_matches: agregar bracket_id para play-offs con múltiples brackets.
+		$has_bracket_id = $wpdb->get_var( "SHOW COLUMNS FROM {$prefix}ds_matches LIKE 'bracket_id'" ); // phpcs:ignore
+		if ( ! $has_bracket_id ) {
+			$wpdb->query( // phpcs:ignore
+				"ALTER TABLE {$prefix}ds_matches
+				 ADD COLUMN bracket_id BIGINT UNSIGNED NULL DEFAULT NULL AFTER phase,
+				 ADD KEY idx_bracket (bracket_id)"
+			);
 		}
 	}
 

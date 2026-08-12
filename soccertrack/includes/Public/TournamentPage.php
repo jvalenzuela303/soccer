@@ -984,6 +984,7 @@ final class TournamentPage {
 				"SELECT m.id, m.round_number, m.home_team_id, m.away_team_id, m.venue_id, m.court_id,
 				        m.referee_user_id, m.planillero_user_id, m.match_datetime, m.home_score, m.away_score, m.status,
 				        COALESCE(m.phase, 'regular') AS phase,
+				        m.bracket_id,
 				        ht.name AS home_team, at.name AS away_team
 				 FROM {$wpdb->prefix}ds_matches m
 				 JOIN {$wpdb->prefix}ds_teams ht ON ht.id = m.home_team_id
@@ -1045,7 +1046,43 @@ final class TournamentPage {
 
 		$playoffs_status = compact( 'is_playoffs_format', 'all_regular_done', 'has_semifinals', 'both_sf_done', 'has_finals' );
 
-		self::render( 'torneo-detalle', compact( 'tournament', 'teams', 'matches', 'notice', 'error', 'venues', 'tournament_venue_ids', 'courts_by_venue', 'referees', 'planilleros', 'page_title', 'playoffs_status' ) );
+		// ── Brackets configurados para este torneo ───────────────────────────
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$brackets_raw = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT b.id, b.name, b.rank_from, b.rank_to, b.sort_order,
+				        COUNT(m.id) > 0 AS locked
+				 FROM {$wpdb->prefix}ds_playoff_brackets b
+				 LEFT JOIN {$wpdb->prefix}ds_matches m ON m.bracket_id = b.id
+				 WHERE b.tournament_id = %d
+				 GROUP BY b.id
+				 ORDER BY b.sort_order ASC, b.id ASC",
+				$id
+			),
+			ARRAY_A
+		);
+
+		// Enriquecer cada bracket con su estado de playoffs.
+		$brackets = [];
+		foreach ( $brackets_raw ?: [] as $b ) {
+			$bid          = (int) $b['id'];
+			$b_semis      = array_filter( $matches, static fn( $m ) => (int) ( $m['bracket_id'] ?? 0 ) === $bid && ( $m['phase'] ?? '' ) === 'semifinal' );
+			$b_has_semis  = ! empty( $b_semis );
+			$b_semis_done = $b_has_semis && count( array_filter( $b_semis, static fn( $m ) => ! in_array( $m['status'], [ 'finished', 'suspended', 'postponed' ], true ) ) ) === 0;
+			$b_has_finals = ! empty( array_filter( $matches, static fn( $m ) => (int) ( $m['bracket_id'] ?? 0 ) === $bid && in_array( $m['phase'] ?? '', [ 'final', 'third_place' ], true ) ) );
+
+			$brackets[] = array_merge( $b, [
+				'locked'       => (bool) (int) $b['locked'],
+				'rank_from'    => (int) $b['rank_from'],
+				'rank_to'      => (int) $b['rank_to'],
+				'sort_order'   => (int) $b['sort_order'],
+				'has_semis'    => $b_has_semis,
+				'semis_done'   => $b_semis_done,
+				'has_finals'   => $b_has_finals,
+			] );
+		}
+
+		self::render( 'torneo-detalle', compact( 'tournament', 'teams', 'matches', 'notice', 'error', 'venues', 'tournament_venue_ids', 'courts_by_venue', 'referees', 'planilleros', 'page_title', 'playoffs_status', 'brackets' ) );
 	}
 
 	/**

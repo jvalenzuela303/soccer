@@ -158,6 +158,53 @@ final class StandingsCalculator {
 				[ $b['pts'], $b['dg'], $b['gf'] ] <=> [ $a['pts'], $a['dg'], $a['gf'] ]
 		);
 
-		return array_values( $table );
+		$sorted = array_values( $table );
+
+		// Enriquecer con bracket si el torneo tiene brackets configurados
+		// y la fase regular está completa.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$brackets = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT id, name, rank_from, rank_to
+				 FROM {$wpdb->prefix}ds_playoff_brackets
+				 WHERE tournament_id = %d
+				 ORDER BY rank_from ASC",
+				$tournament_id
+			),
+			ARRAY_A
+		);
+
+		$regular_pending = 0;
+		if ( ! empty( $brackets ) ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$regular_pending = (int) $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches
+					 WHERE tournament_id = %d AND phase = 'regular' AND status NOT IN ('finished', 'suspended', 'postponed')",
+					$tournament_id
+				)
+			);
+		}
+
+		foreach ( $sorted as $rank_idx => &$row ) {
+			$row['bracket_id']   = null;
+			$row['bracket_name'] = null;
+
+			if ( empty( $brackets ) || $regular_pending > 0 ) {
+				continue;
+			}
+
+			$rank = $rank_idx + 1; // 1-based.
+			foreach ( $brackets as $bracket ) {
+				if ( $rank >= (int) $bracket['rank_from'] && $rank <= (int) $bracket['rank_to'] ) {
+					$row['bracket_id']   = (int) $bracket['id'];
+					$row['bracket_name'] = $bracket['name'];
+					break;
+				}
+			}
+		}
+		unset( $row );
+
+		return $sorted;
 	}
 }
