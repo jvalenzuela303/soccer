@@ -661,6 +661,179 @@ final class FixtureGenerator {
 	}
 
 	/**
+	 * Genera el fixture completo de un torneo en Fase de Grupos.
+	 *
+	 * Flujo:
+	 *  1. Carga y baraja equipos (Fisher-Yates).
+	 *  2. Distribuye en N grupos (letras A, B, C…). Si total no divide exactamente,
+	 *     los últimos grupos tienen un equipo menos (diferencia máxima de 1).
+	 *  3. Actualiza ds_teams.group_label.
+	 *  4. Por cada grupo: genera round-robin completo con phase='regular', group_label='X'.
+	 *  5. Asigna canchas.
+	 *
+	 * @param  array{id:int,match_weekday:int,match_weekdays:string,match_time:string,match_duration:int,group_count:int,teams_advancing_per_group:int,has_third_place:int} $tournament
+	 * @param  int $venue_id
+	 * @return array{match_ids: int[], error?: string}
+	 */
+	public function generate_group_stage( array $tournament, int $venue_id ): array {
+		global $wpdb;
+
+		$tournament_id = (int) $tournament['id'];
+		$group_count   = max( 2, min( 8, (int) ( $tournament['group_count'] ?? 2 ) ) );
+		$weekdays      = $this->weekdays_from_tournament( $tournament );
+		$time          = (string) ( $tournament['match_time'] ?? '19:00:00' );
+		$duration      = $this->duration_from_tournament( $tournament );
+		$num_courts    = $this->count_courts( $venue_id );
+
+		// 1. Cargar equipos.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$team_ids = array_map(
+			'intval',
+			$wpdb->get_col(
+				$wpdb->prepare(
+					"SELECT id FROM {$wpdb->prefix}ds_teams WHERE tournament_id = %d ORDER BY id ASC",
+					$tournament_id
+				)
+			)
+		);
+
+		$total = count( $team_ids );
+
+		// 2. Validar mínimo 2 equipos por grupo.
+		if ( $total < $group_count * 2 ) {
+			return [
+				'match_ids' => [],
+				'error'     => sprintf(
+					'Equipos insuficientes para %d grupos (mínimo %d equipos).',
+					$group_count,
+					$group_count * 2
+				),
+			];
+		}
+
+		// 3. Verificar que no exista fixture previo.
+		$existing = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches WHERE tournament_id = %d",
+				$tournament_id
+			)
+		);
+		if ( $existing > 0 ) {
+			return [ 'match_ids' => [], 'error' => 'Ya existen partidos generados para este torneo.' ];
+		}
+
+		// 4. Fisher-Yates shuffle.
+		for ( $i = $total - 1; $i > 0; $i-- ) {
+			$j             = random_int( 0, $i );
+			[ $team_ids[ $i ], $team_ids[ $j ] ] = [ $team_ids[ $j ], $team_ids[ $i ] ];
+		}
+
+		// 5. Distribuir en grupos: ceil() para los primeros grupos, el resto tiene 1 menos.
+		$base_size    = (int) ceil( $total / $group_count );
+		$groups       = [];
+		$group_labels = range( 'A', chr( ord( 'A' ) + $group_count - 1 ) );
+		$offset       = 0;
+		foreach ( $group_labels as $label ) {
+			$remaining   = $total - $offset;
+			$groups_left = $group_count - count( $groups );
+			$size        = (int) ceil( $remaining / $groups_left );
+			$groups[ $label ] = array_slice( $team_ids, $offset, $size );
+			$offset += $size;
+		}
+
+		// 6. Actualizar group_label en ds_teams.
+		foreach ( $groups as $label => $group_team_ids ) {
+			foreach ( $group_team_ids as $tid ) {
+				$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+					"{$wpdb->prefix}ds_teams",
+					[ 'group_label' => $label ],
+					[ 'id' => $tid ],
+					[ '%s' ],
+					[ '%d' ]
+				);
+			}
+		}
+
+		// 7. Generar round-robin por grupo; round_index continuo a través de grupos
+		//    para que los partidos de cada grupo caigan en fechas distintas.
+		$all_match_ids  = [];
+		$round_offset   = 0; // Acumula rondas para calcular fechas escaladas por grupo.
+
+		foreach ( $groups as $label => $group_team_ids ) {
+			$n     = count( $group_team_ids );
+			$teams = $group_team_ids;
+
+			// Número impar → agregar null (bye).
+			if ( $n % 2 !== 0 ) {
+				$teams[] = null;
+				$n++;
+			}
+
+			$rounds_in_group = $n - 1;
+
+			for ( $r = 1; $r <= $rounds_in_group; $r++ ) {
+				$pairs = [];
+				for ( $i = 0; $i < $n / 2; $i++ ) {
+					$home = $teams[ $i ];
+					$away = $teams[ $n - 1 - $i ];
+					if ( $home === null || $away === null ) {
+						continue;
+					}
+					if ( $r % 2 === 0 ) {
+						[ $home, $away ] = [ $away, $home ];
+					}
+					$pairs[] = [ 'home' => $home, 'away' => $away ];
+				}
+
+				$round_index  = $round_offset + $r - 1;
+				$n_pairs      = count( $pairs );
+				$num_batches  = max( 1, (int) ceil( $n_pairs / $num_courts ) );
+
+				foreach ( $pairs as $idx => $pair ) {
+					$base_batch    = (int) floor( $idx / $num_courts );
+					$rotated_batch = ( $base_batch + ( $r - 1 ) ) % $num_batches;
+					$dt            = $this->next_match_datetime( $weekdays, $time, $rotated_batch, $round_index, $duration );
+
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+					$wpdb->insert(
+						"{$wpdb->prefix}ds_matches",
+						[
+							'tournament_id'  => $tournament_id,
+							'round_number'   => $round_offset + $r, // Jornada global.
+							'home_team_id'   => $pair['home'],
+							'away_team_id'   => $pair['away'],
+							'venue_id'       => $venue_id,
+							'court_id'       => 0,
+							'match_datetime' => $dt,
+							'status'         => 'scheduled',
+							'phase'          => 'regular',
+							'group_label'    => $label,
+						],
+						[ '%d', '%d', '%d', '%d', '%d', '%d', '%s', '%s', '%s', '%s' ]
+					);
+
+					if ( $wpdb->insert_id ) {
+						$all_match_ids[] = (int) $wpdb->insert_id;
+					}
+				}
+
+				// Rotación circular (algoritmo Round-Robin estándar).
+				$fixed = array_shift( $teams );
+				$last  = array_pop( $teams );
+				array_unshift( $teams, $last );
+				array_unshift( $teams, $fixed );
+			}
+
+			$round_offset += $rounds_in_group;
+		}
+
+		// 8. Asignar canchas.
+		$this->assign_courts( $all_match_ids, $venue_id );
+
+		return [ 'match_ids' => $all_match_ids ];
+	}
+
+	/**
 	 * Genera la Final y el partido por el 3.er puesto de un bracket específico.
 	 *
 	 * Requiere que ambas semi-finales del bracket estén finalizadas.
