@@ -361,7 +361,8 @@
 	</form>
 </div>
 
-<?php /* ── Brackets de Playoffs ──────────────────────────────────────── */ ?>
+<?php /* ── Brackets de Playoffs (solo formato round_robin_playoffs) ─── */ ?>
+<?php if ( ! empty( $playoffs_status['is_playoffs_format'] ) ) : ?>
 <div class="st-card" style="margin-bottom:20px" id="st-brackets-card">
 	<div class="st-card-header">
 		<h2 class="st-card-title">🏅 <?php esc_html_e( 'Brackets de Playoffs', 'soccertrack' ); ?></h2>
@@ -468,6 +469,8 @@
 		</div>
 	</div>
 </div>
+
+<?php endif; /* is_playoffs_format — brackets card */ ?>
 
 <?php /* ── Recintos del torneo ─────────────────────────────────────── */ ?>
 <div class="st-card" style="margin-bottom:20px">
