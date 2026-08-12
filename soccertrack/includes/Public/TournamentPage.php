@@ -1058,6 +1058,24 @@ final class TournamentPage {
 
 		$playoffs_status = compact( 'is_playoffs_format', 'all_regular_done', 'has_semifinals', 'both_sf_done', 'has_finals' );
 
+		// ── Estado fase eliminatoria (group_stage) ───────────────────────────
+		$is_group_stage  = ( $tournament['format'] ?? '' ) === 'group_stage';
+		$has_group_label = $is_group_stage && ! empty( array_filter( $teams, static fn( $t ) => ! empty( $t['group_label'] ) ) );
+		$qf_ms           = array_filter( $matches, static fn( $m ) => ( $m['phase'] ?? '' ) === 'quarterfinal' );
+		$sf_ms           = array_filter( $matches, static fn( $m ) => ( $m['phase'] ?? '' ) === 'semifinal' );
+		$final_ms        = array_filter( $matches, static fn( $m ) => in_array( $m['phase'] ?? '', [ 'final', 'third_place' ], true ) );
+		$group_stage_status = [
+			'is_group_stage'    => $is_group_stage,
+			'has_group_label'   => $has_group_label,
+			'all_regular_done'  => $is_group_stage && ! empty( $regular_matches ) &&
+			                       count( array_filter( $regular_matches, static fn( $m ) => ! in_array( $m['status'], [ 'finished', 'suspended', 'postponed' ], true ) ) ) === 0,
+			'has_quarterfinals' => ! empty( $qf_ms ),
+			'all_qf_done'       => ! empty( $qf_ms ) && count( array_filter( $qf_ms, static fn( $m ) => ! in_array( $m['status'], [ 'finished', 'suspended', 'postponed' ], true ) ) ) === 0,
+			'has_semifinals'    => ! empty( $sf_ms ),
+			'all_sf_done'       => ! empty( $sf_ms ) && count( array_filter( $sf_ms, static fn( $m ) => ! in_array( $m['status'], [ 'finished', 'suspended', 'postponed' ], true ) ) ) === 0,
+			'has_finals'        => ! empty( $final_ms ),
+		];
+
 		// ── Brackets configurados para este torneo ───────────────────────────
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$brackets_raw = $wpdb->get_results(
@@ -1094,7 +1112,7 @@ final class TournamentPage {
 			] );
 		}
 
-		self::render( 'torneo-detalle', compact( 'tournament', 'teams', 'matches', 'notice', 'error', 'venues', 'tournament_venue_ids', 'courts_by_venue', 'referees', 'planilleros', 'page_title', 'playoffs_status', 'brackets' ) );
+		self::render( 'torneo-detalle', compact( 'tournament', 'teams', 'matches', 'notice', 'error', 'venues', 'tournament_venue_ids', 'courts_by_venue', 'referees', 'planilleros', 'page_title', 'playoffs_status', 'brackets', 'group_stage_status' ) );
 	}
 
 	/**

@@ -361,6 +361,144 @@
 	</form>
 </div>
 
+<?php /* ── Fase Eliminatoria (solo formato group_stage) ──────────────── */ ?>
+<?php if ( ! empty( $group_stage_status['is_group_stage'] ) ) : ?>
+<div class="st-card" style="margin-bottom:20px" id="st-group-stage-card">
+	<div class="st-card-header" style="display:flex;justify-content:space-between;align-items:center">
+		<h2 class="st-card-title" style="margin:0"><?php esc_html_e( 'Grupos', 'soccertrack' ); ?></h2>
+	</div>
+
+	<?php if ( ! $group_stage_status['has_group_label'] ) : ?>
+		<p class="st-empty-msg"><?php esc_html_e( 'Genera el fixture primero para ver los grupos.', 'soccertrack' ); ?></p>
+	<?php else : ?>
+		<?php
+		// Agrupar equipos por group_label.
+		$teams_by_group = [];
+		foreach ( $teams as $t ) {
+			if ( ! empty( $t['group_label'] ) ) {
+				$teams_by_group[ $t['group_label'] ][] = $t;
+			}
+		}
+		ksort( $teams_by_group );
+		?>
+		<div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:12px">
+		<?php foreach ( $teams_by_group as $label => $group_teams ) : ?>
+			<div style="min-width:160px">
+				<h3 style="font-size:.9rem;margin:0 0 8px;color:#0E0C19"><?php echo esc_html( __( 'Grupo', 'soccertrack' ) . ' ' . $label ); ?></h3>
+				<ul style="margin:0;padding:0;list-style:none">
+				<?php foreach ( $group_teams as $gt ) : ?>
+					<li style="padding:4px 0;border-bottom:1px solid #eee;font-size:.85rem">
+						<?php echo esc_html( $gt['name'] ); ?>
+					</li>
+				<?php endforeach; ?>
+				</ul>
+			</div>
+		<?php endforeach; ?>
+		</div>
+	<?php endif; ?>
+</div>
+
+<?php /* ── Fase Eliminatoria — botones de generación ─────────────────── */ ?>
+<div class="st-card" style="margin-bottom:20px" id="st-knockout-card">
+	<div class="st-card-header">
+		<h2 class="st-card-title"><?php esc_html_e( 'Fase Eliminatoria', 'soccertrack' ); ?></h2>
+	</div>
+
+	<div id="st-knockout-notice"></div>
+
+	<?php
+	$venues_for_knockout ??= ! empty( $tournament_venue_ids )
+		? array_filter( $venues, static fn( $v ) => in_array( (int) $v['id'], $tournament_venue_ids, true ) )
+		: $venues;
+	?>
+
+	<?php if ( $group_stage_status['has_finals'] ) : ?>
+		<p style="color:#3CBC20;font-weight:600">✅ <?php esc_html_e( 'Fase eliminatoria completa.', 'soccertrack' ); ?></p>
+
+	<?php elseif ( $group_stage_status['has_semifinals'] && ! $group_stage_status['all_sf_done'] ) : ?>
+		<p class="st-empty-msg"><?php esc_html_e( 'Semi-finales en curso. Espera a que terminen para generar la Final.', 'soccertrack' ); ?></p>
+
+	<?php elseif ( $group_stage_status['has_quarterfinals'] && ! $group_stage_status['all_qf_done'] ) : ?>
+		<p class="st-empty-msg"><?php esc_html_e( 'Cuartos de final en curso. Espera a que terminen.', 'soccertrack' ); ?></p>
+
+	<?php elseif ( ! $group_stage_status['all_regular_done'] ) : ?>
+		<p class="st-empty-msg"><?php esc_html_e( 'La eliminatoria estará disponible cuando todos los partidos de grupos estén finalizados.', 'soccertrack' ); ?></p>
+
+	<?php else : ?>
+		<?php
+		$knockout_btn_label = __( 'Generar Eliminatoria', 'soccertrack' );
+		if ( $group_stage_status['all_sf_done'] && ! $group_stage_status['has_finals'] ) {
+			$knockout_btn_label = __( 'Generar Final', 'soccertrack' );
+		} elseif ( $group_stage_status['all_qf_done'] && ! $group_stage_status['has_semifinals'] ) {
+			$knockout_btn_label = __( 'Generar Semi-finales', 'soccertrack' );
+		}
+		?>
+		<?php if ( ! empty( $venues_for_knockout ) ) : ?>
+		<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+			<select id="st-knockout-venue-select" class="st-input" style="max-width:220px">
+				<option value=""><?php esc_html_e( '— Seleccionar recinto —', 'soccertrack' ); ?></option>
+				<?php foreach ( $venues_for_knockout as $v ) : ?>
+					<option value="<?php echo esc_attr( (string) $v['id'] ); ?>"><?php echo esc_html( $v['name'] ); ?></option>
+				<?php endforeach; ?>
+			</select>
+			<input type="date" id="st-knockout-date-input" class="st-input" style="max-width:160px"
+			       title="<?php esc_attr_e( 'Fecha opcional. Si no se elige, se usará el próximo día hábil.', 'soccertrack' ); ?>">
+			<button class="st-btn st-btn--primary" id="st-gen-knockout-btn"
+				data-tournament="<?php echo esc_attr( (string) $tournament['id'] ); ?>"
+				data-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>">
+				⚡ <?php echo esc_html( $knockout_btn_label ); ?>
+			</button>
+		</div>
+		<?php else : ?>
+			<p class="st-alert st-alert--warning"><?php esc_html_e( 'Asigna al menos un recinto al torneo para generar la eliminatoria.', 'soccertrack' ); ?></p>
+		<?php endif; ?>
+	<?php endif; ?>
+</div>
+
+<script>
+(function() {
+	var btn   = document.getElementById('st-gen-knockout-btn');
+	if ( ! btn ) return;
+	btn.addEventListener('click', function() {
+		var venueEl = document.getElementById('st-knockout-venue-select');
+		var dateEl  = document.getElementById('st-knockout-date-input');
+		var venueId = venueEl ? parseInt(venueEl.value, 10) : 0;
+		if ( ! venueId ) { alert('Selecciona un recinto.'); return; }
+
+		var tid        = btn.dataset.tournament;
+		var nonce      = btn.dataset.nonce;
+		var matchDate  = dateEl && dateEl.value ? dateEl.value : null;
+		var body       = { venue_id: venueId };
+		if ( matchDate ) body.match_date = matchDate;
+
+		btn.disabled = true;
+		btn.textContent = '⏳ Generando…';
+
+		fetch('/wp-json/soccertrack/v1/admin/tournament/' + tid + '/knockout', {
+			method:  'POST',
+			headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': nonce },
+			body:    JSON.stringify(body),
+		})
+		.then(r => r.json())
+		.then(data => {
+			var notice = document.getElementById('st-knockout-notice');
+			if (data.matches_created > 0) {
+				notice.innerHTML = '<div class="st-alert st-alert--success">✅ ' + data.matches_created + ' partido(s) generado(s) — ' + data.phase + '. <a href="">Recargar</a></div>';
+			} else {
+				notice.innerHTML = '<div class="st-alert st-alert--error">⚠️ ' + (data.message || data.error || 'Error') + '</div>';
+				btn.disabled = false;
+				btn.textContent = '⚡ Reintentar';
+			}
+		})
+		.catch(err => {
+			document.getElementById('st-knockout-notice').innerHTML = '<div class="st-alert st-alert--error">⚠️ ' + err.message + '</div>';
+			btn.disabled = false;
+		});
+	});
+}());
+</script>
+<?php endif; /* is_group_stage */ ?>
+
 <?php /* ── Brackets de Playoffs (solo formato round_robin_playoffs) ─── */ ?>
 <?php if ( ! empty( $playoffs_status['is_playoffs_format'] ) ) : ?>
 <div class="st-card" style="margin-bottom:20px" id="st-brackets-card">
