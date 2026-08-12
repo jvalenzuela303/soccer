@@ -1403,6 +1403,10 @@ final class AdminEndpoints {
 		);
 
 		$bracket_id = isset( $request['bracket_id'] ) ? (int) $request['bracket_id'] : 0;
+		$match_date = isset( $request['match_date'] ) ? sanitize_text_field( (string) $request['match_date'] ) : null;
+		if ( $match_date && ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $match_date ) ) {
+			$match_date = null;
+		}
 
 		if ( $has_brackets ) {
 			if ( ! $bracket_id ) {
@@ -1412,7 +1416,7 @@ final class AdminEndpoints {
 					[ 'status' => 400 ]
 				);
 			}
-			$result = ( new FixtureGenerator() )->generate_bracket_playoffs( $tournament, $bracket_id, $venue_id );
+			$result = ( new FixtureGenerator() )->generate_bracket_playoffs( $tournament, $bracket_id, $venue_id, $match_date );
 		} else {
 			$result = ( new FixtureGenerator() )->generate_playoffs( $tournament, $venue_id );
 		}
@@ -1463,6 +1467,10 @@ final class AdminEndpoints {
 		);
 
 		$bracket_id = isset( $request['bracket_id'] ) ? (int) $request['bracket_id'] : 0;
+		$match_date = isset( $request['match_date'] ) ? sanitize_text_field( (string) $request['match_date'] ) : null;
+		if ( $match_date && ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $match_date ) ) {
+			$match_date = null;
+		}
 
 		if ( $has_brackets ) {
 			if ( ! $bracket_id ) {
@@ -1472,7 +1480,7 @@ final class AdminEndpoints {
 					[ 'status' => 400 ]
 				);
 			}
-			$result = ( new FixtureGenerator() )->generate_bracket_finals( $tournament, $bracket_id, $venue_id );
+			$result = ( new FixtureGenerator() )->generate_bracket_finals( $tournament, $bracket_id, $venue_id, $match_date );
 		} else {
 			$result = ( new FixtureGenerator() )->generate_finals( $tournament, $venue_id );
 		}
