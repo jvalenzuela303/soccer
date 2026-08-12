@@ -589,6 +589,55 @@
 		}
 	}
 
+	/**
+	 * Inyecta dinámicamente la pestaña "Playoffs" en el nav y su panel en el DOM
+	 * cuando un torneo de fase de grupos detecta partidos de eliminación directa.
+	 * Idempotente: sale silenciosamente si la pestaña ya existe.
+	 *
+	 * @param {Array} playoffMatches - Array de partidos de playoffs (ya filtrado).
+	 */
+	function injectPlayoffsTab( playoffMatches ) {
+		if ( qs( '#st-tab-playoffs' ) ) return; // ya existe
+
+		const nav = qs( '.st-tabs-nav' );
+		if ( ! nav ) return;
+
+		// --- Crear botón de pestaña ---
+		const li  = document.createElement( 'li' );
+		li.setAttribute( 'role', 'presentation' );
+		const btn = document.createElement( 'button' );
+		btn.className   = 'st-tab-btn';
+		btn.setAttribute( 'role', 'tab' );
+		btn.dataset.tab = 'playoffs';
+		btn.id          = 'st-tab-playoffs';
+		btn.setAttribute( 'aria-selected', 'false' );
+		btn.setAttribute( 'aria-controls', 'st-panel-playoffs' );
+		btn.setAttribute( 'tabindex', '-1' );
+		btn.textContent = `🏆 ${ i18n.playoffs_title ?? 'Playoffs' }`;
+		li.appendChild( btn );
+		nav.appendChild( li );
+
+		// --- Crear panel e insertarlo antes del panel de equipos ---
+		const panel = document.createElement( 'section' );
+		panel.id        = 'st-panel-playoffs';
+		panel.className = 'st-tab-panel';
+		panel.setAttribute( 'role', 'tabpanel' );
+		panel.setAttribute( 'aria-labelledby', 'st-tab-playoffs' );
+		panel.setAttribute( 'aria-hidden', 'true' );
+
+		const teamsPanel = qs( '#st-panel-teams' );
+		if ( teamsPanel ) {
+			teamsPanel.before( panel );
+		} else {
+			nav.parentElement?.appendChild( panel );
+		}
+
+		// Registrar renderer si por algún motivo no estuviera aún disponible.
+		if ( ! RENDERERS.playoffs ) {
+			RENDERERS.playoffs = renderPlayoffs;
+		}
+	}
+
 	async function renderTeams( container ) {
 		showLoading( container );
 
