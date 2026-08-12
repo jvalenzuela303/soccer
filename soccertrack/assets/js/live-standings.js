@@ -143,7 +143,6 @@
 
 		for ( const group of groups ) {
 			const rows = group.standings ?? [];
-			const advancing = rows.length > 0 ? Math.ceil( rows.length / 2 ) : 1; // fallback visual
 			// Detect advancing count from first group where all teams have played.
 			// (The server handles the actual logic; we just mark the top rows visually.)
 			// The spec says "las primeras teams_advancing_per_group filas" — since we don't know
@@ -409,44 +408,6 @@
 		</div>`;
 	};
 
-	/**
-	 * Inyecta el tab "🏆 Playoffs" en la nav y su panel en el portal si aún no existen.
-	 * Se llama desde renderFixture() en cuanto detecta partidos de playoffs.
-	 */
-	function injectPlayoffsTab() {
-		if ( el( 'st-tab-playoffs' ) ) return; // ya inyectado
-
-		// ── Botón en la nav ─────────────────────────────────────────────
-		const nav = qs( '.st-tabs-nav' );
-		if ( ! nav ) return;
-
-		const li = document.createElement( 'li' );
-		li.setAttribute( 'role', 'presentation' );
-		li.innerHTML = `<button class="st-tab-btn" role="tab" data-tab="playoffs"
-			id="st-tab-playoffs" aria-selected="false" aria-controls="st-panel-playoffs" tabindex="-1">
-			🏆 ${ escHtml( i18n.playoffs_tab ?? 'Playoffs' ) }
-		</button>`;
-		nav.appendChild( li );
-
-		// ── Panel vacío en el portal ────────────────────────────────────
-		const portal = qs( '[id^="st-portal-"]' );
-		if ( ! portal ) return;
-
-		const section = document.createElement( 'section' );
-		section.id = 'st-panel-playoffs';
-		section.className = 'st-tab-panel';
-		section.setAttribute( 'role', 'tabpanel' );
-		section.setAttribute( 'aria-labelledby', 'st-tab-playoffs' );
-		section.setAttribute( 'aria-hidden', 'true' );
-		portal.appendChild( section );
-
-		// Si init() guardó una activación pendiente (URL ?tab=playoffs), ejecutarla ahora.
-		if ( pendingPlayoffsTab ) {
-			pendingPlayoffsTab = false;
-			activateTab( 'playoffs' );
-		}
-	}
-
 	async function renderFixture( container ) {
 		showLoading( container );
 
@@ -493,12 +454,11 @@
 					}
 				}
 
-				// Si hay play-offs, inyectar el tab dinámico (sin renderizarlos aquí).
-				if ( playoffMatches.length ) {
-					injectPlayoffsTab();
-				}
-
 				container.innerHTML = html;
+
+				if ( playoffMatches.length ) {
+					injectPlayoffsTab( playoffMatches );
+				}
 
 			} else {
 				// Render clásico por jornadas (round-robin, etc.).
@@ -539,11 +499,6 @@
 							<h3 class="st-round-header">${ i18n.round ?? 'Fecha' } ${ activeRound }</h3>
 							${ renderRound( activeRound ) }
 						</div>`;
-				}
-
-				// Si hay play-offs, inyectar el tab dinámico (sin renderizarlos aquí).
-				if ( playoffMatches.length ) {
-					injectPlayoffsTab();
 				}
 
 				container.innerHTML = html;
@@ -993,10 +948,6 @@
 		stats:     renderStandings, // alias: ?tab=stats redirige a posiciones (tab unificado)
 	};
 
-	// Se pone a true en init() cuando la URL tiene ?tab=playoffs.
-	// injectPlayoffsTab() lo consume para activar el tab en cuanto se inyecte.
-	let pendingPlayoffsTab = false;
-
 	function activateTab( tabId ) {
 		const buttons = qsa( '.st-tab-btn' );
 		const panels  = qsa( '.st-tab-panel' );
@@ -1066,18 +1017,9 @@
 		} );
 
 		// Tab inicial: desde URL o el primero disponible.
-		const urlTab   = new URLSearchParams( window.location.search ).get( 'tab' );
-		const firstBtn = qs( '.st-tab-btn', nav );
-		let   initialId;
-
-		if ( urlTab === 'playoffs' ) {
-			// El tab de playoffs se inyecta dinámicamente tras cargar el fixture.
-			// Cargamos fixture primero; injectPlayoffsTab() activará el tab cuando esté listo.
-			pendingPlayoffsTab = true;
-			initialId = 'fixture';
-		} else {
-			initialId = ( urlTab && RENDERERS[ urlTab ] ) ? urlTab : firstBtn?.dataset.tab;
-		}
+		const urlTab    = new URLSearchParams( window.location.search ).get( 'tab' );
+		const firstBtn  = qs( '.st-tab-btn', nav );
+		const initialId = ( urlTab && RENDERERS[ urlTab ] ) ? urlTab : firstBtn?.dataset.tab;
 
 		if ( initialId ) activateTab( initialId );
 	}
