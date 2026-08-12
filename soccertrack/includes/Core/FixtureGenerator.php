@@ -517,4 +517,225 @@ final class FixtureGenerator {
 			)
 		);
 	}
+
+	/**
+	 * Genera las semi-finales de un bracket específico de play-offs.
+	 *
+	 * Emparejamiento: primero del bracket vs último, segundo vs penúltimo.
+	 * Requiere que todos los partidos 'regular' del torneo estén 'finished'.
+	 *
+	 * @param  array{id:int,match_weekday:int,match_weekdays:string,match_time:string,match_duration:int} $tournament
+	 * @param  int $bracket_id  ID del bracket en ds_playoff_brackets.
+	 * @param  int $venue_id    Recinto donde se disputarán las semi-finales.
+	 * @return array{match_ids: int[], error?: string}
+	 */
+	public function generate_bracket_playoffs( array $tournament, int $bracket_id, int $venue_id ): array {
+		global $wpdb;
+
+		$tournament_id = (int) $tournament['id'];
+		$weekdays      = $this->weekdays_from_tournament( $tournament );
+		$time          = (string) ( $tournament['match_time'] ?? '19:00:00' );
+		$duration      = $this->duration_from_tournament( $tournament );
+
+		// 1. Leer y validar el bracket.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$bracket = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT id, tournament_id, rank_from, rank_to
+				 FROM {$wpdb->prefix}ds_playoff_brackets
+				 WHERE id = %d",
+				$bracket_id
+			),
+			ARRAY_A
+		);
+
+		if ( ! $bracket || (int) $bracket['tournament_id'] !== $tournament_id ) {
+			return [ 'match_ids' => [], 'error' => __( 'Bracket no encontrado o no pertenece a este torneo.', 'soccertrack' ) ];
+		}
+
+		$rank_from = (int) $bracket['rank_from'];
+		$rank_to   = (int) $bracket['rank_to'];
+
+		// 2. Verificar que todos los partidos regulares están finalizados.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$pending = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches
+				 WHERE tournament_id = %d AND phase = 'regular' AND status != 'finished'",
+				$tournament_id
+			)
+		);
+
+		if ( $pending > 0 ) {
+			return [ 'match_ids' => [], 'error' => __( 'Aún hay partidos de fase regular sin finalizar.', 'soccertrack' ) ];
+		}
+
+		// 3. Verificar que no existan ya semi-finales de este bracket.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$existing_sf = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches
+				 WHERE tournament_id = %d AND bracket_id = %d AND phase = 'semifinal'",
+				$tournament_id,
+				$bracket_id
+			)
+		);
+
+		if ( $existing_sf > 0 ) {
+			return [ 'match_ids' => [], 'error' => __( 'Las semi-finales de este bracket ya fueron generadas.', 'soccertrack' ) ];
+		}
+
+		// 4. Extraer equipos del rango del bracket de la tabla de posiciones.
+		$standings     = ( new StandingsCalculator() )->recalculate( $tournament_id );
+		$bracket_teams = array_slice( $standings, $rank_from - 1, $rank_to - $rank_from + 1 );
+		$num_teams     = count( $bracket_teams );
+
+		if ( $num_teams < 4 ) {
+			return [ 'match_ids' => [], 'error' => __( 'Se necesitan al menos 4 equipos en el rango del bracket.', 'soccertrack' ) ];
+		}
+
+		// 5. Emparejamiento: primero vs último, segundo vs penúltimo.
+		$first  = (int) $bracket_teams[0]['team_id'];
+		$second = (int) $bracket_teams[1]['team_id'];
+		$third  = (int) $bracket_teams[ $num_teams - 2 ]['team_id'];
+		$last   = (int) $bracket_teams[ $num_teams - 1 ]['team_id'];
+
+		$dt_sf1 = $this->next_match_datetime( $weekdays, $time, 0, 0, $duration );
+		$dt_sf2 = $this->next_match_datetime( $weekdays, $time, 1, 0, $duration );
+
+		$ids = [];
+
+		foreach ( [
+			[ 'home' => $first,  'away' => $last,  'dt' => $dt_sf1 ],
+			[ 'home' => $second, 'away' => $third, 'dt' => $dt_sf2 ],
+		] as $pair ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->insert(
+				"{$wpdb->prefix}ds_matches",
+				[
+					'tournament_id'  => $tournament_id,
+					'round_number'   => 0,
+					'home_team_id'   => $pair['home'],
+					'away_team_id'   => $pair['away'],
+					'venue_id'       => $venue_id,
+					'court_id'       => 0,
+					'match_datetime' => $pair['dt'],
+					'status'         => 'scheduled',
+					'phase'          => 'semifinal',
+					'bracket_id'     => $bracket_id,
+				],
+				[ '%d', '%d', '%d', '%d', '%d', '%d', '%s', '%s', '%s', '%d' ]
+			);
+
+			if ( $wpdb->insert_id ) {
+				$ids[] = (int) $wpdb->insert_id;
+			}
+		}
+
+		$this->assign_courts( $ids, $venue_id );
+
+		return [ 'match_ids' => $ids ];
+	}
+
+	/**
+	 * Genera la Final y el partido por el 3.er puesto de un bracket específico.
+	 *
+	 * Requiere que ambas semi-finales del bracket estén finalizadas.
+	 * En caso de empate en semi: gana el equipo local (misma regla que generate_finals()).
+	 *
+	 * @param  array{id:int,match_weekday:int,match_weekdays:string,match_time:string,match_duration:int} $tournament
+	 * @param  int $bracket_id
+	 * @param  int $venue_id
+	 * @return array{match_ids: int[], error?: string}
+	 */
+	public function generate_bracket_finals( array $tournament, int $bracket_id, int $venue_id ): array {
+		global $wpdb;
+
+		$tournament_id = (int) $tournament['id'];
+		$weekdays      = $this->weekdays_from_tournament( $tournament );
+		$time          = (string) ( $tournament['match_time'] ?? '19:00:00' );
+		$duration      = $this->duration_from_tournament( $tournament );
+
+		// 1. Leer semi-finales finalizadas del bracket.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$semis = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT id, home_team_id, away_team_id, home_score, away_score
+				 FROM {$wpdb->prefix}ds_matches
+				 WHERE tournament_id = %d AND bracket_id = %d AND phase = 'semifinal' AND status = 'finished'
+				 ORDER BY id ASC",
+				$tournament_id,
+				$bracket_id
+			),
+			ARRAY_A
+		);
+
+		if ( count( $semis ) < 2 ) {
+			return [ 'match_ids' => [], 'error' => __( 'Ambas semi-finales del bracket deben estar finalizadas.', 'soccertrack' ) ];
+		}
+
+		// 2. Verificar que no existan ya final/3er puesto de este bracket.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$existing = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches
+				 WHERE tournament_id = %d AND bracket_id = %d AND phase IN ('final', 'third_place')",
+				$tournament_id,
+				$bracket_id
+			)
+		);
+
+		if ( $existing > 0 ) {
+			return [ 'match_ids' => [], 'error' => __( 'La final de este bracket ya fue generada.', 'soccertrack' ) ];
+		}
+
+		// 3. Determinar ganadores y perdedores (empate → gana local).
+		$resolve = static function ( array $m ): array {
+			$hs = (int) $m['home_score'];
+			$as = (int) $m['away_score'];
+			if ( $hs >= $as ) {
+				return [ 'winner' => (int) $m['home_team_id'], 'loser' => (int) $m['away_team_id'] ];
+			}
+			return [ 'winner' => (int) $m['away_team_id'], 'loser' => (int) $m['home_team_id'] ];
+		};
+
+		$sf1 = $resolve( $semis[0] );
+		$sf2 = $resolve( $semis[1] );
+
+		$dt_3rd   = $this->next_match_datetime( $weekdays, $time, 0, 0, $duration );
+		$dt_final = $this->next_match_datetime( $weekdays, $time, 1, 0, $duration );
+
+		$ids = [];
+
+		foreach ( [
+			[ 'home' => $sf1['loser'],  'away' => $sf2['loser'],  'dt' => $dt_3rd,   'phase' => 'third_place' ],
+			[ 'home' => $sf1['winner'], 'away' => $sf2['winner'], 'dt' => $dt_final,  'phase' => 'final' ],
+		] as $pair ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->insert(
+				"{$wpdb->prefix}ds_matches",
+				[
+					'tournament_id'  => $tournament_id,
+					'round_number'   => 0,
+					'home_team_id'   => $pair['home'],
+					'away_team_id'   => $pair['away'],
+					'venue_id'       => $venue_id,
+					'court_id'       => 0,
+					'match_datetime' => $pair['dt'],
+					'status'         => 'scheduled',
+					'phase'          => $pair['phase'],
+					'bracket_id'     => $bracket_id,
+				],
+				[ '%d', '%d', '%d', '%d', '%d', '%d', '%s', '%s', '%s', '%d' ]
+			);
+
+			if ( $wpdb->insert_id ) {
+				$ids[] = (int) $wpdb->insert_id;
+			}
+		}
+
+		$this->assign_courts( $ids, $venue_id );
+
+		return [ 'match_ids' => $ids ];
+	}
 }
