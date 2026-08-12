@@ -1560,6 +1560,14 @@ final class AdminEndpoints {
 			return new \WP_Error( 'invalid_range', __( 'rank_from debe ser menor que rank_to.', 'soccertrack' ), [ 'status' => 422 ] );
 		}
 
+		if ( ( $rank_to - $rank_from + 1 ) !== 4 ) {
+			return new \WP_Error(
+				'invalid_bracket_size',
+				__( 'El bracket debe contener exactamente 4 equipos (rank_to - rank_from + 1 = 4).', 'soccertrack' ),
+				[ 'status' => 422 ]
+			);
+		}
+
 		if ( self::brackets_overlap( $tid, $rank_from, $rank_to ) ) {
 			return new \WP_Error( 'bracket_overlap', __( 'El rango se solapa con un bracket existente.', 'soccertrack' ), [ 'status' => 409 ] );
 		}
@@ -1656,6 +1664,14 @@ final class AdminEndpoints {
 
 		if ( $rank_from >= $rank_to ) {
 			return new \WP_Error( 'invalid_range', __( 'rank_from debe ser menor que rank_to.', 'soccertrack' ), [ 'status' => 422 ] );
+		}
+
+		if ( ( $rank_to - $rank_from + 1 ) !== 4 ) {
+			return new \WP_Error(
+				'invalid_bracket_size',
+				__( 'El bracket debe contener exactamente 4 equipos (rank_to - rank_from + 1 = 4).', 'soccertrack' ),
+				[ 'status' => 422 ]
+			);
 		}
 
 		if ( self::brackets_overlap( $tid, $rank_from, $rank_to, $bid ) ) {

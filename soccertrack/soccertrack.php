@@ -35,7 +35,7 @@ if ( version_compare( PHP_VERSION, '8.2', '<' ) ) {
 }
 
 // ── Constantes ────────────────────────────────────────────────────────────────
-define( 'SOCCERTRACK_VERSION',    '1.9.3' );
+define( 'SOCCERTRACK_VERSION',    '1.9.4' );
 define( 'SOCCERTRACK_DB_VERSION', '1.9.4' );
 define( 'SOCCERTRACK_FILE',       __FILE__ );
 define( 'SOCCERTRACK_DIR',        plugin_dir_path( __FILE__ ) );

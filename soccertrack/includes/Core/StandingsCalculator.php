@@ -180,7 +180,7 @@ final class StandingsCalculator {
 			$regular_pending = (int) $wpdb->get_var(
 				$wpdb->prepare(
 					"SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches
-					 WHERE tournament_id = %d AND phase = 'regular' AND status != 'finished'",
+					 WHERE tournament_id = %d AND phase = 'regular' AND status NOT IN ('finished', 'suspended', 'postponed')",
 					$tournament_id
 				)
 			);
