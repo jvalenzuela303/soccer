@@ -11,6 +11,7 @@
  * GET    /admin/match/{id}/events              — Listar incidentes con auditoría
  * POST   /admin/match/{id}/planillero          — Asignar planillero (coordinador)
  * POST /admin/tournament/{id}/fixture          — Generar fixture (coordinador)
+ * POST /admin/tournament/{id}/knockout         — Generar siguiente ronda eliminatoria (group_stage)
  * POST /admin/tournament/{id}/playoffs         — Generar semi-finales (coordinador)
  * POST /admin/tournament/{id}/finals           — Generar final y 3.er puesto (coordinador)
  * POST /admin/player/sanction                  — Sancionar jugador (coordinador)
@@ -83,6 +84,33 @@ final class AdminEndpoints {
 						'required'          => true,
 						'validate_callback' => static fn( mixed $v ): bool => is_numeric( $v ) && (int) $v > 0,
 						'sanitize_callback' => 'absint',
+					],
+				],
+			]
+		);
+
+		// POST /admin/tournament/{id}/knockout — Generar siguiente ronda eliminatoria (group_stage).
+		register_rest_route(
+			self::NAMESPACE,
+			'/admin/tournament/(?P<id>\d+)/knockout',
+			[
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'callback'            => [ self::class, 'post_generate_knockout' ],
+				'permission_callback' => static fn() => current_user_can( 'ds_generate_fixture' ),
+				'args'                => [
+					'id'         => [
+						'validate_callback' => static fn( mixed $v ): bool => is_numeric( $v ) && (int) $v > 0,
+						'sanitize_callback' => 'absint',
+					],
+					'venue_id'   => [
+						'required'          => true,
+						'validate_callback' => static fn( mixed $v ): bool => is_numeric( $v ) && (int) $v > 0,
+						'sanitize_callback' => 'absint',
+					],
+					'match_date' => [
+						'required'          => false,
+						'validate_callback' => static fn( mixed $v ): bool => ! $v || (bool) preg_match( '/^\d{4}-\d{2}-\d{2}$/', (string) $v ),
+						'sanitize_callback' => 'sanitize_text_field',
 					],
 				],
 			]
@@ -683,7 +711,7 @@ final class AdminEndpoints {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$tournament = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT id, name, match_weekday, match_weekdays, match_time, match_time_weekend, match_duration FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
+				"SELECT id, name, format, match_weekday, match_weekdays, match_time, match_time_weekend, match_duration, group_count, teams_advancing_per_group, has_third_place FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
 				$tournament_id
 			),
 			ARRAY_A
@@ -727,8 +755,22 @@ final class AdminEndpoints {
 			);
 		}
 
-		$team_ids    = array_map( 'intval', $team_ids );
-		$match_ids   = ( new FixtureGenerator() )->generate( $tournament, $team_ids, $venue_id );
+		$team_ids  = array_map( 'intval', $team_ids );
+		$generator = new FixtureGenerator();
+
+		if ( ( $tournament['format'] ?? '' ) === 'group_stage' ) {
+			$result    = $generator->generate_group_stage( $tournament, $venue_id );
+			if ( ! empty( $result['error'] ) ) {
+				return new \WP_Error(
+					'fixture_error',
+					$result['error'],
+					[ 'status' => 422 ]
+				);
+			}
+			$match_ids = $result['match_ids'];
+		} else {
+			$match_ids = $generator->generate( $tournament, $team_ids, $venue_id );
+		}
 
 		// Notificar a todos los delegados que el fixture está disponible.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
@@ -1736,6 +1778,56 @@ final class AdminEndpoints {
 		$wpdb->delete( "{$wpdb->prefix}ds_playoff_brackets", [ 'id' => $bid ], [ '%d' ] );
 
 		return rest_ensure_response( [ 'deleted' => true, 'id' => $bid ] );
+	}
+
+	/**
+	 * POST /admin/tournament/{id}/knockout
+	 *
+	 * Genera la siguiente ronda eliminatoria de un torneo en Fase de Grupos.
+	 * Puede llamarse múltiples veces: detecta automáticamente qué ronda corresponde.
+	 */
+	public static function post_generate_knockout( \WP_REST_Request $request ): \WP_REST_Response|\WP_Error {
+		global $wpdb;
+
+		$tournament_id = (int) $request['id'];
+		$venue_id      = (int) $request['venue_id'];
+		$match_date    = $request['match_date'] ? (string) $request['match_date'] : null;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$tournament = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT id, name, format, match_weekday, match_weekdays, match_time, match_time_weekend, match_duration,
+				        group_count, teams_advancing_per_group, has_third_place
+				 FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
+				$tournament_id
+			),
+			ARRAY_A
+		);
+
+		if ( ! $tournament ) {
+			return new \WP_Error( 'tournament_not_found', __( 'Torneo no encontrado.', 'soccertrack' ), [ 'status' => 404 ] );
+		}
+
+		if ( ( $tournament['format'] ?? '' ) !== 'group_stage' ) {
+			return new \WP_Error(
+				'invalid_format',
+				__( 'Este endpoint solo aplica para torneos en Fase de Grupos.', 'soccertrack' ),
+				[ 'status' => 422 ]
+			);
+		}
+
+		$result = ( new FixtureGenerator() )->generate_group_knockout( $tournament, $venue_id, $match_date );
+
+		if ( ! empty( $result['error'] ) ) {
+			return new \WP_Error( 'knockout_error', $result['error'], [ 'status' => 422 ] );
+		}
+
+		return rest_ensure_response( [
+			'tournament_id'   => $tournament_id,
+			'matches_created' => count( $result['match_ids'] ),
+			'match_ids'       => $result['match_ids'],
+			'phase'           => $result['phase'],
+		] );
 	}
 
 	/**
