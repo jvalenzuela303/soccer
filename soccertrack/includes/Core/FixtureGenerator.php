@@ -1098,6 +1098,10 @@ final class FixtureGenerator {
 				[ $winners[ $i ], $winners[ $j ] ] = [ $winners[ $j ], $winners[ $i ] ];
 			}
 
+			if ( count( $winners ) !== 4 ) {
+				return [ 'match_ids' => [], 'error' => 'Se esperaban 4 ganadores de cuartos de final.' ];
+			}
+
 			$ids = [];
 			foreach ( [ [ $winners[0], $winners[1] ], [ $winners[2], $winners[3] ] ] as $k => $pair ) {
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery
