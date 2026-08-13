@@ -17,23 +17,6 @@
 </head>
 <body class="st-public-body">
 
-<?php if ( ! empty( $tournament['banner_url'] ) ) : ?>
-<div class="st-tournament-banner">
-	<img
-		src="<?php echo esc_url( $tournament['banner_url'] ); ?>"
-		alt="<?php echo esc_attr( sprintf(
-			/* translators: %s: tournament name */
-			__( 'Banner de %s', 'soccertrack' ),
-			$tournament['name']
-		) ); ?>"
-		class="st-tournament-banner__img"
-	>
-	<div id="st-results-ticker" class="st-results-ticker" aria-hidden="true">
-		<div class="st-results-ticker__track"></div>
-	</div>
-</div>
-<?php endif; ?>
-
 <?php /* ── Hero del torneo ────────────────────────────────────────────── */ ?>
 <header class="st-public-header">
 	<div class="st-public-header-inner">
@@ -56,6 +39,23 @@
 		</div>
 	</div>
 </header>
+
+<?php if ( ! empty( $tournament['banner_url'] ) ) : ?>
+<div class="st-tournament-banner">
+	<img
+		src="<?php echo esc_url( $tournament['banner_url'] ); ?>"
+		alt="<?php echo esc_attr( sprintf(
+			/* translators: %s: tournament name */
+			__( 'Banner de %s', 'soccertrack' ),
+			$tournament['name']
+		) ); ?>"
+		class="st-tournament-banner__img"
+	>
+	<div id="st-results-ticker" class="st-results-ticker" aria-hidden="true">
+		<div class="st-results-ticker__track"></div>
+	</div>
+</div>
+<?php endif; ?>
 
 <?php
 // Formatos que incluyen fase de play-offs.
