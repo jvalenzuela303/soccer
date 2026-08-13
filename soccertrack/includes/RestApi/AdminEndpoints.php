@@ -592,6 +592,26 @@ final class AdminEndpoints {
 		// Recalcular tabla de posiciones.
 		$standings = ( new StandingsCalculator() )->recalculate( $tournament_id );
 
+		// Auto-avance de ronda para formato knockout.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$tournament_format = (string) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT format FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
+				$tournament_id
+			)
+		);
+		if ( 'knockout' === $tournament_format ) {
+			// Usar el recinto del propio partido como referencia para la siguiente ronda.
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$match_venue_id = (int) $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT venue_id FROM {$wpdb->prefix}ds_matches WHERE id = %d",
+					$match_id
+				)
+			);
+			( new FixtureGenerator() )->generate_knockout_next_round( $tournament_id, $match_venue_id );
+		}
+
 		// Invalidar caché pública del torneo (fixture, posiciones, goleadores, tribunal).
 		PublicEndpoints::invalidate_cache( $tournament_id );
 
