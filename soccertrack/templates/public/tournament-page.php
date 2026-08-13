@@ -28,6 +28,9 @@
 		) ); ?>"
 		class="st-tournament-banner__img"
 	>
+	<div id="st-results-ticker" class="st-results-ticker" aria-hidden="true">
+		<div class="st-results-ticker__track"></div>
+	</div>
 </div>
 <?php endif; ?>
 
