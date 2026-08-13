@@ -629,6 +629,16 @@ final class DatabaseInstaller {
 				                     NOT NULL DEFAULT 'regular'"
 			);
 		}
+
+		// v2.1.0 — ds_matches: ampliar ENUM phase para incluir 'octavos' (soporte knockout 16 equipos).
+		$phase_col_21 = $wpdb->get_row( "SHOW COLUMNS FROM {$prefix}ds_matches LIKE 'phase'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( $phase_col_21 && ! str_contains( (string) $phase_col_21->Type, 'octavos' ) ) {
+			$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				"ALTER TABLE {$prefix}ds_matches
+				 MODIFY COLUMN phase ENUM('regular','octavos','quarterfinal','semifinal','third_place','final')
+				                     NOT NULL DEFAULT 'regular'"
+			);
+		}
 	}
 
 	/**
