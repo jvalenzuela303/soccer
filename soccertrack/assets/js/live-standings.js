@@ -1125,8 +1125,8 @@
 
 		const items = finished.map( ( m ) => `
 			<div class="st-results-ticker__item">
-				<span class="st-results-ticker__round">${ escHtml( i18n.round ?? 'Jornada' ) } ${ m.round_number }</span>
-				<span class="st-results-ticker__score">${ escHtml( m.home_team ) } ${ m.home_score } – ${ m.away_score } ${ escHtml( m.away_team ) }</span>
+				<span class="st-results-ticker__round">${ escHtml( i18n.round ?? 'Jornada' ) } ${ Number( m.round_number ) }</span>
+				<span class="st-results-ticker__score">${ escHtml( m.home_team ) } ${ Number( m.home_score ) } – ${ Number( m.away_score ) } ${ escHtml( m.away_team ) }</span>
 			</div>` ).join( '' );
 
 		// Duplicar para loop seamless (el @keyframes va de 0 a -50%).
