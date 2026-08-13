@@ -42,6 +42,30 @@
 	</a>
 </div>
 
+<?php if ( ! empty( $is_locked ) ) : ?>
+<div class="st-alert" style="background:#fef3c7;border:1px solid #f59e0b;color:#92400e;border-radius:8px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px">
+	🔒 <strong><?php esc_html_e( 'Torneo finalizado — solo lectura.', 'soccertrack' ); ?></strong>
+	<?php esc_html_e( 'Para realizar cambios, reactiva el torneo desde la lista de torneos.', 'soccertrack' ); ?>
+</div>
+<style>
+/* Bloquear todos los controles del panel cuando el torneo está finalizado */
+.st-card form input:not([type="hidden"]),
+.st-card form select,
+.st-card form textarea,
+.st-card form button,
+.st-card .st-btn:not([href*="portal"]):not([href*="torneo/"]),
+#st-gen-playoffs-btn,
+#st-reset-playoffs-btn,
+#st-gen-knockout-btn,
+.st-bracket-gen-btn,
+#st-gen-fixture-btn {
+	pointer-events: none;
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+</style>
+<?php endif; ?>
+
 <?php /* ── Equipos inscritos ─────────────────────────────────────────── */ ?>
 <div class="st-card">
 	<div class="st-card-header">
