@@ -428,17 +428,16 @@ body.st-public-body {
 	}
 }
 
-/* ── Ticker de resultados sobre el banner ───────────────────────── */
+/* ── Ticker de resultados sobre el banner (horizontal) ──────────── */
 .st-results-ticker {
 	display: none;
 	position: absolute;
-	top: 0;
-	right: 0;
-	width: 220px;
-	height: 100%;
+	bottom: 0;
+	left: 0;
+	width: 100%;
 	overflow: hidden;
-	background: rgba(0, 0, 0, 0.55);
-	--st-ticker-duration: 25s;
+	background: rgba(0, 0, 0, 0.60);
+	--st-ticker-duration: 30s;
 }
 
 .st-results-ticker.is-active {
@@ -447,43 +446,36 @@ body.st-public-body {
 
 .st-results-ticker__track {
 	display: flex;
-	flex-direction: column;
+	flex-direction: row;
+	width: max-content;
 	animation: st-ticker-scroll var(--st-ticker-duration) linear infinite;
 }
 
 @keyframes st-ticker-scroll {
-	from { transform: translateY(0); }
-	to   { transform: translateY(-50%); }
+	from { transform: translateX(0); }
+	to   { transform: translateX(-50%); }
 }
 
 .st-results-ticker__item {
-	padding: 0.6rem 0.75rem;
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.45rem 1.25rem;
 	font-family: var(--st-font-body, 'Poppins', sans-serif);
 	font-size: 0.72rem;
 	color: #fff;
-	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	line-height: 1.4;
+	border-right: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .st-results-ticker__round {
 	color: var(--st-green-light, #7CDA24);
 	font-weight: 600;
-	display: block;
 	font-size: 0.65rem;
 	text-transform: uppercase;
 	letter-spacing: 0.04em;
 }
 
 .st-results-ticker__score {
-	display: block;
-	margin-top: 0.15rem;
-}
-
-@media (max-width: 480px) {
-	.st-results-ticker {
-		display: none !important;
-	}
+	color: #fff;
 }
