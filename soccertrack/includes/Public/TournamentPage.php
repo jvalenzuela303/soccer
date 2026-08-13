@@ -1101,7 +1101,7 @@ final class TournamentPage {
 			$knockout_pending      = count( array_filter(
 				$knockout_matches,
 				static fn( $m ) => $m['phase'] === $knockout_active_phase
-								&& ! in_array( $m['status'], [ 'finished', 'suspended' ], true )
+								&& ! in_array( $m['status'], [ 'finished', 'suspended', 'postponed' ], true )
 			) );
 			$knockout_complete = ( 'final' === $knockout_active_phase ) && ( 0 === $knockout_pending );
 		}
