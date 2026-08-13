@@ -12,8 +12,9 @@
  * POST   /admin/match/{id}/planillero          — Asignar planillero (coordinador)
  * POST /admin/tournament/{id}/fixture          — Generar fixture (coordinador)
  * POST /admin/tournament/{id}/knockout         — Generar siguiente ronda eliminatoria (group_stage)
- * POST /admin/tournament/{id}/playoffs         — Generar semi-finales (coordinador)
- * POST /admin/tournament/{id}/finals           — Generar final y 3.er puesto (coordinador)
+ * POST   /admin/tournament/{id}/playoffs       — Generar semi-finales (coordinador)
+ * POST   /admin/tournament/{id}/finals         — Generar final y 3.er puesto (coordinador)
+ * DELETE /admin/tournament/{id}/playoffs       — Reiniciar fase eliminatoria (coordinador)
  * POST /admin/player/sanction                  — Sancionar jugador (coordinador)
  * POST /admin/import/players                   — Importar jugadores CSV/XLSX (coordinador)
  *
@@ -342,17 +343,25 @@ final class AdminEndpoints {
 			self::NAMESPACE,
 			'/admin/tournament/(?P<id>\d+)/playoffs',
 			[
-				'methods'             => \WP_REST_Server::CREATABLE,
-				'callback'            => [ self::class, 'post_generate_playoffs' ],
-				'permission_callback' => static fn() => current_user_can( 'ds_generate_fixture' ),
-				'args'                => [
-					'id'         => $tid_arg,
-					'venue_id'   => $venue_arg,
-					'bracket_id' => [
-						'required'          => false,
-						'validate_callback' => static fn( mixed $v ): bool => is_numeric( $v ) && (int) $v > 0,
-						'sanitize_callback' => 'absint',
+				[
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => [ self::class, 'post_generate_playoffs' ],
+					'permission_callback' => static fn() => current_user_can( 'ds_generate_fixture' ),
+					'args'                => [
+						'id'         => $tid_arg,
+						'venue_id'   => $venue_arg,
+						'bracket_id' => [
+							'required'          => false,
+							'validate_callback' => static fn( mixed $v ): bool => is_numeric( $v ) && (int) $v > 0,
+							'sanitize_callback' => 'absint',
+						],
 					],
+				],
+				[
+					'methods'             => \WP_REST_Server::DELETABLE,
+					'callback'            => [ self::class, 'delete_playoffs' ],
+					'permission_callback' => static fn() => current_user_can( 'ds_generate_fixture' ),
+					'args'                => [ 'id' => $tid_arg ],
 				],
 			]
 		);
@@ -760,6 +769,16 @@ final class AdminEndpoints {
 
 		if ( ( $tournament['format'] ?? '' ) === 'group_stage' ) {
 			$result    = $generator->generate_group_stage( $tournament, $venue_id );
+			if ( ! empty( $result['error'] ) ) {
+				return new \WP_Error(
+					'fixture_error',
+					$result['error'],
+					[ 'status' => 422 ]
+				);
+			}
+			$match_ids = $result['match_ids'];
+		} elseif ( ( $tournament['format'] ?? '' ) === 'knockout' ) {
+			$result = $generator->generate_knockout_initial( $tournament, $venue_id );
 			if ( ! empty( $result['error'] ) ) {
 				return new \WP_Error(
 					'fixture_error',
@@ -1537,6 +1556,38 @@ final class AdminEndpoints {
 			'matches_created' => count( $result['match_ids'] ),
 			'match_ids'       => $result['match_ids'],
 		] );
+	}
+
+	/**
+	 * DELETE /admin/tournament/{id}/playoffs
+	 *
+	 * Elimina todos los partidos de fase eliminatoria (phase != 'regular') del torneo.
+	 * Permite al coordinador regenerar la fase eliminatoria desde cero.
+	 */
+	public static function delete_playoffs( \WP_REST_Request $request ): \WP_REST_Response|\WP_Error {
+		global $wpdb;
+
+		$tid = (int) $request->get_param( 'id' );
+
+		$deleted = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->prepare(
+				"DELETE FROM {$wpdb->prefix}ds_matches
+				 WHERE tournament_id = %d AND phase != 'regular'",
+				$tid
+			)
+		);
+
+		if ( false === $deleted ) {
+			return new \WP_Error( 'db_error', __( 'Error al eliminar los partidos.', 'soccertrack' ), [ 'status' => 500 ] );
+		}
+
+		if ( 0 === $deleted ) {
+			return new \WP_Error( 'nothing_to_delete', __( 'No hay partidos de fase eliminatoria para eliminar.', 'soccertrack' ), [ 'status' => 404 ] );
+		}
+
+		PublicEndpoints::invalidate_cache( $tid );
+
+		return rest_ensure_response( [ 'deleted' => $deleted ] );
 	}
 
 	/**
