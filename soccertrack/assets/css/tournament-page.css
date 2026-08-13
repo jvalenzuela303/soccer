@@ -432,7 +432,7 @@ body.st-public-body {
 .st-results-ticker {
 	display: none;
 	position: absolute;
-	bottom: 0;
+	top: 0;
 	left: 0;
 	width: 100%;
 	overflow: hidden;
