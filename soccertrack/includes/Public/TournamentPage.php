@@ -498,6 +498,16 @@ final class TournamentPage {
 			wp_die( esc_html__( 'Torneo no encontrado.', 'soccertrack' ), '', [ 'response' => 404 ] );
 		}
 
+		// ── Torneo finalizado: bloquear todas las escrituras ──────────────
+		$is_locked = ( $tournament['status'] ?? '' ) === 'completed';
+		if ( $is_locked && $_SERVER['REQUEST_METHOD'] === 'POST' ) {
+			wp_die(
+				esc_html__( 'Este torneo está finalizado. No se pueden realizar cambios.', 'soccertrack' ),
+				esc_html__( 'Torneo finalizado', 'soccertrack' ),
+				[ 'response' => 403, 'back_link' => true ]
+			);
+		}
+
 		// ── Cambiar estado de un partido ─────────────────────────────────
 		$notice = '';
 		$error  = '';
@@ -1158,7 +1168,7 @@ final class TournamentPage {
 			] );
 		}
 
-		self::render( 'torneo-detalle', compact( 'tournament', 'teams', 'matches', 'notice', 'error', 'venues', 'tournament_venue_ids', 'courts_by_venue', 'referees', 'planilleros', 'page_title', 'playoffs_status', 'brackets', 'group_stage_status', 'knockout_status' ) );
+		self::render( 'torneo-detalle', compact( 'tournament', 'teams', 'matches', 'notice', 'error', 'venues', 'tournament_venue_ids', 'courts_by_venue', 'referees', 'planilleros', 'page_title', 'playoffs_status', 'brackets', 'group_stage_status', 'knockout_status', 'is_locked' ) );
 	}
 
 	/**
