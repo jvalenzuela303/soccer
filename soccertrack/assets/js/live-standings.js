@@ -1102,6 +1102,40 @@
 	}
 
 	/* ------------------------------------------------------------------ */
+	/* Ticker de resultados sobre el banner                                */
+	/* ------------------------------------------------------------------ */
+
+	async function injectResultsTicker() {
+		const ticker = document.getElementById( 'st-results-ticker' );
+		if ( ! ticker ) return; // No hay banner configurado.
+
+		let matches;
+		try {
+			matches = await apiFetch( `soccertrack/v1/public/tournament/${ TID }/fixture` );
+		} catch {
+			return; // Falló el fetch — ticker permanece oculto.
+		}
+
+		const finished = ( Array.isArray( matches ) ? matches : [] )
+			.filter( ( m ) => m.status === 'finished' )
+			.sort( ( a, b ) => b.round_number - a.round_number )
+			.slice( 0, 10 );
+
+		if ( finished.length === 0 ) return; // Sin partidos finalizados.
+
+		const items = finished.map( ( m ) => `
+			<div class="st-results-ticker__item">
+				<span class="st-results-ticker__round">${ escHtml( i18n.round ?? 'Jornada' ) } ${ m.round_number }</span>
+				<span class="st-results-ticker__score">${ escHtml( m.home_team ) } ${ m.home_score } – ${ m.away_score } ${ escHtml( m.away_team ) }</span>
+			</div>` ).join( '' );
+
+		// Duplicar para loop seamless (el @keyframes va de 0 a -50%).
+		const track = ticker.querySelector( '.st-results-ticker__track' );
+		track.innerHTML = items + items;
+		ticker.classList.add( 'is-active' );
+	}
+
+	/* ------------------------------------------------------------------ */
 	/* Init                                                                 */
 	/* ------------------------------------------------------------------ */
 
@@ -1142,6 +1176,9 @@
 		const initialId = ( urlTab && RENDERERS[ urlTab ] ) ? urlTab : firstBtn?.dataset.tab;
 
 		if ( initialId ) activateTab( initialId );
+
+		// Ticker de resultados sobre el banner (fire-and-forget).
+		injectResultsTicker();
 	}
 
 	if ( document.readyState === 'loading' ) {
