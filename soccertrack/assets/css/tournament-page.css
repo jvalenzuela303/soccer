@@ -24,7 +24,7 @@ body.st-public-body {
 .st-public-header {
 	background: var(--st-navy);
 	color: #fff;
-	padding: 10px 0;
+	padding: 12px 0;
 }
 
 .st-public-header-inner {
@@ -33,7 +33,7 @@ body.st-public-body {
 	padding: 0 20px;
 	display: flex;
 	align-items: center;
-	gap: 14px;
+	gap: 16px;
 	flex-wrap: wrap;
 }
 
@@ -47,21 +47,30 @@ body.st-public-body {
 .st-public-logo { font-size: 1rem; }
 
 .st-public-brand-name {
-	font-family: var(--st-font-display);
-	font-size: 0.85rem;
-	color: var(--st-green-primary);
+	font-family: var(--st-font-body);
+	font-size: 0.72rem;
+	color: rgba(255, 255, 255, 0.5);
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+}
+
+.st-public-tournament {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
 }
 
 .st-public-tournament-name {
 	font-family: var(--st-font-display);
-	font-size: 1.1rem;
-	line-height: 1.2;
+	font-size: 1.5rem;
+	line-height: 1.15;
+	color: #fff;
 }
 
 .st-public-tournament-dates {
-	font-size: .75rem;
-	opacity: .7;
-	margin-top: 2px;
+	font-size: 0.72rem;
+	opacity: 0.55;
+	margin-top: 0;
 }
 
 /* ── Portal (contenido de pestañas) ─────────────────────────────── */
