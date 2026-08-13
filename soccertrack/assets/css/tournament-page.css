@@ -56,8 +56,10 @@ body.st-public-body {
 
 .st-public-tournament {
 	display: flex;
-	flex-direction: column;
-	gap: 2px;
+	flex-direction: row;
+	align-items: baseline;
+	gap: 10px;
+	flex-wrap: wrap;
 }
 
 .st-public-tournament-name {
@@ -70,7 +72,6 @@ body.st-public-body {
 .st-public-tournament-dates {
 	font-size: 0.72rem;
 	opacity: 0.55;
-	margin-top: 0;
 }
 
 /* ── Portal (contenido de pestañas) ─────────────────────────────── */
