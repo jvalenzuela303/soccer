@@ -21,7 +21,7 @@
 <?php /* ── Formulario crear torneo ─────────────────────────────────── */ ?>
 <div class="st-card">
 	<h2 class="st-card-title"><?php esc_html_e( 'Nuevo torneo', 'soccertrack' ); ?></h2>
-	<form method="post" class="st-form-inline">
+	<form method="post" class="st-form-inline" enctype="multipart/form-data">
 		<?php wp_nonce_field( 'st_create_tournament' ); ?>
 		<input type="hidden" name="st_create_tournament" value="1">
 
@@ -73,6 +73,25 @@
 
 		<input type="hidden" name="registration_mode" value="realtime">
 
+		<div class="st-field" style="flex-basis:100%">
+			<label class="st-label">
+				🖼️ <?php esc_html_e( 'Banner (opcional)', 'soccertrack' ); ?>
+			</label>
+			<input
+				type="file"
+				name="banner_file"
+				class="st-input"
+				accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+				onchange="stPreviewCreateBanner(this)"
+			>
+			<small class="st-hint">
+				<?php esc_html_e( 'JPG, PNG, WebP — Máx. 5 MB — 1920 × 500 px. Puede agregarse o cambiarse después.', 'soccertrack' ); ?>
+			</small>
+			<div id="st-create-banner-preview" style="display:none;margin-top:8px">
+				<img id="st-create-banner-img" src="" alt="" style="max-width:100%;max-height:120px;border-radius:6px;border:1px solid #e5e7eb;object-fit:cover">
+			</div>
+		</div>
+
 		<button type="submit" class="st-btn st-btn--primary">
 			<?php esc_html_e( '+ Crear torneo', 'soccertrack' ); ?>
 		</button>
@@ -89,6 +108,17 @@
 		fmt.addEventListener('change', toggle);
 		toggle();
 	}());
+	function stPreviewCreateBanner(input) {
+		var box = document.getElementById('st-create-banner-preview');
+		var img = document.getElementById('st-create-banner-img');
+		if (input.files && input.files[0]) {
+			var reader = new FileReader();
+			reader.onload = function(e) { img.src = e.target.result; box.style.display = ''; };
+			reader.readAsDataURL(input.files[0]);
+		} else {
+			box.style.display = 'none';
+		}
+	}
 	</script>
 </div>
 

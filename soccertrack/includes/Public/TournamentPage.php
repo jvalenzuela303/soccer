@@ -463,6 +463,38 @@ final class TournamentPage {
 					],
 					[ '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d' ]
 				);
+				// Banner opcional al crear el torneo.
+				$new_id = (int) $wpdb->insert_id;
+				if ( $new_id && ! empty( $_FILES['banner_file']['name'] ) ) {
+					if ( ! function_exists( 'wp_handle_upload' ) ) {
+						require_once ABSPATH . 'wp-admin/includes/file.php';
+					}
+					$bfile     = $_FILES['banner_file'];
+					$allowed   = [ 'image/jpeg', 'image/png', 'image/webp' ];
+					$mime_type = mime_content_type( $bfile['tmp_name'] );
+
+					if ( in_array( $mime_type, $allowed, true ) && $bfile['size'] <= 5 * 1024 * 1024 ) {
+						add_filter( 'upload_mimes', static function ( $mimes ) {
+							$mimes['jpg|jpeg|jpe'] = 'image/jpeg';
+							$mimes['png']          = 'image/png';
+							$mimes['webp']         = 'image/webp';
+							return $mimes;
+						} );
+						$ext           = strtolower( pathinfo( $bfile['name'], PATHINFO_EXTENSION ) );
+						$bfile['name'] = sprintf( 'banner_%d_%s_%s.%s', $new_id, gmdate( 'Ymd' ), wp_generate_password( 6, false ), $ext );
+						$uploaded      = wp_handle_upload( $bfile, [ 'test_form' => false ] );
+						if ( isset( $uploaded['url'] ) ) {
+							$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+								"{$wpdb->prefix}ds_tournaments",
+								[ 'banner_url' => esc_url_raw( $uploaded['url'] ) ],
+								[ 'id' => $new_id ],
+								[ '%s' ],
+								[ '%d' ]
+							);
+						}
+					}
+					// Errores de banner al crear se ignoran silenciosamente — el torneo ya se creó.
+				}
 				$notice = 'created';
 			}
 		}
