@@ -976,10 +976,10 @@ final class FixtureGenerator {
 
 		// 2. Validar rango.
 		if ( $n < 2 ) {
-			return [ 'match_ids' => [], 'error' => 'Se necesitan al menos 2 equipos.' ];
+			return [ 'match_ids' => [], 'error' => __( 'Se necesitan al menos 2 equipos.', 'soccertrack' ) ];
 		}
 		if ( $n > 16 ) {
-			return [ 'match_ids' => [], 'error' => 'No soportado (máx. 16 equipos).' ];
+			return [ 'match_ids' => [], 'error' => __( 'No soportado (máx. 16 equipos).', 'soccertrack' ) ];
 		}
 
 		// 3. Verificar que no existan partidos previos de eliminación.
@@ -992,7 +992,7 @@ final class FixtureGenerator {
 			)
 		);
 		if ( $existing > 0 ) {
-			return [ 'match_ids' => [], 'error' => 'El cuadro ya fue generado.' ];
+			return [ 'match_ids' => [], 'error' => __( 'El cuadro ya fue generado.', 'soccertrack' ) ];
 		}
 
 		// 4. Fisher-Yates shuffle.
@@ -1006,7 +1006,6 @@ final class FixtureGenerator {
 		while ( $s < $n ) {
 			$s *= 2;
 		}
-		$byes = $s - $n;
 
 		// 6. Determinar fase inicial.
 		$first_phase = match( true ) {
