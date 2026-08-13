@@ -1093,6 +1093,215 @@ final class FixtureGenerator {
 	}
 
 	/**
+	 * Detecta la fase activa del cuadro de eliminación y genera la siguiente ronda.
+	 *
+	 * Llámalo inline después de guardar el resultado de cualquier partido
+	 * cuando el torneo es de formato 'knockout'. Si la fase activa no está
+	 * completa todavía, retorna match_ids = [] sin error.
+	 *
+	 * @param  int $tournament_id
+	 * @param  int $venue_id      Recinto donde se disputará la siguiente ronda.
+	 * @return array{match_ids: int[]}|array{match_ids: int[], error: string}
+	 */
+	public function generate_knockout_next_round( int $tournament_id, int $venue_id ): array {
+		global $wpdb;
+
+		$weekdays = $this->weekdays_from_tournament(
+			(array) $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				$wpdb->prepare(
+					"SELECT match_weekday, match_weekdays, match_time, match_time_weekend, match_duration
+					 FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
+					$tournament_id
+				),
+				ARRAY_A
+			)
+		);
+		$time     = (string) ( $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->prepare( "SELECT match_time FROM {$wpdb->prefix}ds_tournaments WHERE id = %d", $tournament_id )
+		) ?? '19:00:00' );
+		$duration = $this->duration_from_tournament(
+			(array) $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				$wpdb->prepare(
+					"SELECT match_duration FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
+					$tournament_id
+				),
+				ARRAY_A
+			)
+		);
+		$has_third_place = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->prepare(
+				"SELECT has_third_place FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
+				$tournament_id
+			)
+		);
+
+		// 1. Detectar fase activa: la más reciente donde todos los partidos están terminados.
+		$phase_order = [ 'octavos', 'quarterfinal', 'semifinal', 'third_place', 'final' ];
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT phase,
+				        COUNT(*) AS total,
+				        SUM( status IN ('finished','suspended') ) AS done
+				 FROM {$wpdb->prefix}ds_matches
+				 WHERE tournament_id = %d AND phase != 'regular'
+				 GROUP BY phase",
+				$tournament_id
+			),
+			ARRAY_A
+		) ?: [];
+
+		// Ordenar por posición en el árbol.
+		usort( $rows, static function ( array $a, array $b ) use ( $phase_order ): int {
+			return array_search( $a['phase'], $phase_order, true ) <=> array_search( $b['phase'], $phase_order, true );
+		} );
+
+		// La fase activa es la última que tiene todos sus partidos terminados
+		// pero cuya siguiente fase aún no existe.
+		$active_phase = null;
+		foreach ( $rows as $row ) {
+			if ( (int) $row['total'] > 0 && (int) $row['done'] === (int) $row['total'] ) {
+				$active_phase = $row['phase'];
+			}
+		}
+
+		if ( $active_phase === null ) {
+			return [ 'match_ids' => [] ]; // Nada que hacer aún.
+		}
+
+		// 2. Determinar siguiente fase.
+		$next_phase = match( $active_phase ) {
+			'octavos'      => 'quarterfinal',
+			'quarterfinal' => 'semifinal',
+			'semifinal'    => 'final',
+			default        => null, // 'final' o 'third_place' → torneo completo.
+		};
+
+		if ( $next_phase === null ) {
+			return [ 'match_ids' => [] ]; // Torneo completo.
+		}
+
+		// 3. Guard: la siguiente fase ya existe.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$next_exists = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches
+				 WHERE tournament_id = %d AND phase = %s",
+				$tournament_id,
+				$next_phase
+			)
+		);
+		if ( $next_exists > 0 ) {
+			return [ 'match_ids' => [] ]; // Ya generada (idempotente).
+		}
+
+		// 4. Colectar ganadores (ignorar byes: away_team_id IS NULL → home gana).
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$matches = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT home_team_id, away_team_id, home_score, away_score, status
+				 FROM {$wpdb->prefix}ds_matches
+				 WHERE tournament_id = %d AND phase = %s
+				 ORDER BY id ASC",
+				$tournament_id,
+				$active_phase
+			),
+			ARRAY_A
+		) ?: [];
+
+		$winners = [];
+		$losers  = []; // Necesarios para 3.er puesto.
+
+		foreach ( $matches as $m ) {
+			if ( $m['away_team_id'] === null ) {
+				$winners[] = (int) $m['home_team_id']; // Bye.
+				continue;
+			}
+			$hs = (int) $m['home_score'];
+			$as = (int) $m['away_score'];
+			if ( $hs > $as ) {
+				$winners[] = (int) $m['home_team_id'];
+				$losers[]  = (int) $m['away_team_id'];
+			} elseif ( $as > $hs ) {
+				$winners[] = (int) $m['away_team_id'];
+				$losers[]  = (int) $m['home_team_id'];
+			} else {
+				return [
+					'match_ids' => [],
+					'error'     => __( 'Hay partidos empatados — el formato knockout no admite empates.', 'soccertrack' ),
+				];
+			}
+		}
+
+		// 5. Generar partidos de la siguiente fase.
+		$all_ids = [];
+
+		for ( $i = 0; $i < count( $winners ) - 1; $i += 2 ) {
+			$dt = $this->next_match_datetime( $weekdays, $time, (int) ( $i / 2 ), 0, $duration );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->insert(
+				"{$wpdb->prefix}ds_matches",
+				[
+					'tournament_id'  => $tournament_id,
+					'round_number'   => 0,
+					'home_team_id'   => $winners[ $i ],
+					'away_team_id'   => $winners[ $i + 1 ],
+					'venue_id'       => $venue_id,
+					'court_id'       => 0,
+					'match_datetime' => $dt,
+					'status'         => 'scheduled',
+					'phase'          => $next_phase,
+				],
+				[ '%d', '%d', '%d', '%d', '%d', '%d', '%s', '%s', '%s' ]
+			);
+			if ( $wpdb->insert_id ) {
+				$all_ids[] = (int) $wpdb->insert_id;
+			}
+		}
+
+		// 6. Si viene de semifinal → también generar 3.er puesto (si está habilitado).
+		if ( $active_phase === 'semifinal' && $has_third_place && count( $losers ) >= 2 ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$third_exists = (int) $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches
+					 WHERE tournament_id = %d AND phase = 'third_place'",
+					$tournament_id
+				)
+			);
+			if ( $third_exists === 0 ) {
+				$dt_third = $this->next_match_datetime( $weekdays, $time, 1, 0, $duration );
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				$wpdb->insert(
+					"{$wpdb->prefix}ds_matches",
+					[
+						'tournament_id'  => $tournament_id,
+						'round_number'   => 0,
+						'home_team_id'   => $losers[0],
+						'away_team_id'   => $losers[1],
+						'venue_id'       => $venue_id,
+						'court_id'       => 0,
+						'match_datetime' => $dt_third,
+						'status'         => 'scheduled',
+						'phase'          => 'third_place',
+					],
+					[ '%d', '%d', '%d', '%d', '%d', '%d', '%s', '%s', '%s' ]
+				);
+				if ( $wpdb->insert_id ) {
+					$all_ids[] = (int) $wpdb->insert_id;
+				}
+			}
+		}
+
+		if ( ! empty( $all_ids ) ) {
+			$this->assign_courts( $all_ids, $venue_id );
+		}
+
+		return [ 'match_ids' => $all_ids ];
+	}
+
+	/**
 	 * Genera la siguiente ronda eliminatoria de un torneo en Fase de Grupos.
 	 *
 	 * Se llama múltiples veces: cada llamada genera la siguiente ronda disponible.
