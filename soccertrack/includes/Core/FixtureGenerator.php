@@ -942,6 +942,158 @@ final class FixtureGenerator {
 	}
 
 	/**
+	 * Genera el cuadro inicial de un torneo de eliminación directa.
+	 *
+	 * - Fisher-Yates shuffle de los equipos.
+	 * - Rellena hasta la siguiente potencia de 2 con byes.
+	 * - Los byes se insertan como partidos finalizados (home gana 1-0, away_team_id = NULL).
+	 *
+	 * @param  array{id:int,match_weekday:int,match_time:string,match_duration?:int} $tournament
+	 * @param  int $venue_id
+	 * @return array{match_ids: int[]}|array{match_ids: int[], error: string}
+	 */
+	public function generate_knockout_initial( array $tournament, int $venue_id ): array {
+		global $wpdb;
+
+		$tournament_id = (int) $tournament['id'];
+		$weekdays      = $this->weekdays_from_tournament( $tournament );
+		$time          = (string) ( $tournament['match_time'] ?? '19:00:00' );
+		$duration      = $this->duration_from_tournament( $tournament );
+
+		// 1. Cargar equipos.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$team_ids = array_map(
+			'intval',
+			$wpdb->get_col(
+				$wpdb->prepare(
+					"SELECT id FROM {$wpdb->prefix}ds_teams WHERE tournament_id = %d ORDER BY id ASC",
+					$tournament_id
+				)
+			)
+		);
+
+		$n = count( $team_ids );
+
+		// 2. Validar rango.
+		if ( $n < 2 ) {
+			return [ 'match_ids' => [], 'error' => 'Se necesitan al menos 2 equipos.' ];
+		}
+		if ( $n > 16 ) {
+			return [ 'match_ids' => [], 'error' => 'No soportado (máx. 16 equipos).' ];
+		}
+
+		// 3. Verificar que no existan partidos previos de eliminación.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$existing = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches
+				 WHERE tournament_id = %d AND phase != 'regular'",
+				$tournament_id
+			)
+		);
+		if ( $existing > 0 ) {
+			return [ 'match_ids' => [], 'error' => 'El cuadro ya fue generado.' ];
+		}
+
+		// 4. Fisher-Yates shuffle.
+		for ( $i = $n - 1; $i > 0; $i-- ) {
+			$j             = random_int( 0, $i );
+			[ $team_ids[ $i ], $team_ids[ $j ] ] = [ $team_ids[ $j ], $team_ids[ $i ] ];
+		}
+
+		// 5. Calcular tamaño del bracket (siguiente potencia de 2).
+		$s    = 2;
+		while ( $s < $n ) {
+			$s *= 2;
+		}
+		$byes = $s - $n;
+
+		// 6. Determinar fase inicial.
+		$first_phase = match( true ) {
+			$s <= 2  => 'final',
+			$s <= 4  => 'semifinal',
+			$s <= 8  => 'quarterfinal',
+			default  => 'octavos',
+		};
+
+		// Rellenar con null para los byes (primeras posiciones = mayor seeding).
+		// Los primeros $byes equipos recibirán un bye (ganan automáticamente).
+		// Estructura: [ bye_team_1, bye_team_2, ..., real_A, real_B, ..., real_X ]
+		// Emparejamiento estándar: posición i vs posición (S-1-i).
+		// Si la posición (S-1-i) >= N → ese oponente es un bye → bye match para teams[i].
+		$all_ids       = [];
+		$scheduled_ids = [];
+		$now           = current_time( 'mysql' );
+
+		for ( $i = 0; $i < $s / 2; $i++ ) {
+			$home_slot = $i;
+			$away_slot = $s - 1 - $i;
+
+			$home_team = $home_slot < $n ? $team_ids[ $home_slot ] : null;
+			$away_team = $away_slot < $n ? $team_ids[ $away_slot ] : null;
+
+			if ( $home_team === null ) {
+				// Ambos slots son byes — no insertar partido.
+				continue;
+			}
+
+			if ( $away_team === null ) {
+				// Bye: home avanza automáticamente.
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				$wpdb->insert(
+					"{$wpdb->prefix}ds_matches",
+					[
+						'tournament_id'  => $tournament_id,
+						'round_number'   => 0,
+						'home_team_id'   => $home_team,
+						'away_team_id'   => null,
+						'venue_id'       => $venue_id,
+						'court_id'       => 0,
+						'match_datetime' => $now,
+						'status'         => 'finished',
+						'home_score'     => 1,
+						'away_score'     => 0,
+						'phase'          => $first_phase,
+					],
+					[ '%d', '%d', '%d', null, '%d', '%d', '%s', '%s', '%d', '%d', '%s' ]
+				);
+			} else {
+				// Partido real.
+				$dt = $this->next_match_datetime( $weekdays, $time, (int) floor( $i / 2 ), 0, $duration );
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				$wpdb->insert(
+					"{$wpdb->prefix}ds_matches",
+					[
+						'tournament_id'  => $tournament_id,
+						'round_number'   => 0,
+						'home_team_id'   => $home_team,
+						'away_team_id'   => $away_team,
+						'venue_id'       => $venue_id,
+						'court_id'       => 0,
+						'match_datetime' => $dt,
+						'status'         => 'scheduled',
+						'phase'          => $first_phase,
+					],
+					[ '%d', '%d', '%d', '%d', '%d', '%d', '%s', '%s', '%s' ]
+				);
+				if ( $wpdb->insert_id ) {
+					$scheduled_ids[] = (int) $wpdb->insert_id;
+				}
+			}
+
+			if ( $wpdb->insert_id ) {
+				$all_ids[] = (int) $wpdb->insert_id;
+			}
+		}
+
+		if ( ! empty( $scheduled_ids ) ) {
+			$this->assign_courts( $scheduled_ids, $venue_id );
+		}
+
+		return [ 'match_ids' => $all_ids ];
+	}
+
+	/**
 	 * Genera la siguiente ronda eliminatoria de un torneo en Fase de Grupos.
 	 *
 	 * Se llama múltiples veces: cada llamada genera la siguiente ronda disponible.

@@ -639,6 +639,13 @@ final class DatabaseInstaller {
 				                     NOT NULL DEFAULT 'regular'"
 			);
 		}
+
+		// v2.1.0 — ds_matches: away_team_id pasa a NULLable para soportar byes en torneos knockout.
+		// Un bye se representa como partido finished con away_team_id = NULL y home_score = 1.
+		$away_col = $wpdb->get_row( "SHOW COLUMNS FROM {$prefix}ds_matches LIKE 'away_team_id'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( $away_col && str_contains( (string) $away_col->Null, 'NO' ) ) {
+			$wpdb->query( "ALTER TABLE {$prefix}ds_matches MODIFY COLUMN away_team_id BIGINT UNSIGNED NULL DEFAULT NULL" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		}
 	}
 
 	/**
