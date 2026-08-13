@@ -1116,16 +1116,40 @@
 			return; // Falló el fetch — ticker permanece oculto.
 		}
 
-		const finished = ( Array.isArray( matches ) ? matches : [] )
-			.filter( ( m ) => m.status === 'finished' )
+		const allFinished = ( Array.isArray( matches ) ? matches : [] )
+			.filter( ( m ) => m.status === 'finished' );
+
+		if ( allFinished.length === 0 ) return; // Sin partidos finalizados.
+
+		// Para round_robin_playoffs: mostrar playoffs si ya comenzaron, si no solo fase regular.
+		let pool;
+		if ( FORMAT === 'round_robin_playoffs' ) {
+			const playoffFinished = allFinished.filter( ( m ) => m.phase !== 'regular' );
+			pool = playoffFinished.length > 0 ? playoffFinished : allFinished.filter( ( m ) => m.phase === 'regular' );
+		} else {
+			pool = allFinished;
+		}
+
+		const finished = pool
 			.sort( ( a, b ) => b.round_number - a.round_number )
 			.slice( 0, 10 );
 
-		if ( finished.length === 0 ) return; // Sin partidos finalizados.
+		// Etiqueta de fase para cada ítem.
+		const phaseLabel = ( m ) => {
+			if ( m.phase === 'regular' || ! m.phase ) return `${ escHtml( i18n.round ?? 'Jornada' ) } ${ Number( m.round_number ) }`;
+			const labels = {
+				semifinal:    i18n.phase_semifinal    ?? 'Semifinal',
+				final:        i18n.phase_final        ?? 'Final',
+				third_place:  i18n.phase_third_place  ?? '3.er Puesto',
+				quarterfinal: i18n.phase_quarterfinal ?? 'Cuartos',
+				octavos:      i18n.phase_octavos      ?? 'Octavos',
+			};
+			return escHtml( labels[ m.phase ] ?? m.phase );
+		};
 
 		const items = finished.map( ( m ) => `
 			<div class="st-results-ticker__item">
-				<span class="st-results-ticker__round">${ escHtml( i18n.round ?? 'Jornada' ) } ${ Number( m.round_number ) }</span>
+				<span class="st-results-ticker__round">${ phaseLabel( m ) }</span>
 				<span class="st-results-ticker__score">${ escHtml( m.home_team ) } ${ Number( m.home_score ) } – ${ Number( m.away_score ) } ${ escHtml( m.away_team ) }</span>
 			</div>` ).join( '' );
 
