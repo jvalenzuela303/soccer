@@ -1106,34 +1106,20 @@ final class FixtureGenerator {
 	public function generate_knockout_next_round( int $tournament_id, int $venue_id ): array {
 		global $wpdb;
 
-		$weekdays = $this->weekdays_from_tournament(
-			(array) $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-				$wpdb->prepare(
-					"SELECT match_weekday, match_weekdays, match_time, match_time_weekend, match_duration
-					 FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
-					$tournament_id
-				),
-				ARRAY_A
-			)
-		);
-		$time     = (string) ( $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-			$wpdb->prepare( "SELECT match_time FROM {$wpdb->prefix}ds_tournaments WHERE id = %d", $tournament_id )
-		) ?? '19:00:00' );
-		$duration = $this->duration_from_tournament(
-			(array) $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-				$wpdb->prepare(
-					"SELECT match_duration FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
-					$tournament_id
-				),
-				ARRAY_A
-			)
-		);
-		$has_third_place = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$t = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT has_third_place FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
+				"SELECT match_weekday, match_weekdays, match_time, match_time_weekend, match_duration, has_third_place
+				 FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
 				$tournament_id
-			)
-		);
+			),
+			ARRAY_A
+		) ?: [];
+
+		$weekdays        = $this->weekdays_from_tournament( $t );
+		$time            = (string) ( $t['match_time'] ?? '19:00:00' );
+		$duration        = $this->duration_from_tournament( $t );
+		$has_third_place = (int) ( $t['has_third_place'] ?? 0 );
 
 		// 1. Detectar fase activa: la más reciente donde todos los partidos están terminados.
 		$phase_order = [ 'octavos', 'quarterfinal', 'semifinal', 'third_place', 'final' ];
@@ -1157,10 +1143,14 @@ final class FixtureGenerator {
 			return array_search( $a['phase'], $phase_order, true ) <=> array_search( $b['phase'], $phase_order, true );
 		} );
 
+		// Excluir third_place de la detección de fase activa
+		// (third_place nunca genera una fase sucesora).
+		$rows_for_detection = array_filter( $rows, static fn( array $r ) => $r['phase'] !== 'third_place' );
+
 		// La fase activa es la última que tiene todos sus partidos terminados
 		// pero cuya siguiente fase aún no existe.
 		$active_phase = null;
-		foreach ( $rows as $row ) {
+		foreach ( $rows_for_detection as $row ) {
 			if ( (int) $row['total'] > 0 && (int) $row['done'] === (int) $row['total'] ) {
 				$active_phase = $row['phase'];
 			}
