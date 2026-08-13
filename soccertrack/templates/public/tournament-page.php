@@ -36,7 +36,7 @@
 	<div class="st-public-header-inner">
 		<div class="st-public-brand">
 			<span class="st-public-logo">⚽</span>
-			<span class="st-public-brand-name"><?php echo esc_html( $tournament['name'] ); ?></span>
+			<span class="st-public-brand-name"><?php esc_html_e( 'Torneos Corporativos', 'soccertrack' ); ?></span>
 		</div>
 		<div class="st-public-tournament">
 			<h1 class="st-public-tournament-name"><?php echo esc_html( $tournament['name'] ); ?></h1>
