@@ -499,6 +499,39 @@
 </script>
 <?php endif; /* is_group_stage */ ?>
 
+<?php /* ── Eliminación Directa (solo formato knockout) ─────────────── */ ?>
+<?php if ( ! empty( $knockout_status['is_knockout'] ) ) : ?>
+<div class="st-card" style="margin-bottom:20px" id="st-knockout-status-card">
+	<div class="st-card-header" style="display:flex;justify-content:space-between;align-items:center">
+		<h2 class="st-card-title" style="margin:0"><?php esc_html_e( 'Eliminación Directa', 'soccertrack' ); ?></h2>
+	</div>
+
+	<?php if ( ! $knockout_status['has_fixture'] ) : ?>
+		<p class="st-empty-msg"><?php esc_html_e( 'El cuadro aún no ha sido generado. Usa el botón "Generar Fixture" de arriba.', 'soccertrack' ); ?></p>
+
+	<?php elseif ( $knockout_status['is_complete'] ) : ?>
+		<p style="color:#3CBC20;font-weight:600">🏆 <?php esc_html_e( 'Torneo finalizado.', 'soccertrack' ); ?></p>
+
+	<?php else : ?>
+		<p>
+			<strong><?php esc_html_e( 'Fase activa:', 'soccertrack' ); ?></strong>
+			<?php echo esc_html( $knockout_status['active_phase_label'] ); ?>
+		</p>
+		<?php if ( $knockout_status['pending_count'] > 0 ) : ?>
+			<p class="st-empty-msg">
+				<?php printf(
+					// translators: %d number of pending matches.
+					esc_html__( '%d partido(s) pendiente(s) en esta fase. La siguiente ronda se generará automáticamente al cerrar todos los partidos.', 'soccertrack' ),
+					$knockout_status['pending_count']
+				); ?>
+			</p>
+		<?php else : ?>
+			<p class="st-empty-msg"><?php esc_html_e( 'Todos los partidos de esta fase han sido cerrados. La siguiente ronda se generará al guardar el próximo resultado.', 'soccertrack' ); ?></p>
+		<?php endif; ?>
+	<?php endif; ?>
+</div>
+<?php endif; /* is_knockout */ ?>
+
 <?php /* ── Brackets de Playoffs (solo formato round_robin_playoffs) ─── */ ?>
 <?php if ( ! empty( $playoffs_status['is_playoffs_format'] ) ) : ?>
 <div class="st-card" style="margin-bottom:20px" id="st-brackets-card">
@@ -920,8 +953,17 @@ $venues_for_select ??= ! empty( $tournament_venue_ids )
 $has_brackets = ! empty( $brackets );
 ?>
 <div class="st-card">
-	<div class="st-card-header">
-		<h2 class="st-card-title">🏆 <?php esc_html_e( 'Play-offs', 'soccertrack' ); ?></h2>
+	<div class="st-card-header" style="display:flex;justify-content:space-between;align-items:center">
+		<h2 class="st-card-title" style="margin:0">🏆 <?php esc_html_e( 'Play-offs', 'soccertrack' ); ?></h2>
+		<?php if ( $playoffs_status['has_semifinals'] || $playoffs_status['has_finals'] ) : ?>
+		<button
+			class="st-btn"
+			id="st-reset-playoffs-btn"
+			style="background:#dc2626;color:#fff;font-size:.8rem;padding:5px 12px"
+			data-tournament="<?php echo esc_attr( (string) $tournament['id'] ); ?>"
+			data-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>"
+		>🗑 <?php esc_html_e( 'Reiniciar Fase Eliminatoria', 'soccertrack' ); ?></button>
+		<?php endif; ?>
 	</div>
 
 	<div id="st-playoffs-notice"></div>
@@ -1059,6 +1101,42 @@ $has_brackets = ! empty( $brackets );
 		<?php endif; ?>
 	<?php endif; ?>
 </div>
+
+<script>
+(function() {
+	var resetBtn = document.getElementById('st-reset-playoffs-btn');
+	if ( ! resetBtn ) return;
+	resetBtn.addEventListener('click', function() {
+		if ( ! confirm('<?php echo esc_js( __( '¿Eliminar todos los partidos de Play-offs (semi-finales, final, 3.er puesto)? Esta acción no se puede deshacer.', 'soccertrack' ) ); ?>') ) return;
+
+		var tid   = resetBtn.dataset.tournament;
+		var nonce = resetBtn.dataset.nonce;
+		resetBtn.disabled = true;
+		resetBtn.textContent = '⏳ Eliminando…';
+
+		fetch('/wp-json/soccertrack/v1/admin/tournament/' + tid + '/playoffs', {
+			method:  'DELETE',
+			headers: { 'X-WP-Nonce': nonce },
+		})
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
+			var notice = document.getElementById('st-playoffs-notice');
+			if ( data.deleted ) {
+				notice.innerHTML = '<div class="st-alert st-alert--success">✅ <?php echo esc_js( __( 'Fase eliminatoria reiniciada.', 'soccertrack' ) ); ?> <a href="">Recargar</a></div>';
+				resetBtn.style.display = 'none';
+			} else {
+				notice.innerHTML = '<div class="st-alert st-alert--error">⚠️ ' + ( data.message || data.error || 'Error' ) + '</div>';
+				resetBtn.disabled = false;
+				resetBtn.textContent = '🗑 <?php echo esc_js( __( 'Reiniciar Fase Eliminatoria', 'soccertrack' ) ); ?>';
+			}
+		})
+		.catch(function(err) {
+			document.getElementById('st-playoffs-notice').innerHTML = '<div class="st-alert st-alert--error">⚠️ ' + err.message + '</div>';
+			resetBtn.disabled = false;
+		});
+	});
+}());
+</script>
 <?php endif; ?>
 
 <?php /* ── Bases del torneo (PDF) ─────────────────────────────────────── */ ?>

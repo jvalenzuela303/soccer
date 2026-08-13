@@ -60,6 +60,9 @@
 				<label class="st-label"><?php esc_html_e( 'Equipos que clasifican por grupo', 'soccertrack' ); ?></label>
 				<input type="number" name="teams_advancing_per_group" class="st-input" value="2" min="1" max="4" style="max-width:80px">
 			</div>
+		</div>
+
+		<div id="st-third-place-options" style="display:none">
 			<div class="st-field">
 				<label class="st-label" style="display:flex;align-items:center;gap:8px">
 					<input type="checkbox" name="has_third_place" value="1" checked>
@@ -76,9 +79,13 @@
 	</form>
 	<script>
 	(function() {
-		var fmt   = document.querySelector('select[name="format"]');
-		var opts  = document.getElementById('st-group-stage-options');
-		function toggle() { opts.style.display = fmt.value === 'group_stage' ? '' : 'none'; }
+		var fmt      = document.querySelector('select[name="format"]');
+		var gsOpts   = document.getElementById('st-group-stage-options');
+		var thirdOpt = document.getElementById('st-third-place-options');
+		function toggle() {
+			gsOpts.style.display   = fmt.value === 'group_stage' ? '' : 'none';
+			thirdOpt.style.display = ( fmt.value === 'group_stage' || fmt.value === 'knockout' ) ? '' : 'none';
+		}
 		fmt.addEventListener('change', toggle);
 		toggle();
 	}());

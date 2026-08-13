@@ -442,7 +442,9 @@ final class TournamentPage {
 				$format        = sanitize_text_field( $_POST['format'] ?? 'round_robin' );
 				$group_count   = 'group_stage' === $format ? max( 2, min( 8, (int) ( $_POST['group_count'] ?? 2 ) ) ) : 2;
 				$teams_adv     = 'group_stage' === $format ? max( 1, min( 4, (int) ( $_POST['teams_advancing_per_group'] ?? 2 ) ) ) : 2;
-				$has_3rd       = 'group_stage' === $format ? ( isset( $_POST['has_third_place'] ) ? 1 : 0 ) : 1;
+				$has_3rd       = in_array( $format, [ 'group_stage', 'knockout' ], true )
+					? ( isset( $_POST['has_third_place'] ) ? 1 : 0 )
+					: 1;
 
 				$wpdb->insert( // phpcs:ignore
 					"{$wpdb->prefix}ds_tournaments",
@@ -1076,6 +1078,50 @@ final class TournamentPage {
 			'has_finals'        => ! empty( $final_ms ),
 		];
 
+		// ── Estado eliminación directa (formato knockout) ──────────────────
+		$is_knockout = ( $tournament['format'] ?? '' ) === 'knockout';
+
+		$knockout_matches = array_filter(
+			$matches,
+			static fn( $m ) => ( $m['phase'] ?? 'regular' ) !== 'regular'
+		);
+
+		$knockout_active_phase = '';
+		$knockout_pending      = 0;
+		$knockout_complete     = false;
+
+		if ( $is_knockout && ! empty( $knockout_matches ) ) {
+			$phase_order    = [ 'octavos', 'quarterfinal', 'semifinal', 'third_place', 'final' ];
+			$phases_present = array_unique( array_column( array_values( $knockout_matches ), 'phase' ) );
+			usort(
+				$phases_present,
+				static fn( $a, $b ) => array_search( $a, $phase_order, true ) <=> array_search( $b, $phase_order, true )
+			);
+			$knockout_active_phase = end( $phases_present );
+			$knockout_pending      = count( array_filter(
+				$knockout_matches,
+				static fn( $m ) => $m['phase'] === $knockout_active_phase
+								&& ! in_array( $m['status'], [ 'finished', 'suspended' ], true )
+			) );
+			$knockout_complete = ( 'final' === $knockout_active_phase ) && ( 0 === $knockout_pending );
+		}
+
+		$knockout_phase_labels = [
+			'octavos'      => __( 'Octavos de Final', 'soccertrack' ),
+			'quarterfinal' => __( 'Cuartos de Final', 'soccertrack' ),
+			'semifinal'    => __( 'Semifinal', 'soccertrack' ),
+			'third_place'  => __( '3.er Puesto', 'soccertrack' ),
+			'final'        => __( 'Final', 'soccertrack' ),
+		];
+
+		$knockout_status = [
+			'is_knockout'        => $is_knockout,
+			'has_fixture'        => $is_knockout && ! empty( $knockout_matches ),
+			'active_phase_label' => $knockout_phase_labels[ $knockout_active_phase ] ?? '',
+			'pending_count'      => $knockout_pending,
+			'is_complete'        => $knockout_complete,
+		];
+
 		// ── Brackets configurados para este torneo ───────────────────────────
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$brackets_raw = $wpdb->get_results(
@@ -1112,7 +1158,7 @@ final class TournamentPage {
 			] );
 		}
 
-		self::render( 'torneo-detalle', compact( 'tournament', 'teams', 'matches', 'notice', 'error', 'venues', 'tournament_venue_ids', 'courts_by_venue', 'referees', 'planilleros', 'page_title', 'playoffs_status', 'brackets', 'group_stage_status' ) );
+		self::render( 'torneo-detalle', compact( 'tournament', 'teams', 'matches', 'notice', 'error', 'venues', 'tournament_venue_ids', 'courts_by_venue', 'referees', 'planilleros', 'page_title', 'playoffs_status', 'brackets', 'group_stage_status', 'knockout_status' ) );
 	}
 
 	/**
