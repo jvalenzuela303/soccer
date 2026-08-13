@@ -21,6 +21,15 @@
 	const FORMAT = cfg.tournamentFormat ?? '';
 	const i18n   = cfg.i18n ?? {};
 
+	/* Títulos de fase compartidos entre renderPlayoffs, renderKnockoutBracket y renderFixture. */
+	const PHASE_TITLE = {
+		octavos:      i18n.phase_octavos      ?? 'Octavos de Final',
+		quarterfinal: i18n.phase_quarterfinal ?? 'Cuartos de Final',
+		semifinal:    i18n.phase_semifinal    ?? 'Semi-finales',
+		third_place:  i18n.phase_third_place  ?? '3.er Puesto',
+		final:        i18n.phase_final        ?? 'Final',
+	};
+
 	// Cache de respuestas por tab para evitar refetches.
 	/** @type {Map<string, any>} */
 	const cache = new Map();
@@ -122,6 +131,10 @@
 		showLoading( container );
 
 		try {
+			if ( FORMAT === 'knockout' ) {
+				return renderKnockoutBracket( container );
+			}
+
 			if ( FORMAT === 'group_stage' ) {
 				await renderGroupStandings( container );
 			} else {
@@ -418,6 +431,26 @@
 				return showEmpty( container, i18n.no_fixture ?? 'El fixture aún no ha sido generado.' );
 			}
 
+			if ( FORMAT === 'knockout' ) {
+				// Todos los partidos son de eliminación directa — sin navegación por jornadas.
+				const phases = [ 'octavos', 'quarterfinal', 'semifinal', 'third_place', 'final' ];
+				const knockoutMatches = matches.filter(
+					m => phases.includes( m.phase ) && m.away_team_id !== null
+				);
+				if ( ! knockoutMatches.length ) {
+					return showEmpty( container, i18n.no_fixture ?? 'El fixture aún no ha sido generado.' );
+				}
+				let html = '';
+				for ( const phase of phases ) {
+					const ms = knockoutMatches.filter( m => m.phase === phase );
+					if ( ! ms.length ) continue;
+					html += `<h2 class="st-section-title">${ escHtml( PHASE_TITLE[ phase ] ) }</h2>`;
+					html += ms.map( matchCard ).join( '' );
+				}
+				container.innerHTML = html;
+				return;
+			}
+
 			// Separar partidos regulares de eliminatoria.
 			const PLAYOFF_PHASES = [ 'quarterfinal', 'semifinal', 'third_place', 'final' ];
 			const regularMatches  = matches.filter( m => ! PLAYOFF_PHASES.includes( m.phase ) );
@@ -536,12 +569,7 @@
 				return showEmpty( container, i18n.no_playoffs ?? 'Los play-offs aún no han comenzado.' );
 			}
 
-			const phaseTitle = {
-				quarterfinal: i18n.phase_quarterfinal ?? 'Cuartos de Final',
-				semifinal:    i18n.phase_semifinal    ?? 'Semi-finales',
-				third_place:  i18n.phase_third_place  ?? '3.er Puesto',
-				final:        i18n.phase_final        ?? 'Final',
-			};
+			const phaseTitle = PHASE_TITLE;
 
 			// Agrupar por bracket_name (null → bracket genérico).
 			const bracketMap = new Map();
@@ -586,6 +614,49 @@
 
 		} catch ( err ) {
 			showError( container, `${ i18n.error_load ?? 'Error al cargar los play-offs.' } (${ err.message })` );
+		}
+	}
+
+	/**
+	 * Renderiza el cuadro de eliminación directa en el contenedor dado.
+	 * Usado en el tab "Posiciones" cuando el formato es knockout.
+	 *
+	 * @param {HTMLElement} container
+	 */
+	async function renderKnockoutBracket( container ) {
+		showLoading( container );
+
+		try {
+			const matches         = await apiFetch( `soccertrack/v1/public/tournament/${ TID }/fixture` );
+			const phases          = [ 'octavos', 'quarterfinal', 'semifinal', 'third_place', 'final' ];
+			// Excluir byes (away_team_id === null en la respuesta REST significa away_team_id IS NULL en DB).
+			const knockoutMatches = matches.filter(
+				m => phases.includes( m.phase ) && m.away_team_id !== null
+			);
+
+			if ( ! knockoutMatches.length ) {
+				return showEmpty( container, i18n.no_fixture ?? 'El fixture aún no ha sido generado.' );
+			}
+
+			let html = `<h2 class="st-section-title">${ escHtml( i18n.playoffs_title ?? 'Eliminación Directa' ) }</h2>`;
+
+			for ( const phase of phases ) {
+				const ms = knockoutMatches.filter( m => m.phase === phase );
+				if ( ! ms.length ) continue;
+				html += `<h3 class="st-bracket-round-title" style="font-size:.9rem;margin:1rem 0 .4rem">${ escHtml( PHASE_TITLE[ phase ] ?? phase ) }</h3>`;
+				html += ms.map( matchCard ).join( '' );
+			}
+
+			// Banner de torneo finalizado.
+			const finalMatch = knockoutMatches.find( m => m.phase === 'final' );
+			if ( finalMatch && finalMatch.status === 'finished' ) {
+				html += `<p style="color:var(--st-green-primary);font-weight:700;margin-top:1rem">🏆 ${ escHtml( i18n.tournament_complete ?? 'Torneo finalizado.' ) }</p>`;
+			}
+
+			container.innerHTML = html;
+
+		} catch ( err ) {
+			showError( container, `${ i18n.error_load ?? 'Error al cargar.' } (${ err.message })` );
 		}
 	}
 

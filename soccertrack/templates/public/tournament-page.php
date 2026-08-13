@@ -42,7 +42,7 @@
 
 <?php
 // Formatos que incluyen fase de play-offs.
-$has_playoffs_tab = in_array( $tournament['format'] ?? '', [ 'round_robin_playoffs', 'group_stage', 'knockout' ], true );
+$has_playoffs_tab = in_array( $tournament['format'] ?? '', [ 'round_robin_playoffs', 'group_stage' ], true );
 ?>
 
 <?php /* ── Portal de pestañas ────────────────────────────────────────── */ ?>
@@ -174,6 +174,7 @@ window.stPublic = <?php echo wp_json_encode( [
 		'playoffs_title'   => __( 'Play-offs', 'soccertrack' ),
 		'no_playoffs'      => __( 'Los play-offs aún no han comenzado.', 'soccertrack' ),
 		'group_label'        => __( 'Grupo', 'soccertrack' ),
+		'phase_octavos'      => __( 'Octavos de Final', 'soccertrack' ),
 		'phase_quarterfinal' => __( 'Cuartos de Final', 'soccertrack' ),
 		'phase_semifinal'    => __( 'Semi-finales', 'soccertrack' ),
 		'phase_third_place'  => __( '3.er Puesto', 'soccertrack' ),
