@@ -463,6 +463,41 @@ final class TournamentPage {
 					],
 					[ '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d' ]
 				);
+				// Banner opcional al crear el torneo.
+				$new_id = (int) $wpdb->insert_id;
+				if ( $new_id && ! empty( $_FILES['banner_file']['name'] ) ) {
+					if ( ! function_exists( 'wp_handle_upload' ) ) {
+						require_once ABSPATH . 'wp-admin/includes/file.php';
+					}
+					$bfile   = $_FILES['banner_file'];
+					$allowed = [ 'image/jpeg', 'image/png', 'image/webp' ];
+
+					if ( isset( $bfile['error'] ) && UPLOAD_ERR_OK === $bfile['error'] ) {
+						$mime_type = mime_content_type( $bfile['tmp_name'] );
+
+						if ( in_array( $mime_type, $allowed, true ) && $bfile['size'] <= 5 * 1024 * 1024 ) {
+							add_filter( 'upload_mimes', static function ( $mimes ) {
+								$mimes['jpg|jpeg|jpe'] = 'image/jpeg';
+								$mimes['png']          = 'image/png';
+								$mimes['webp']         = 'image/webp';
+								return $mimes;
+							} );
+							$ext           = strtolower( pathinfo( $bfile['name'], PATHINFO_EXTENSION ) );
+							$bfile['name'] = sprintf( 'banner_%d_%s_%s.%s', $new_id, gmdate( 'Ymd' ), wp_generate_password( 6, false ), $ext );
+							$uploaded      = wp_handle_upload( $bfile, [ 'test_form' => false ] );
+							if ( isset( $uploaded['url'] ) ) {
+								$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+									"{$wpdb->prefix}ds_tournaments",
+									[ 'banner_url' => esc_url_raw( $uploaded['url'] ) ],
+									[ 'id' => $new_id ],
+									[ '%s' ],
+									[ '%d' ]
+								);
+							}
+						}
+					}
+					// Errores de banner al crear se ignoran silenciosamente — el torneo ya se creó.
+				}
 				$notice = 'created';
 			}
 		}
@@ -585,6 +620,90 @@ final class TournamentPage {
 
 			// Refrescar datos del torneo.
 			$tournament = $wpdb->get_row( // phpcs:ignore
+				$wpdb->prepare( "SELECT * FROM {$wpdb->prefix}ds_tournaments WHERE id = %d", $id ),
+				ARRAY_A
+			);
+		}
+
+		// ── Guardar / subir banner del torneo ─────────────────────────
+		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_save_banner'] ) ) {
+			check_admin_referer( 'st_save_banner_' . $id );
+
+			if ( empty( $_FILES['banner_file']['name'] ) ) {
+				$error = __( 'Selecciona una imagen para el banner.', 'soccertrack' );
+			} else {
+				if ( ! function_exists( 'wp_handle_upload' ) ) {
+					require_once ABSPATH . 'wp-admin/includes/file.php';
+				}
+
+				$file      = $_FILES['banner_file'];
+				$allowed   = [ 'image/jpeg', 'image/png', 'image/webp' ];
+				$max_bytes = 5 * 1024 * 1024; // 5 MB
+
+				if ( isset( $file['error'] ) && UPLOAD_ERR_OK !== $file['error'] ) {
+					$error = __( 'Error al subir el archivo. Verifica el tamaño máximo permitido.', 'soccertrack' );
+				} else {
+					$mime_type = mime_content_type( $file['tmp_name'] );
+
+					if ( ! in_array( $mime_type, $allowed, true ) ) {
+						$error = __( 'Solo se permiten imágenes JPG, PNG o WebP.', 'soccertrack' );
+					} elseif ( $file['size'] > $max_bytes ) {
+						$error = __( 'El banner no puede superar 5 MB.', 'soccertrack' );
+					} else {
+						add_filter( 'upload_mimes', static function ( $mimes ) {
+							$mimes['jpg|jpeg|jpe'] = 'image/jpeg';
+							$mimes['png']          = 'image/png';
+							$mimes['webp']         = 'image/webp';
+							return $mimes;
+						} );
+
+						$ext          = strtolower( pathinfo( $file['name'], PATHINFO_EXTENSION ) );
+						$file['name'] = sprintf(
+							'banner_%d_%s_%s.%s',
+							$id,
+							gmdate( 'Ymd' ),
+							wp_generate_password( 6, false ),
+							$ext
+						);
+
+						$uploaded = wp_handle_upload( $file, [ 'test_form' => false ] );
+
+						if ( isset( $uploaded['error'] ) ) {
+							$error = $uploaded['error'];
+						} elseif ( isset( $uploaded['url'] ) ) {
+							$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+								"{$wpdb->prefix}ds_tournaments",
+								[ 'banner_url' => esc_url_raw( $uploaded['url'] ) ],
+								[ 'id' => $id ],
+								[ '%s' ],
+								[ '%d' ]
+							);
+							$notice = 'banner_saved';
+						}
+					}
+				}
+			}
+
+			// Refrescar datos del torneo.
+			$tournament = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				$wpdb->prepare( "SELECT * FROM {$wpdb->prefix}ds_tournaments WHERE id = %d", $id ),
+				ARRAY_A
+			);
+		}
+
+		// ── Eliminar banner del torneo ────────────────────────────────
+		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_delete_banner'] ) ) {
+			check_admin_referer( 'st_delete_banner_' . $id );
+
+			$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				$wpdb->prepare(
+					"UPDATE {$wpdb->prefix}ds_tournaments SET banner_url = NULL WHERE id = %d",
+					$id
+				)
+			);
+			$notice = 'banner_deleted';
+
+			$tournament = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 				$wpdb->prepare( "SELECT * FROM {$wpdb->prefix}ds_tournaments WHERE id = %d", $id ),
 				ARRAY_A
 			);

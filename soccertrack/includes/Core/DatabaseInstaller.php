@@ -646,6 +646,12 @@ final class DatabaseInstaller {
 		if ( $away_col && str_contains( (string) $away_col->Null, 'NO' ) ) {
 			$wpdb->query( "ALTER TABLE {$prefix}ds_matches MODIFY COLUMN away_team_id BIGINT UNSIGNED NULL DEFAULT NULL" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		}
+
+		// v2.2.0 — ds_tournaments: banner publicitario por torneo.
+		$has_banner = $wpdb->get_var( "SHOW COLUMNS FROM {$prefix}ds_tournaments LIKE 'banner_url'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( ! $has_banner ) {
+			$wpdb->query( "ALTER TABLE {$prefix}ds_tournaments ADD COLUMN banner_url VARCHAR(500) NULL DEFAULT NULL AFTER bases_pdf_url" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		}
 	}
 
 	/**

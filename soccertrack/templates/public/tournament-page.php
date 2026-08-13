@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><?php echo esc_html( $tournament['name'] ); ?> — SoccerTrack</title>
+<title><?php echo esc_html( $tournament['name'] ); ?></title>
 <meta name="description" content="<?php echo esc_attr( sprintf( __( 'Posiciones, fixture y resultados del torneo %s', 'soccertrack' ), $tournament['name'] ) ); ?>">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,12 +17,26 @@
 </head>
 <body class="st-public-body">
 
+<?php if ( ! empty( $tournament['banner_url'] ) ) : ?>
+<div class="st-tournament-banner">
+	<img
+		src="<?php echo esc_url( $tournament['banner_url'] ); ?>"
+		alt="<?php echo esc_attr( sprintf(
+			/* translators: %s: tournament name */
+			__( 'Banner de %s', 'soccertrack' ),
+			$tournament['name']
+		) ); ?>"
+		class="st-tournament-banner__img"
+	>
+</div>
+<?php endif; ?>
+
 <?php /* ── Hero del torneo ────────────────────────────────────────────── */ ?>
 <header class="st-public-header">
 	<div class="st-public-header-inner">
 		<div class="st-public-brand">
 			<span class="st-public-logo">⚽</span>
-			<span class="st-public-brand-name">SoccerTrack</span>
+			<span class="st-public-brand-name"><?php echo esc_html( $tournament['name'] ); ?></span>
 		</div>
 		<div class="st-public-tournament">
 			<h1 class="st-public-tournament-name"><?php echo esc_html( $tournament['name'] ); ?></h1>
@@ -117,8 +131,10 @@ $has_playoffs_tab = in_array( $tournament['format'] ?? '', [ 'round_robin_playof
 	<p>
 		<?php
 		printf(
-			esc_html__( '© %d SoccerTrack — Torneos corporativos', 'soccertrack' ),
-			(int) gmdate( 'Y' )
+			/* translators: 1: year, 2: tournament name */
+			esc_html__( '© %1$d %2$s', 'soccertrack' ),
+			(int) gmdate( 'Y' ),
+			esc_html( $tournament['name'] )
 		);
 		?>
 	</p>

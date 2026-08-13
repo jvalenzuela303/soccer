@@ -30,6 +30,12 @@
 <?php if ( ( $notice ?? '' ) === 'venues_updated' ) : ?>
 	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Recintos del torneo actualizados.', 'soccertrack' ); ?></div>
 <?php endif; ?>
+<?php if ( ( $notice ?? '' ) === 'banner_saved' ) : ?>
+	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Banner guardado correctamente.', 'soccertrack' ); ?></div>
+<?php endif; ?>
+<?php if ( ( $notice ?? '' ) === 'banner_deleted' ) : ?>
+	<div class="st-alert st-alert--success">🗑️ <?php esc_html_e( 'Banner eliminado.', 'soccertrack' ); ?></div>
+<?php endif; ?>
 <?php if ( ! empty( $error ?? '' ) ) : ?>
 	<div class="st-alert st-alert--error">⚠️ <?php echo esc_html( $error ); ?></div>
 <?php endif; ?>
@@ -1222,6 +1228,91 @@ $has_brackets = ! empty( $brackets );
 		<?php endif; ?>
 	</form>
 </div>
+
+<?php /* ── Banner del torneo ─────────────────────────────────────────── */ ?>
+<div class="st-card" style="margin-bottom:20px">
+	<div class="st-card-header">
+		<h2 class="st-card-title">🖼️ <?php esc_html_e( 'Banner del torneo', 'soccertrack' ); ?></h2>
+	</div>
+
+	<?php if ( ! empty( $tournament['banner_url'] ) ) : ?>
+	<div style="margin-bottom:16px">
+		<img
+			src="<?php echo esc_url( $tournament['banner_url'] ); ?>"
+			alt="<?php esc_attr_e( 'Banner actual', 'soccertrack' ); ?>"
+			style="max-width:100%;height:auto;border-radius:6px;border:1px solid #e5e7eb;display:block"
+		>
+	</div>
+	<form method="post" action="" style="margin-bottom:16px">
+		<?php wp_nonce_field( 'st_delete_banner_' . $tournament['id'] ); ?>
+		<input type="hidden" name="st_delete_banner" value="1">
+		<button
+			type="submit"
+			class="st-btn"
+			style="background:#dc2626;color:#fff;border:none"
+			onclick="return confirm('<?php esc_attr_e( '¿Eliminar el banner actual?', 'soccertrack' ); ?>')"
+		>
+			🗑️ <?php esc_html_e( 'Eliminar banner', 'soccertrack' ); ?>
+		</button>
+	</form>
+	<hr style="margin:0 0 16px;border:none;border-top:1px solid #e5e7eb">
+	<?php endif; ?>
+
+	<form method="post" action="" enctype="multipart/form-data">
+		<?php wp_nonce_field( 'st_save_banner_' . $tournament['id'] ); ?>
+		<input type="hidden" name="st_save_banner" value="1">
+
+		<div class="st-field" style="margin-bottom:16px">
+			<label for="st-banner-file" class="st-label">
+				📤 <?php empty( $tournament['banner_url'] )
+					? esc_html_e( 'Seleccionar imagen', 'soccertrack' )
+					: esc_html_e( 'Reemplazar imagen', 'soccertrack' ); ?>
+			</label>
+			<input
+				type="file"
+				id="st-banner-file"
+				name="banner_file"
+				class="st-input"
+				accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+				onchange="stPreviewBanner(this)"
+			>
+			<small class="st-hint">
+				<?php esc_html_e( 'Formatos: JPG, PNG, WebP — Máx. 5 MB — Dimensión recomendada: 1920 × 500 px', 'soccertrack' ); ?>
+			</small>
+		</div>
+
+		<div id="st-banner-preview-box" style="display:none;margin-bottom:16px">
+			<p class="st-label" style="margin-bottom:8px"><?php esc_html_e( 'Vista previa:', 'soccertrack' ); ?></p>
+			<img
+				id="st-banner-preview-img"
+				src=""
+				alt=""
+				style="max-width:100%;height:auto;border-radius:6px;border:1px solid #e5e7eb;display:block"
+			>
+		</div>
+
+		<button type="submit" class="st-btn st-btn--primary">
+			💾 <?php esc_html_e( 'Guardar banner', 'soccertrack' ); ?>
+		</button>
+	</form>
+</div>
+
+<script>
+function stPreviewBanner(input) {
+	var box = document.getElementById('st-banner-preview-box');
+	var img = document.getElementById('st-banner-preview-img');
+	if (input.files && input.files[0]) {
+		var reader = new FileReader();
+		reader.onload = function(e) {
+			img.src = e.target.result;
+			box.style.display = '';
+		};
+		reader.readAsDataURL(input.files[0]);
+	} else {
+		box.style.display = 'none';
+	}
+}
+</script>
 
 <script>
 ( () => {

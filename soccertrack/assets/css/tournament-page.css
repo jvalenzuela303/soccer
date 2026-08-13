@@ -398,3 +398,31 @@ body.st-public-body {
 	.st-charts-grid  { grid-template-columns: 1fr; }
 	.st-bar-row      { grid-template-columns: 90px 1fr 24px; }
 }
+
+/* ── Banner publicitario del torneo ─────────────────────────────── */
+.st-tournament-banner {
+	width: 100%;
+	line-height: 0;
+	background: #0E0C19;
+	overflow: hidden;
+}
+
+.st-tournament-banner__img {
+	display: block;
+	width: 100%;
+	max-height: 300px;
+	object-fit: cover;
+	object-position: center top;
+}
+
+@media (max-width: 768px) {
+	.st-tournament-banner__img {
+		max-height: 160px;
+	}
+}
+
+@media (max-width: 480px) {
+	.st-tournament-banner__img {
+		max-height: 120px;
+	}
+}
