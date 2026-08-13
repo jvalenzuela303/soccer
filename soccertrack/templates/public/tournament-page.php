@@ -40,31 +40,13 @@
 	</div>
 </header>
 
-<?php if ( ! empty( $tournament['banner_url'] ) ) : ?>
-<div class="st-tournament-banner">
-	<img
-		src="<?php echo esc_url( $tournament['banner_url'] ); ?>"
-		alt="<?php echo esc_attr( sprintf(
-			/* translators: %s: tournament name */
-			__( 'Banner de %s', 'soccertrack' ),
-			$tournament['name']
-		) ); ?>"
-		class="st-tournament-banner__img"
-	>
-	<div id="st-results-ticker" class="st-results-ticker" aria-hidden="true">
-		<div class="st-results-ticker__track"></div>
-	</div>
-</div>
-<?php endif; ?>
-
 <?php
 // Formatos que incluyen fase de play-offs.
 $has_playoffs_tab = in_array( $tournament['format'] ?? '', [ 'round_robin_playoffs', 'group_stage' ], true );
 ?>
 
-<?php /* ── Portal de pestañas ────────────────────────────────────────── */ ?>
-<div class="st-portal" id="st-portal-<?php echo esc_attr( (string) $tournament['id'] ); ?>">
-
+<?php /* ── Navegación de pestañas ──────────────────────────────────────── */ ?>
+<div class="st-tabs-nav-wrapper">
 	<nav aria-label="<?php esc_attr_e( 'Secciones del torneo', 'soccertrack' ); ?>">
 		<ul class="st-tabs-nav" role="tablist">
 			<li role="presentation">
@@ -115,6 +97,27 @@ $has_playoffs_tab = in_array( $tournament['format'] ?? '', [ 'round_robin_playof
 			<?php endif; ?>
 		</ul>
 	</nav>
+</div>
+
+<?php if ( ! empty( $tournament['banner_url'] ) ) : ?>
+<div class="st-tournament-banner">
+	<img
+		src="<?php echo esc_url( $tournament['banner_url'] ); ?>"
+		alt="<?php echo esc_attr( sprintf(
+			/* translators: %s: tournament name */
+			__( 'Banner de %s', 'soccertrack' ),
+			$tournament['name']
+		) ); ?>"
+		class="st-tournament-banner__img"
+	>
+	<div id="st-results-ticker" class="st-results-ticker" aria-hidden="true">
+		<div class="st-results-ticker__track"></div>
+	</div>
+</div>
+<?php endif; ?>
+
+<?php /* ── Portal de pestañas ────────────────────────────────────────── */ ?>
+<div class="st-portal" id="st-portal-<?php echo esc_attr( (string) $tournament['id'] ); ?>">
 
 	<section id="st-panel-standings" class="st-tab-panel" role="tabpanel" aria-labelledby="st-tab-standings" aria-hidden="true"></section>
 	<section id="st-panel-fixture"   class="st-tab-panel" role="tabpanel" aria-labelledby="st-tab-fixture"   aria-hidden="true"></section>
