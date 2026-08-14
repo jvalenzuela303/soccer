@@ -281,7 +281,7 @@ final class TournamentPage {
 
 		// Lista de torneos para el filtro.
 		$tournaments = $wpdb->get_results( // phpcs:ignore
-			"SELECT id, name FROM {$wpdb->prefix}ds_tournaments ORDER BY id DESC",
+			"SELECT id, name FROM {$wpdb->prefix}ds_tournaments ORDER BY id DESC LIMIT 200",
 			ARRAY_A
 		);
 
@@ -503,12 +503,15 @@ final class TournamentPage {
 		}
 
 		$tournaments = $wpdb->get_results( // phpcs:ignore
-			"SELECT t.*, COUNT(DISTINCT eq.id) AS team_count, COUNT(DISTINCT m.id) AS match_count
+			"SELECT t.id, t.name, t.format, t.start_date, t.status,
+			        COUNT(DISTINCT eq.id) AS team_count,
+			        COUNT(DISTINCT m.id)  AS match_count
 			 FROM {$wpdb->prefix}ds_tournaments t
 			 LEFT JOIN {$wpdb->prefix}ds_teams eq ON eq.tournament_id = t.id
 			 LEFT JOIN {$wpdb->prefix}ds_matches m ON m.tournament_id = t.id
 			 GROUP BY t.id
-			 ORDER BY t.id DESC",
+			 ORDER BY t.id DESC
+			 LIMIT 200",
 			ARRAY_A
 		);
 
@@ -1270,20 +1273,29 @@ final class TournamentPage {
 		// Enriquecer cada bracket con su estado de playoffs.
 		$brackets = [];
 		foreach ( $brackets_raw ?: [] as $b ) {
-			$bid          = (int) $b['id'];
+			$bid = (int) $b['id'];
+
+			$b_qf      = array_filter( $matches, static fn( $m ) => (int) ( $m['bracket_id'] ?? 0 ) === $bid && ( $m['phase'] ?? '' ) === 'quarterfinal' );
+			$b_has_qf  = ! empty( $b_qf );
+			$b_qf_done = $b_has_qf && count( array_filter( $b_qf, static fn( $m ) => ! in_array( $m['status'], [ 'finished', 'suspended', 'postponed' ], true ) ) ) === 0;
+
 			$b_semis      = array_filter( $matches, static fn( $m ) => (int) ( $m['bracket_id'] ?? 0 ) === $bid && ( $m['phase'] ?? '' ) === 'semifinal' );
 			$b_has_semis  = ! empty( $b_semis );
 			$b_semis_done = $b_has_semis && count( array_filter( $b_semis, static fn( $m ) => ! in_array( $m['status'], [ 'finished', 'suspended', 'postponed' ], true ) ) ) === 0;
+
 			$b_has_finals = ! empty( array_filter( $matches, static fn( $m ) => (int) ( $m['bracket_id'] ?? 0 ) === $bid && in_array( $m['phase'] ?? '', [ 'final', 'third_place' ], true ) ) );
 
 			$brackets[] = array_merge( $b, [
-				'locked'       => (bool) (int) $b['locked'],
-				'rank_from'    => (int) $b['rank_from'],
-				'rank_to'      => (int) $b['rank_to'],
-				'sort_order'   => (int) $b['sort_order'],
-				'has_semis'    => $b_has_semis,
-				'semis_done'   => $b_semis_done,
-				'has_finals'   => $b_has_finals,
+				'locked'               => (bool) (int) $b['locked'],
+				'rank_from'            => (int) $b['rank_from'],
+				'rank_to'              => (int) $b['rank_to'],
+				'sort_order'           => (int) $b['sort_order'],
+				'num_teams'            => (int) $b['rank_to'] - (int) $b['rank_from'] + 1,
+				'has_quarterfinals'    => $b_has_qf,
+				'quarterfinals_done'   => $b_qf_done,
+				'has_semis'            => $b_has_semis,
+				'semis_done'           => $b_semis_done,
+				'has_finals'           => $b_has_finals,
 			] );
 		}
 
@@ -1741,7 +1753,7 @@ final class TournamentPage {
 		);
 
 		$tournaments = $wpdb->get_results( // phpcs:ignore
-			"SELECT id, name FROM {$wpdb->prefix}ds_tournaments ORDER BY id DESC",
+			"SELECT id, name FROM {$wpdb->prefix}ds_tournaments ORDER BY id DESC LIMIT 200",
 			ARRAY_A
 		);
 
@@ -1938,7 +1950,7 @@ final class TournamentPage {
 		$tournament_id = absint( $_GET['tournament_id'] ?? 0 );
 
 		$tournaments = $wpdb->get_results( // phpcs:ignore
-			"SELECT id, name FROM {$wpdb->prefix}ds_tournaments ORDER BY id DESC",
+			"SELECT id, name FROM {$wpdb->prefix}ds_tournaments ORDER BY id DESC LIMIT 200",
 			ARRAY_A
 		);
 
@@ -2176,7 +2188,7 @@ final class TournamentPage {
 		}
 
 		$tournaments = $wpdb->get_results( // phpcs:ignore
-			"SELECT id, name FROM {$wpdb->prefix}ds_tournaments ORDER BY id DESC",
+			"SELECT id, name FROM {$wpdb->prefix}ds_tournaments ORDER BY id DESC LIMIT 200",
 			ARRAY_A
 		);
 
@@ -2459,7 +2471,9 @@ final class TournamentPage {
 		// Cargar todos los partidos de la jornada.
 		$matches = $wpdb->get_results( // phpcs:ignore
 			$wpdb->prepare(
-				"SELECT m.*,
+				"SELECT m.id, m.status, m.home_team_id, m.away_team_id,
+				        m.home_score, m.away_score,
+				        m.match_datetime, m.referee_name, m.planillero_name,
 				        th.name AS home_team_name,
 				        ta.name AS away_team_name,
 				        v.name  AS venue_name,
