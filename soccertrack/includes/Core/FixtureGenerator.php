@@ -621,6 +621,10 @@ final class FixtureGenerator {
 
 		// 5a. Generar SEMI-FINALES desde ganadores de cuartos (cuando cuartos done).
 		if ( $qf_done ) {
+			if ( count( $qf_matches ) < 4 ) {
+				return [ 'match_ids' => [], 'error' => __( 'Se esperaban 4 partidos de cuartos de final finalizados, pero se encontraron menos.', 'soccertrack' ) ];
+			}
+
 			// Verificar que no existan ya semi-finales.
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$existing_sf = (int) $wpdb->get_var(
