@@ -848,10 +848,11 @@
 			<tbody>
 			<?php
 			$phase_labels = [
-				'regular'     => '',
-				'semifinal'   => '⚡ ' . __( 'Semi', 'soccertrack' ),
-				'third_place' => '🥉 ' . __( '3.er Puesto', 'soccertrack' ),
-				'final'       => '🏆 ' . __( 'Final', 'soccertrack' ),
+				'regular'      => '',
+				'quarterfinal' => '⚽ ' . __( 'Cuartos', 'soccertrack' ),
+				'semifinal'    => '⚡ ' . __( 'Semi', 'soccertrack' ),
+				'third_place'  => '🥉 ' . __( '3.er Puesto', 'soccertrack' ),
+				'final'        => '🏆 ' . __( 'Final', 'soccertrack' ),
 			];
 			?>
 			<?php foreach ( $matches as $m ) : ?>
@@ -1022,10 +1023,12 @@ $has_brackets = ! empty( $brackets );
 					<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
 						<?php if ( $b['has_finals'] ) : ?>
 							<span style="color:#3CBC20;font-weight:600">✅ <?php esc_html_e( 'Completo', 'soccertrack' ); ?></span>
+
 						<?php elseif ( $b['has_semis'] && ! $b['semis_done'] ) : ?>
 							<span style="font-size:.85rem;color:#888">
 								<?php esc_html_e( 'Semi-finales en curso…', 'soccertrack' ); ?>
 							</span>
+
 						<?php elseif ( $b['semis_done'] ) : ?>
 							<select class="st-input st-bracket-venue-select" style="max-width:200px" data-bracket="<?php echo esc_attr( (string) $b['id'] ); ?>">
 								<option value=""><?php esc_html_e( '— Recinto —', 'soccertrack' ); ?></option>
@@ -1047,7 +1050,13 @@ $has_brackets = ! empty( $brackets );
 								data-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>"
 								data-endpoint="finals"
 							>🏆 <?php esc_html_e( 'Generar Final y 3.er Puesto', 'soccertrack' ); ?></button>
-						<?php else : ?>
+
+						<?php elseif ( $b['has_quarterfinals'] && ! $b['quarterfinals_done'] ) : ?>
+							<span style="font-size:.85rem;color:#888">
+								<?php esc_html_e( 'Cuartos de final en curso…', 'soccertrack' ); ?>
+							</span>
+
+						<?php elseif ( $b['quarterfinals_done'] && ! $b['has_semis'] ) : ?>
 							<select class="st-input st-bracket-venue-select" style="max-width:200px" data-bracket="<?php echo esc_attr( (string) $b['id'] ); ?>">
 								<option value=""><?php esc_html_e( '— Recinto —', 'soccertrack' ); ?></option>
 								<?php foreach ( $venues_for_select as $v ) : ?>
@@ -1068,6 +1077,33 @@ $has_brackets = ! empty( $brackets );
 								data-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>"
 								data-endpoint="playoffs"
 							>⚡ <?php esc_html_e( 'Generar Semi-finales', 'soccertrack' ); ?></button>
+
+						<?php else : ?>
+							<select class="st-input st-bracket-venue-select" style="max-width:200px" data-bracket="<?php echo esc_attr( (string) $b['id'] ); ?>">
+								<option value=""><?php esc_html_e( '— Recinto —', 'soccertrack' ); ?></option>
+								<?php foreach ( $venues_for_select as $v ) : ?>
+									<option value="<?php echo esc_attr( (string) $v['id'] ); ?>"><?php echo esc_html( $v['name'] ); ?></option>
+								<?php endforeach; ?>
+							</select>
+							<input
+								type="date"
+								class="st-input st-bracket-date-input"
+								data-bracket="<?php echo esc_attr( (string) $b['id'] ); ?>"
+								style="max-width:140px"
+								title="<?php esc_attr_e( 'Fecha del partido (opcional)', 'soccertrack' ); ?>"
+							>
+							<button
+								class="st-btn st-btn--primary st-bracket-gen-btn"
+								data-tournament="<?php echo esc_attr( (string) $tournament['id'] ); ?>"
+								data-bracket="<?php echo esc_attr( (string) $b['id'] ); ?>"
+								data-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>"
+								data-endpoint="playoffs"
+							><?php
+								// Label dinámico según tamaño del bracket.
+								echo $b['num_teams'] >= 8
+									? '⚽ ' . esc_html__( 'Generar Cuartos', 'soccertrack' )
+									: '⚡ ' . esc_html__( 'Generar Semi-finales', 'soccertrack' );
+							?></button>
 						<?php endif; ?>
 					</div>
 				</div>
@@ -1277,7 +1313,7 @@ $has_brackets = ! empty( $brackets );
 				onchange="stPreviewBanner(this)"
 			>
 			<small class="st-hint">
-				<?php esc_html_e( 'Formatos: JPG, PNG, WebP — Máx. 5 MB — Dimensión recomendada: 1920 × 500 px', 'soccertrack' ); ?>
+				<?php esc_html_e( 'Formatos: JPG, PNG, WebP — Máx. 5 MB — Dimensión recomendada: 1920 × 300 px', 'soccertrack' ); ?>
 			</small>
 		</div>
 
