@@ -1079,6 +1079,416 @@ final class FixtureGenerator {
 		return [ 'match_ids' => $ids ];
 	}
 
+	// =========================================================================
+	// Swiss tournament methods
+	// =========================================================================
+
+	/**
+	 * Retorna un Set de claves "min:max" de pares de equipos que ya jugaron entre sí.
+	 * Excluye partidos contra el equipo fantasma (bye) para no bloquear rematches vs LIBRE.
+	 *
+	 * @param  int   $tournament_id
+	 * @param  int   $ghost_id  ID del equipo LIBRE (0 si no existe aún).
+	 * @return array<string, true>  Claves "minId:maxId" => true.
+	 */
+	private function get_played_pairs( int $tournament_id, int $ghost_id = 0 ): array {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT home_team_id, away_team_id
+				 FROM {$wpdb->prefix}ds_matches
+				 WHERE tournament_id = %d AND phase = 'regular' AND status != 'suspended'",
+				$tournament_id
+			),
+			ARRAY_A
+		);
+
+		$pairs = [];
+		foreach ( $rows as $row ) {
+			$a = (int) $row['home_team_id'];
+			$b = (int) $row['away_team_id'];
+			// No registrar partidos vs el equipo fantasma como "jugados" entre reales.
+			if ( $ghost_id > 0 && ( $a === $ghost_id || $b === $ghost_id ) ) {
+				continue;
+			}
+			$key           = min( $a, $b ) . ':' . max( $a, $b );
+			$pairs[ $key ] = true;
+		}
+
+		return $pairs;
+	}
+
+	/**
+	 * Empareja equipos usando algoritmo greedy top-down con backtracking simple.
+	 *
+	 * Orden de candidatos dentro del mismo grupo de puntos: DG DESC (ya viene así de standings).
+	 * Si todos los candidatos cercanos ya jugaron contra el equipo actual, desciende al siguiente bucket.
+	 * Backtracking de 1 nivel: si un equipo queda sin pareja, intenta intercambiar el último par formado.
+	 *
+	 * @param  int[]                 $team_ids    IDs en orden standings (pts DESC, dg DESC, gf DESC).
+	 * @param  array<string, true>   $played      Set de pares ya jugados ("minId:maxId").
+	 * @return array<array{home:int,away:int}>  Pares emparejados.
+	 */
+	private function build_swiss_pairs( array $team_ids, array $played ): array {
+		$paired = [];   // team_id => true (ya tiene pareja).
+		$pairs  = [];
+
+		$n = count( $team_ids );
+
+		for ( $i = 0; $i < $n; $i++ ) {
+			$a = $team_ids[ $i ];
+			if ( isset( $paired[ $a ] ) ) {
+				continue;
+			}
+
+			$found = false;
+			for ( $j = $i + 1; $j < $n; $j++ ) {
+				$b = $team_ids[ $j ];
+				if ( isset( $paired[ $b ] ) ) {
+					continue;
+				}
+				$key = min( $a, $b ) . ':' . max( $a, $b );
+				if ( isset( $played[ $key ] ) ) {
+					continue;
+				}
+				// Par válido encontrado.
+				$pairs[]      = [ 'home' => $a, 'away' => $b ];
+				$paired[ $a ] = true;
+				$paired[ $b ] = true;
+				$found        = true;
+				break;
+			}
+
+			if ( ! $found && ! empty( $pairs ) ) {
+				// Backtracking: deshacer el último par e intentar reasignar.
+				$last = array_pop( $pairs );
+				$c    = $last['home'];
+				$d    = $last['away'];
+				unset( $paired[ $c ], $paired[ $d ] );
+
+				$key_ca = min( $c, $a ) . ':' . max( $c, $a );
+				$key_da = min( $d, $a ) . ':' . max( $d, $a );
+
+				if ( ! isset( $played[ $key_ca ] ) ) {
+					// c juega con a; d queda libre para la siguiente iteración.
+					$pairs[]      = [ 'home' => $c, 'away' => $a ];
+					$paired[ $c ] = true;
+					$paired[ $a ] = true;
+				} elseif ( ! isset( $played[ $key_da ] ) ) {
+					// d juega con a; c queda libre.
+					$pairs[]      = [ 'home' => $d, 'away' => $a ];
+					$paired[ $d ] = true;
+					$paired[ $a ] = true;
+				} else {
+					// No hay solución de backtracking — restaurar par original, a quedará sin pareja (bye).
+					$pairs[]      = [ 'home' => $c, 'away' => $d ];
+					$paired[ $c ] = true;
+					$paired[ $d ] = true;
+				}
+			}
+		}
+
+		return $pairs;
+	}
+
+	/**
+	 * Selecciona el equipo que descansará esta ronda (bye).
+	 *
+	 * Prioridad: el equipo de menor ranking que aún no haya tenido bye.
+	 * Si todos tuvieron bye, asigna al de menor ranking.
+	 *
+	 * @param  int[] $unpaired_ids  IDs sin pareja, en orden standings (mejor primero).
+	 * @param  int[] $bye_history   IDs que ya tuvieron bye en rondas anteriores.
+	 * @return int   team_id seleccionado para el bye.
+	 */
+	private function select_bye_team( array $unpaired_ids, array $bye_history ): int {
+		// Invertir para tener peor primero (menor ranking).
+		$worst_first = array_reverse( $unpaired_ids );
+		foreach ( $worst_first as $tid ) {
+			if ( ! in_array( $tid, $bye_history, true ) ) {
+				return $tid;
+			}
+		}
+		// Todos tuvieron bye — asignar al de peor ranking.
+		return $worst_first[0];
+	}
+
+	/**
+	 * Retorna el ID del equipo LIBRE del torneo, creándolo si no existe.
+	 *
+	 * @param  int $tournament_id
+	 * @return int  ID del equipo fantasma.
+	 */
+	private function ensure_ghost_team( int $tournament_id ): int {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$existing = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT id FROM {$wpdb->prefix}ds_teams WHERE tournament_id = %d AND is_ghost = 1 LIMIT 1",
+				$tournament_id
+			)
+		);
+
+		if ( $existing > 0 ) {
+			return $existing;
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->insert(
+			"{$wpdb->prefix}ds_teams",
+			[
+				'tournament_id' => $tournament_id,
+				'name'          => 'LIBRE',
+				'is_ghost'      => 1,
+			],
+			[ '%d', '%s', '%d' ]
+		);
+
+		return (int) $wpdb->insert_id;
+	}
+
+	/**
+	 * Retorna el estado de la fase liga Swiss de un torneo.
+	 *
+	 * @param  int $tournament_id
+	 * @return array{current_round:int, total_rounds:int, round_complete:bool, swiss_done:bool, bye_history:int[]}
+	 */
+	public function get_swiss_status( int $tournament_id ): array {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$swiss_rounds = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT swiss_rounds FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
+				$tournament_id
+			)
+		);
+		$total_rounds = max( 1, $swiss_rounds ?: 8 );
+
+		// Última ronda generada.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$current_round = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT MAX(round_number) FROM {$wpdb->prefix}ds_matches
+				 WHERE tournament_id = %d AND phase = 'regular'",
+				$tournament_id
+			)
+		);
+
+		// ¿Todos los partidos de la ronda actual están finalizados?
+		$round_complete = false;
+		if ( $current_round > 0 ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$pending = (int) $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches
+					 WHERE tournament_id = %d AND phase = 'regular'
+					   AND round_number = %d AND status NOT IN ('finished', 'suspended')",
+					$tournament_id,
+					$current_round
+				)
+			);
+			$round_complete = ( 0 === $pending );
+		}
+
+		// Historial de byes: equipos que jugaron contra el equipo LIBRE.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$ghost_id = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT id FROM {$wpdb->prefix}ds_teams WHERE tournament_id = %d AND is_ghost = 1 LIMIT 1",
+				$tournament_id
+			)
+		);
+
+		$bye_history = [];
+		if ( $ghost_id > 0 ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$bye_rows = $wpdb->get_col(
+				$wpdb->prepare(
+					"SELECT home_team_id FROM {$wpdb->prefix}ds_matches
+					 WHERE tournament_id = %d AND away_team_id = %d AND phase = 'regular'",
+					$tournament_id,
+					$ghost_id
+				)
+			);
+			$bye_history = array_map( 'intval', $bye_rows );
+		}
+
+		return [
+			'current_round'  => $current_round,
+			'total_rounds'   => $total_rounds,
+			'round_complete' => $round_complete,
+			'swiss_done'     => $current_round >= $total_rounds && $round_complete,
+			'bye_history'    => $bye_history,
+		];
+	}
+
+	/**
+	 * Genera los emparejamientos de la ronda N del formato Swiss.
+	 *
+	 * Flujo:
+	 *  1. Guard de idempotencia: si ya existen partidos de esta ronda, retorna error.
+	 *  2. Obtiene standings actuales via StandingsCalculator.
+	 *  3. Carga pares ya jugados desde ds_matches.
+	 *  4. Empareja con algoritmo greedy + backtracking (build_swiss_pairs).
+	 *  5. Si número impar, asigna bye al equipo de menor ranking sin bye previo.
+	 *  6. Inserta partidos; el partido bye se inserta como 'finished' 0-0 (no suma puntos
+	 *     porque StandingsCalculator excluye el equipo LIBRE).
+	 *  7. Asigna canchas con assign_courts().
+	 *
+	 * @param  array{id:int,swiss_rounds:int,match_weekday:int,match_weekdays:string,match_time:string,match_time_weekend:string,match_duration:int} $tournament
+	 * @param  int         $round_number  Número de ronda 1-based.
+	 * @param  int         $venue_id
+	 * @param  string|null $match_date    Fecha override 'Y-m-d'. Null usa next_match_datetime().
+	 * @return array{match_ids:int[], error?:string}
+	 */
+	public function generate_swiss_round(
+		array   $tournament,
+		int     $round_number,
+		int     $venue_id,
+		?string $match_date = null
+	): array {
+		global $wpdb;
+
+		$tournament_id = (int) $tournament['id'];
+
+		// 1. Guard de idempotencia.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$existing = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches
+				 WHERE tournament_id = %d AND round_number = %d AND phase = 'regular'",
+				$tournament_id,
+				$round_number
+			)
+		);
+		if ( $existing > 0 ) {
+			return [
+				'match_ids' => [],
+				'error'     => sprintf(
+					/* translators: %d: número de ronda */
+					__( 'La ronda %d ya fue generada.', 'soccertrack' ),
+					$round_number
+				),
+			];
+		}
+
+		// 2. Standings actuales (excluye equipo LIBRE por is_ghost=0 en StandingsCalculator).
+		$standings = ( new StandingsCalculator() )->recalculate( $tournament_id );
+
+		if ( count( $standings ) < 2 ) {
+			return [
+				'match_ids' => [],
+				'error'     => __( 'Se necesitan al menos 2 equipos para generar una ronda Swiss.', 'soccertrack' ),
+			];
+		}
+
+		// IDs en orden standings (mejor → peor).
+		$team_ids = array_column( $standings, 'team_id' );
+
+		// 3. Ghost team y historial de byes.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$ghost_id = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT id FROM {$wpdb->prefix}ds_teams WHERE tournament_id = %d AND is_ghost = 1 LIMIT 1",
+				$tournament_id
+			)
+		);
+
+		$bye_history = [];
+		if ( $ghost_id > 0 ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$bye_rows    = $wpdb->get_col(
+				$wpdb->prepare(
+					"SELECT home_team_id FROM {$wpdb->prefix}ds_matches
+					 WHERE tournament_id = %d AND away_team_id = %d AND phase = 'regular'",
+					$tournament_id,
+					$ghost_id
+				)
+			);
+			$bye_history = array_map( 'intval', $bye_rows );
+		}
+
+		// 4. Pares ya jugados.
+		$played_pairs = $this->get_played_pairs( $tournament_id, $ghost_id );
+
+		// 5. Construir emparejamientos.
+		$pairs = $this->build_swiss_pairs( $team_ids, $played_pairs );
+
+		// 6. Detectar equipo sin pareja (número impar de equipos).
+		$paired_ids = [];
+		foreach ( $pairs as $pair ) {
+			$paired_ids[] = $pair['home'];
+			$paired_ids[] = $pair['away'];
+		}
+		$unpaired = array_values( array_diff( $team_ids, $paired_ids ) );
+
+		$bye_pair = null;
+		if ( ! empty( $unpaired ) ) {
+			$bye_team_id = $this->select_bye_team( $unpaired, $bye_history );
+			$ghost_id    = $this->ensure_ghost_team( $tournament_id );
+			$bye_pair    = [ 'home' => $bye_team_id, 'away' => $ghost_id, 'is_bye' => true ];
+		}
+
+		// 7. Insertar partidos regulares usando insert_round().
+		$weekdays   = $this->weekdays_from_tournament( $tournament );
+		$time       = (string) ( $tournament['match_time'] ?? '19:00:00' );
+		$duration   = $this->duration_from_tournament( $tournament );
+		$num_courts = $this->count_courts( $venue_id );
+
+		$match_ids = $this->insert_round(
+			$tournament_id,
+			$round_number,
+			$pairs,
+			$venue_id,
+			$weekdays,
+			$time,
+			$num_courts,
+			$duration
+		);
+
+		// 8. Insertar partido bye (si aplica) como 'finished' 0-0.
+		if ( null !== $bye_pair ) {
+			$dt = $match_date
+				? $match_date . ' ' . $time
+				: $this->next_match_datetime( $weekdays, $time, count( $pairs ), $round_number - 1, $duration );
+
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->insert(
+				"{$wpdb->prefix}ds_matches",
+				[
+					'tournament_id'  => $tournament_id,
+					'round_number'   => $round_number,
+					'home_team_id'   => $bye_pair['home'],
+					'away_team_id'   => $bye_pair['away'],
+					'venue_id'       => $venue_id,
+					'court_id'       => 0,
+					'match_datetime' => $dt,
+					'status'         => 'finished',
+					'phase'          => 'regular',
+					'home_score'     => 0,
+					'away_score'     => 0,
+				],
+				[ '%d', '%d', '%d', '%d', '%d', '%d', '%s', '%s', '%s', '%d', '%d' ]
+			);
+			if ( $wpdb->insert_id ) {
+				$match_ids[] = (int) $wpdb->insert_id;
+			}
+		}
+
+		// 9. Asignar canchas a todos los partidos.
+		$this->assign_courts( $match_ids, $venue_id );
+
+		return [ 'match_ids' => $match_ids ];
+	}
+
+	// =========================================================================
+	// Knockout tournament methods
+	// =========================================================================
+
 	/**
 	 * Genera el cuadro inicial de un torneo de eliminación directa.
 	 *
