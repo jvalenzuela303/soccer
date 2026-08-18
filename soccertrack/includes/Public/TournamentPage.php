@@ -1131,12 +1131,26 @@ final class TournamentPage {
 				        m.referee_user_id, m.planillero_user_id, m.match_datetime, m.home_score, m.away_score, m.status,
 				        COALESCE(m.phase, 'regular') AS phase,
 				        m.bracket_id,
+				        b.name AS bracket_name,
 				        ht.name AS home_team, at.name AS away_team
 				 FROM {$wpdb->prefix}ds_matches m
 				 JOIN {$wpdb->prefix}ds_teams ht ON ht.id = m.home_team_id
 				 JOIN {$wpdb->prefix}ds_teams at ON at.id = m.away_team_id
+				 LEFT JOIN {$wpdb->prefix}ds_playoff_brackets b ON b.id = m.bracket_id
 				 WHERE m.tournament_id = %d
-				 ORDER BY m.round_number ASC, m.match_datetime ASC
+				 ORDER BY
+				   CASE COALESCE(m.phase,'regular')
+				     WHEN 'regular'      THEN 0
+				     WHEN 'octavos'      THEN 1
+				     WHEN 'quarterfinal' THEN 2
+				     WHEN 'semifinal'    THEN 3
+				     WHEN 'third_place'  THEN 4
+				     WHEN 'final'        THEN 5
+				     ELSE 6
+				   END ASC,
+				   COALESCE(m.bracket_id, 0) ASC,
+				   m.round_number ASC,
+				   m.match_datetime ASC
 				 LIMIT 200",
 				$id
 			),
@@ -1299,7 +1313,13 @@ final class TournamentPage {
 			] );
 		}
 
-		self::render( 'torneo-detalle', compact( 'tournament', 'teams', 'matches', 'notice', 'error', 'venues', 'tournament_venue_ids', 'courts_by_venue', 'referees', 'planilleros', 'page_title', 'playoffs_status', 'brackets', 'group_stage_status', 'knockout_status', 'is_locked' ) );
+		// Swiss status (solo para formato swiss).
+		$swiss_status = [];
+		if ( ( $tournament['format'] ?? '' ) === 'swiss' ) {
+			$swiss_status = ( new \SportsLeague\Core\FixtureGenerator() )->get_swiss_status( (int) $tournament['id'] );
+		}
+
+		self::render( 'torneo-detalle', compact( 'tournament', 'teams', 'matches', 'notice', 'error', 'venues', 'tournament_venue_ids', 'courts_by_venue', 'referees', 'planilleros', 'page_title', 'playoffs_status', 'brackets', 'group_stage_status', 'knockout_status', 'is_locked', 'swiss_status' ) );
 	}
 
 	/**

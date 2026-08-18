@@ -97,10 +97,20 @@ $tab_icons = [
 <?php
 // Enqueue assets si no están ya en cola (permite usar el shortcode varias veces).
 if ( ! wp_script_is( 'soccertrack-public-tabs', 'enqueued' ) ) {
+	// Google Fonts — garantiza carga independiente del tema activo.
+	if ( ! wp_style_is( 'soccertrack-fonts', 'enqueued' ) ) {
+		wp_enqueue_style(
+			'soccertrack-fonts',
+			'https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Poppins:wght@300;400;600;700&display=swap',
+			[],
+			null
+		);
+	}
+
 	wp_enqueue_style(
 		'soccertrack-public-tabs',
 		SOCCERTRACK_URL . 'assets/css/public-tabs.css',
-		[],
+		[ 'soccertrack-fonts' ],
 		SOCCERTRACK_VERSION
 	);
 
@@ -150,6 +160,7 @@ if ( ! wp_script_is( 'soccertrack-public-tabs', 'enqueued' ) ) {
 				'status_live'      => __( 'En curso', 'soccertrack' ),
 				'status_active'    => __( 'Activa', 'soccertrack' ),
 				'status_served'    => __( 'Cumplida', 'soccertrack' ),
+				'bye_team'         => __( 'LIBRE (Descanso)', 'soccertrack' ),
 			],
 		]
 	);

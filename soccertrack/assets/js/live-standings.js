@@ -34,6 +34,11 @@
 	/** @type {Map<string, any>} */
 	const cache = new Map();
 
+	/** Retorna el nombre a mostrar para un equipo; 'LIBRE (Descanso)' si es fantasma. */
+	function teamDisplay( name, isGhost ) {
+		return isGhost ? ( i18n.bye_team ?? 'LIBRE (Descanso)' ) : escHtml( name ?? '—' );
+	}
+
 	/* ------------------------------------------------------------------ */
 	/* Helpers de UI                                                        */
 	/* ------------------------------------------------------------------ */
@@ -90,12 +95,37 @@
 		}
 	}
 
+	function teamInitials( name ) {
+		if ( ! name ) return '?';
+		// Palabras ignoradas al calcular iniciales
+		const SKIP = new Set( [ 'de', 'del', 'la', 'las', 'el', 'los', 'y', 'e', 'fc', 'cf', 'sc', 'ac', 'united', 'pro', 'club' ] );
+		const words = name.trim().split( /\s+/ ).filter( w => ! SKIP.has( w.toLowerCase() ) );
+		if ( words.length === 0 ) return name[0].toUpperCase();
+		if ( words.length === 1 ) return words[0].slice( 0, 2 ).toUpperCase();
+		return ( words[0][0] + words[1][0] ).toUpperCase();
+	}
+
+	// Paleta de colores para avatares — se asigna por hash del nombre
+	const AVATAR_COLORS = [
+		'#3CBC20', '#0E6BC5', '#E63946', '#F4A261', '#6A4C93',
+		'#1D7874', '#E76F51', '#264653', '#2A9D8F', '#8338EC',
+	];
+
+	function avatarColor( name ) {
+		let h = 0;
+		for ( let i = 0; i < ( name?.length ?? 0 ); i++ ) {
+			h = ( h * 31 + name.charCodeAt( i ) ) >>> 0;
+		}
+		return AVATAR_COLORS[ h % AVATAR_COLORS.length ];
+	}
+
 	function logoOrPlaceholder( url, name, classes = 'st-team-logo' ) {
 		if ( url ) {
 			return `<img src="${ escHtml( url ) }" alt="${ escHtml( name ) }" class="${ classes }" loading="lazy">`;
 		}
-		const initial = ( name?.[0] ?? '?' ).toUpperCase();
-		return `<span class="st-team-card__logo--placeholder" aria-hidden="true">${ escHtml( initial ) }</span>`;
+		const initials = teamInitials( name );
+		const bg = avatarColor( name );
+		return `<span class="st-team-avatar" style="background:${ bg }" aria-label="${ escHtml( name ) }">${ escHtml( initials ) }</span>`;
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -400,7 +430,7 @@
 		<div class="st-match-card">
 			<div class="st-match-team">
 				${ logoOrPlaceholder( m.home_logo, m.home_team ) }
-				<span>${ escHtml( m.home_team ) }</span>
+				<span>${ teamDisplay( m.home_team, m.home_is_ghost ) }</span>
 			</div>
 			<div class="st-match-center">
 				<div class="st-match-score">
@@ -416,7 +446,7 @@
 			</div>
 			<div class="st-match-team st-match-team--away">
 				${ logoOrPlaceholder( m.away_logo, m.away_team ) }
-				<span>${ escHtml( m.away_team ) }</span>
+				<span>${ teamDisplay( m.away_team, m.away_is_ghost ) }</span>
 			</div>
 		</div>`;
 	};
@@ -588,22 +618,25 @@
 					html += `<h3 class="st-subsection-title">${ escHtml( bracket.name ) }</h3>`;
 				}
 
+				const octMatches   = bracket.matches.filter( m => m.phase === 'octavos' );
 				const qfMatches    = bracket.matches.filter( m => m.phase === 'quarterfinal' );
 				const sfMatches    = bracket.matches.filter( m => m.phase === 'semifinal' );
 				const thirdMatches = bracket.matches.filter( m => m.phase === 'third_place' );
 				const finalMatches = bracket.matches.filter( m => m.phase === 'final' );
 
 				for ( const [ phase, group ] of [
+					[ 'octavos',     octMatches   ],
 					[ 'quarterfinal', qfMatches    ],
 					[ 'semifinal',    sfMatches    ],
 					[ 'third_place',  thirdMatches ],
 					[ 'final',        finalMatches ],
 				] ) {
 					if ( ! group.length ) continue;
+					const countClass = `st-bracket-matches--${ group.length }`;
 					html += `
 					<div class="st-bracket-round">
 						<h3 class="st-bracket-round-title">${ escHtml( phaseTitle[ phase ] ) }</h3>
-						<div class="st-bracket-matches">
+						<div class="st-bracket-matches ${ countClass }">
 							${ group.map( matchCard ).join( '' ) }
 						</div>
 					</div>`;
@@ -721,9 +754,7 @@
 
 			const cards = teams.map( t => `
 				<div class="st-team-card">
-					${ t.logo_url
-						? `<img src="${ escHtml( t.logo_url ) }" alt="${ escHtml( t.name ) }" class="st-team-card__logo" loading="lazy">`
-						: `<div class="st-team-card__logo--placeholder" aria-hidden="true">${ escHtml( t.name[0]?.toUpperCase() ?? '?' ) }</div>` }
+					${ logoOrPlaceholder( t.logo_url, t.name, 'st-team-card__logo' ) }
 					<div class="st-team-card__name">${ escHtml( t.name ) }</div>
 				</div>` ).join( '' );
 

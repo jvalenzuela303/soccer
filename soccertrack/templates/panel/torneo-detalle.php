@@ -715,6 +715,137 @@
 	<?php endif; ?>
 </div>
 
+<?php if ( ( $tournament['format'] ?? '' ) === 'swiss' && ! empty( $swiss_status ) ) : ?>
+<div class="st-card" style="margin-bottom:24px">
+	<h2 class="st-card-title"><?php esc_html_e( 'Fase Liga Swiss', 'soccertrack' ); ?></h2>
+
+	<?php if ( $swiss_status['swiss_done'] ) : ?>
+		<div class="st-alert st-alert--info" style="background:#dbeafe;border-color:#3b82f6;color:#1e3a5f">
+			✅ <?php
+			echo esc_html(
+				sprintf(
+					/* translators: %d: total de rondas */
+					__( 'Fase liga completa (%d/%d rondas). Configura los brackets de playoffs.', 'soccertrack' ),
+					$swiss_status['total_rounds'],
+					$swiss_status['total_rounds']
+				)
+			);
+			?>
+		</div>
+
+	<?php elseif ( $swiss_status['current_round'] > 0 && $swiss_status['round_complete'] ) : ?>
+		<div class="st-alert st-alert--success">
+			✅ <?php
+			echo esc_html(
+				sprintf(
+					/* translators: %1$d: ronda completada, %2$d: total de rondas */
+					__( 'Ronda %1$d de %2$d completada — todos los resultados ingresados.', 'soccertrack' ),
+					$swiss_status['current_round'],
+					$swiss_status['total_rounds']
+				)
+			);
+			?>
+		</div>
+		<?php if ( empty( $is_locked ) ) : ?>
+		<button
+			class="st-btn st-btn--primary js-swiss-next-round"
+			data-tournament-id="<?php echo esc_attr( (string) $tournament['id'] ); ?>"
+			data-next-round="<?php echo esc_attr( (string) ( $swiss_status['current_round'] + 1 ) ); ?>"
+			data-total-rounds="<?php echo esc_attr( (string) $swiss_status['total_rounds'] ); ?>"
+			data-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>"
+			data-api-base="<?php echo esc_attr( esc_url_raw( get_rest_url() ) ); ?>"
+			style="margin-top:12px"
+		>
+			<?php
+			echo esc_html(
+				sprintf(
+					/* translators: %1$d: número de siguiente ronda, %2$d: total */
+					__( 'Generar Ronda %1$d de %2$d', 'soccertrack' ),
+					$swiss_status['current_round'] + 1,
+					$swiss_status['total_rounds']
+				)
+			);
+			?>
+		</button>
+		<?php endif; ?>
+
+	<?php elseif ( 0 === $swiss_status['current_round'] ) : ?>
+		<p class="st-muted"><?php esc_html_e( 'Aún no se ha generado ninguna ronda. Usa el botón de fixture para generar la Ronda 1.', 'soccertrack' ); ?></p>
+
+	<?php else : ?>
+		<div class="st-alert" style="background:#fef9c3;border-color:#f59e0b;color:#92400e">
+			⏳ <?php
+			echo esc_html(
+				sprintf(
+					/* translators: %1$d: ronda en curso, %2$d: total de rondas */
+					__( 'Ronda %1$d de %2$d en curso. Ingresa los resultados para habilitar la siguiente ronda.', 'soccertrack' ),
+					$swiss_status['current_round'],
+					$swiss_status['total_rounds']
+				)
+			);
+			?>
+		</div>
+	<?php endif; ?>
+</div>
+
+<script>
+( function () {
+	'use strict';
+	document.querySelectorAll( '.js-swiss-next-round' ).forEach( function ( btn ) {
+		btn.addEventListener( 'click', function () {
+			const tid         = btn.dataset.tournamentId;
+			const nextRound   = btn.dataset.nextRound;
+			const totalRounds = btn.dataset.totalRounds;
+			const nonce       = btn.dataset.nonce;
+			const apiBase     = btn.dataset.apiBase;
+
+			if ( ! confirm(
+				'¿Generar ronda ' + nextRound + ' de ' + totalRounds + '? ' +
+				'Los emparejamientos se calcularán según la tabla actual.'
+			) ) {
+				return;
+			}
+
+			btn.disabled    = true;
+			btn.textContent = 'Generando…';
+
+			const venueSelect = document.getElementById( 'st-venue-select' );
+			const venueId     = venueSelect ? parseInt( venueSelect.value || '1', 10 ) : 1;
+
+			fetch(
+				apiBase + 'soccertrack/v1/admin/tournament/' + tid + '/swiss-round',
+				{
+					method:  'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'X-WP-Nonce':   nonce,
+					},
+					body: JSON.stringify( {
+						venue_id: venueId,
+					} ),
+				}
+			)
+				.then( function ( r ) { return r.json(); } )
+				.then( function ( data ) {
+					if ( data.code ) {
+						alert( 'Error: ' + ( data.message ?? data.code ) );
+						btn.disabled    = false;
+						btn.textContent = 'Reintentar';
+					} else {
+						window.location.reload();
+					}
+				} )
+				.catch( function ( err ) {
+					alert( 'Error de red: ' + err.message );
+					btn.disabled    = false;
+					btn.textContent = 'Reintentar';
+				} );
+		} );
+	} );
+}() );
+</script>
+<?php endif; ?>
+
 <?php /* ── Fixture ───────────────────────────────────────────────────── */ ?>
 <div class="st-card">
 	<div class="st-card-header">
@@ -822,25 +953,25 @@
 	<div class="st-table-wrap" style="overflow-x:auto">
 		<table class="st-table st-table--fixture" style="table-layout:fixed;min-width:900px;width:100%">
 			<colgroup>
-				<col style="width:32px">  <?php /* Jornada — 2 dígitos max */ ?>
+				<col style="width:55px">  <?php /* Fecha */ ?>
 				<col style="width:14%">   <?php /* Local */ ?>
 				<col style="width:70px">  <?php /* Resultado */ ?>
 				<col style="width:14%">   <?php /* Visitante */ ?>
 				<col style="width:90px">  <?php /* Estado */ ?>
 				<col style="width:150px"> <?php /* Horario */ ?>
-				<col style="width:40px">  <?php /* Recinto */ ?>
+				<col style="width:70px">  <?php /* Recinto */ ?>
 				<col style="width:125px"> <?php /* Cancha */ ?>
 				<col>                     <?php /* Acciones — ocupa el resto */ ?>
 			</colgroup>
 			<thead>
 				<tr>
-					<th style="text-align:center;padding:8px 4px">J°</th>
+					<th style="text-align:center;padding:8px 4px"><?php esc_html_e( 'Fecha', 'soccertrack' ); ?></th>
 					<th><?php esc_html_e( 'Local', 'soccertrack' ); ?></th>
 					<th><?php esc_html_e( 'Resultado', 'soccertrack' ); ?></th>
 					<th><?php esc_html_e( 'Visitante', 'soccertrack' ); ?></th>
 					<th><?php esc_html_e( 'Estado', 'soccertrack' ); ?></th>
 					<th><?php esc_html_e( 'Horario', 'soccertrack' ); ?></th>
-					<th><?php esc_html_e( '#R', 'soccertrack' ); ?></th>
+					<th><?php esc_html_e( 'Recinto', 'soccertrack' ); ?></th>
 					<th><?php esc_html_e( 'Cancha', 'soccertrack' ); ?></th>
 					<th><?php esc_html_e( 'Acciones', 'soccertrack' ); ?></th>
 				</tr>
@@ -849,17 +980,70 @@
 			<?php
 			$phase_labels = [
 				'regular'      => '',
+				'octavos'      => '🔟 ' . __( 'Octavos', 'soccertrack' ),
 				'quarterfinal' => '⚽ ' . __( 'Cuartos', 'soccertrack' ),
 				'semifinal'    => '⚡ ' . __( 'Semi', 'soccertrack' ),
 				'third_place'  => '🥉 ' . __( '3.er Puesto', 'soccertrack' ),
 				'final'        => '🏆 ' . __( 'Final', 'soccertrack' ),
 			];
+
+			// Separadores de sección: se inserta una fila cabecera al cambiar de bloque (fase + bracket).
+			$section_phase_labels = [
+				'octavos'      => __( 'Octavos de Final', 'soccertrack' ),
+				'quarterfinal' => __( 'Cuartos de Final', 'soccertrack' ),
+				'semifinal'    => __( 'Semifinales', 'soccertrack' ),
+				'third_place'  => __( 'Tercer Puesto', 'soccertrack' ),
+				'final'        => __( 'Final', 'soccertrack' ),
+			];
+			$section_colors = [
+				'regular' => [ 'bg' => '#e8f4e8', 'color' => '#1a5c1a' ],
+				'playoff'  => [ 'bg' => '#fff3e0', 'color' => '#7a3800' ],
+				'final'    => [ 'bg' => '#fef3c7', 'color' => '#7a4400' ],
+			];
+
+			$playoff_phases  = [ 'octavos', 'quarterfinal', 'semifinal', 'third_place', 'final' ];
+			$prev_section    = null;
+			$cols            = 9; // número de columnas de la tabla
 			?>
 			<?php foreach ( $matches as $m ) : ?>
+				<?php
+				$phase_cur    = $m['phase'] ?? 'regular';
+				$bracket_id   = $m['bracket_id'] ?? '';
+				$bracket_name = $m['bracket_name'] ?? '';
+				$is_playoff   = in_array( $phase_cur, $playoff_phases, true );
+
+				// Clave única por fase + bracket para detectar cambio de sección.
+				$section_key = $phase_cur . '_' . $bracket_id;
+
+				// Insertar fila separadora cuando cambia la fase o el bracket.
+				if ( $section_key !== $prev_section ) :
+					if ( $phase_cur === 'regular' ) :
+						$sec_label = '📅 ' . __( 'Fase Regular — Todos contra todos', 'soccertrack' );
+						$sec_colors = $section_colors['regular'];
+					else :
+						$phase_label = $section_phase_labels[ $phase_cur ] ?? $phase_cur;
+						$prefix = $bracket_name ? strtoupper( $bracket_name ) : 'PLAY-OFFS';
+						$sec_label  = '🏆 ' . $prefix . ' — ' . $phase_label;
+						$sec_colors = ( $phase_cur === 'final' && ! $bracket_name ) ? $section_colors['final'] : $section_colors['playoff'];
+					endif;
+				?>
 				<tr>
+					<td colspan="<?php echo $cols; ?>"
+						style="padding:10px 14px;font-weight:700;font-size:.82rem;letter-spacing:.05em;text-transform:uppercase;
+						       background:<?php echo esc_attr( $sec_colors['bg'] ); ?>;
+						       color:<?php echo esc_attr( $sec_colors['color'] ); ?>;
+						       border-top:2px solid <?php echo esc_attr( $sec_colors['color'] ); ?>30;
+						       border-bottom:1px solid <?php echo esc_attr( $sec_colors['color'] ); ?>30">
+						<?php echo esc_html( $sec_label ); ?>
+					</td>
+				</tr>
+				<?php
+					$prev_section = $section_key;
+				endif;
+				?>
+				<tr<?php if ( $is_playoff ) : ?> style="background:#fffaf2"<?php endif; ?>>
 					<td style="text-align:center;font-weight:700;padding:8px 4px;font-size:.85rem">
 						<?php
-						$phase_cur = $m['phase'] ?? 'regular';
 						if ( $phase_cur === 'regular' ) {
 							echo esc_html( (string) $m['round_number'] );
 						} else {
