@@ -183,8 +183,10 @@ final class PublicEndpoints {
 				    m.status,
 				    ht.name     AS home_team,
 				    ht.logo_url AS home_logo,
+				    ht.is_ghost AS home_is_ghost,
 				    at.name     AS away_team,
 				    at.logo_url AS away_logo,
+				    at.is_ghost AS away_is_ghost,
 				    v.name      AS venue,
 				    c.court_name
 				 FROM {$wpdb->prefix}ds_matches m USE INDEX (idx_fixture_order)

@@ -12,6 +12,7 @@
  * POST   /admin/match/{id}/planillero          — Asignar planillero (coordinador)
  * POST /admin/tournament/{id}/fixture          — Generar fixture (coordinador)
  * POST /admin/tournament/{id}/knockout         — Generar siguiente ronda eliminatoria (group_stage)
+ * POST /admin/tournament/{id}/swiss-round      — Generar siguiente ronda Swiss (coordinador)
  * POST   /admin/tournament/{id}/playoffs       — Generar semi-finales (coordinador)
  * POST   /admin/tournament/{id}/finals         — Generar final y 3.er puesto (coordinador)
  * DELETE /admin/tournament/{id}/playoffs       — Reiniciar fase eliminatoria (coordinador)
@@ -97,6 +98,33 @@ final class AdminEndpoints {
 			[
 				'methods'             => \WP_REST_Server::CREATABLE,
 				'callback'            => [ self::class, 'post_generate_knockout' ],
+				'permission_callback' => static fn() => current_user_can( 'ds_generate_fixture' ),
+				'args'                => [
+					'id'         => [
+						'validate_callback' => static fn( mixed $v ): bool => is_numeric( $v ) && (int) $v > 0,
+						'sanitize_callback' => 'absint',
+					],
+					'venue_id'   => [
+						'required'          => true,
+						'validate_callback' => static fn( mixed $v ): bool => is_numeric( $v ) && (int) $v > 0,
+						'sanitize_callback' => 'absint',
+					],
+					'match_date' => [
+						'required'          => false,
+						'validate_callback' => static fn( mixed $v ): bool => ! $v || (bool) preg_match( '/^\d{4}-\d{2}-\d{2}$/', (string) $v ),
+						'sanitize_callback' => 'sanitize_text_field',
+					],
+				],
+			]
+		);
+
+		// POST /admin/tournament/{id}/swiss-round — Generar siguiente ronda Swiss (coordinador).
+		register_rest_route(
+			self::NAMESPACE,
+			'/admin/tournament/(?P<id>\d+)/swiss-round',
+			[
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'callback'            => [ self::class, 'post_generate_swiss_round' ],
 				'permission_callback' => static fn() => current_user_can( 'ds_generate_fixture' ),
 				'args'                => [
 					'id'         => [
@@ -1898,6 +1926,85 @@ final class AdminEndpoints {
 			'matches_created' => count( $result['match_ids'] ),
 			'match_ids'       => $result['match_ids'],
 			'phase'           => $result['phase'],
+		] );
+	}
+
+	/**
+	 * POST /admin/tournament/{id}/swiss-round
+	 *
+	 * Genera la siguiente ronda del formato Swiss para el torneo indicado.
+	 * Valida que la ronda anterior esté completa y que no se hayan agotado las rondas totales.
+	 *
+	 * @param \WP_REST_Request $request
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public static function post_generate_swiss_round( \WP_REST_Request $request ): \WP_REST_Response|\WP_Error {
+		global $wpdb;
+
+		$tournament_id = (int) $request['id'];
+		$venue_id      = (int) $request['venue_id'];
+		$match_date    = $request['match_date'] ? (string) $request['match_date'] : null;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$tournament = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT id, format, swiss_rounds, match_weekday, match_weekdays, match_time, match_time_weekend, match_duration
+				 FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
+				$tournament_id
+			),
+			ARRAY_A
+		);
+
+		if ( ! $tournament ) {
+			return new \WP_Error( 'tournament_not_found', __( 'Torneo no encontrado.', 'soccertrack' ), [ 'status' => 404 ] );
+		}
+
+		if ( ( $tournament['format'] ?? '' ) !== 'swiss' ) {
+			return new \WP_Error(
+				'invalid_format',
+				__( 'Este endpoint solo aplica para torneos en formato Swiss.', 'soccertrack' ),
+				[ 'status' => 422 ]
+			);
+		}
+
+		$generator = new FixtureGenerator();
+		$status    = $generator->get_swiss_status( $tournament_id );
+
+		// Validar que la ronda actual esté completa (si hay rondas generadas).
+		if ( $status['current_round'] > 0 && ! $status['round_complete'] ) {
+			return new \WP_Error(
+				'round_not_complete',
+				sprintf(
+					/* translators: %d: número de ronda actual */
+					__( 'La ronda %d aún no está completa. Ingresa todos los resultados antes de generar la siguiente.', 'soccertrack' ),
+					$status['current_round']
+				),
+				[ 'status' => 409 ]
+			);
+		}
+
+		// Validar que no se hayan agotado todas las rondas.
+		if ( $status['swiss_done'] ) {
+			return new \WP_Error(
+				'swiss_complete',
+				__( 'La fase liga Swiss ya está completa. Activa los playoffs desde el panel.', 'soccertrack' ),
+				[ 'status' => 409 ]
+			);
+		}
+
+		$next_round = $status['current_round'] + 1;
+		$result     = $generator->generate_swiss_round( $tournament, $next_round, $venue_id, $match_date );
+
+		if ( ! empty( $result['error'] ) ) {
+			return new \WP_Error( 'swiss_error', $result['error'], [ 'status' => 409 ] );
+		}
+
+		PublicEndpoints::invalidate_cache( $tournament_id );
+
+		return rest_ensure_response( [
+			'round'           => $next_round,
+			'matches_created' => count( $result['match_ids'] ),
+			'match_ids'       => $result['match_ids'],
 		] );
 	}
 
