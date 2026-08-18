@@ -48,7 +48,19 @@
 				<option value="round_robin_playoffs" selected="selected"><?php esc_html_e( 'Todos contra todos + Play-offs', 'soccertrack' ); ?></option>
 				<option value="group_stage"><?php esc_html_e( 'Fase de grupos', 'soccertrack' ); ?></option>
 				<option value="knockout"><?php esc_html_e( 'Eliminación directa', 'soccertrack' ); ?></option>
+				<option value="swiss"><?php esc_html_e( 'Liga Swiss (tipo Champions)', 'soccertrack' ); ?></option>
 			</select>
+		</div>
+
+		<div id="st-swiss-options" style="display:none">
+			<div class="st-field">
+				<label class="st-label">
+					<?php esc_html_e( 'Rondas de liga', 'soccertrack' ); ?>
+					<span title="<?php esc_attr_e( 'Cuántas rondas dura la fase de liga Swiss antes de los playoffs. Rango: 1–20.', 'soccertrack' ); ?>"
+						  style="font-size:.75rem;color:#999;font-weight:400;cursor:default"> ℹ</span>
+				</label>
+				<input type="number" name="swiss_rounds" class="st-input" value="8" min="1" max="20" style="max-width:80px">
+			</div>
 		</div>
 
 		<div id="st-group-stage-options" style="display:none">
@@ -85,7 +97,7 @@
 				onchange="stPreviewCreateBanner(this)"
 			>
 			<small class="st-hint">
-				<?php esc_html_e( 'JPG, PNG, WebP — Máx. 5 MB — 1920 × 500 px. Puede agregarse o cambiarse después.', 'soccertrack' ); ?>
+				<?php esc_html_e( 'JPG, PNG, WebP — Máx. 5 MB — 1920 × 300 px. Puede agregarse o cambiarse después.', 'soccertrack' ); ?>
 			</small>
 			<div id="st-create-banner-preview" style="display:none;margin-top:8px">
 				<img id="st-create-banner-img" src="" alt="" style="max-width:100%;max-height:120px;border-radius:6px;border:1px solid #e5e7eb;object-fit:cover">
@@ -98,12 +110,14 @@
 	</form>
 	<script>
 	(function() {
-		var fmt      = document.querySelector('select[name="format"]');
-		var gsOpts   = document.getElementById('st-group-stage-options');
-		var thirdOpt = document.getElementById('st-third-place-options');
+		var fmt        = document.querySelector('select[name="format"]');
+		var swissOpts  = document.getElementById('st-swiss-options');
+		var gsOpts     = document.getElementById('st-group-stage-options');
+		var thirdOpt   = document.getElementById('st-third-place-options');
 		function toggle() {
-			gsOpts.style.display   = fmt.value === 'group_stage' ? '' : 'none';
-			thirdOpt.style.display = ( fmt.value === 'group_stage' || fmt.value === 'knockout' ) ? '' : 'none';
+			swissOpts.style.display = fmt.value === 'swiss' ? '' : 'none';
+			gsOpts.style.display    = fmt.value === 'group_stage' ? '' : 'none';
+			thirdOpt.style.display  = ( fmt.value === 'group_stage' || fmt.value === 'knockout' ) ? '' : 'none';
 		}
 		fmt.addEventListener('change', toggle);
 		toggle();
@@ -154,6 +168,7 @@
 						'round_robin_playoffs' => __( 'Todos contra todos + Play-offs', 'soccertrack' ),
 						'group_stage'          => __( 'Fase de grupos', 'soccertrack' ),
 						'knockout'             => __( 'Eliminación directa', 'soccertrack' ),
+						'swiss'                => __( 'Liga Swiss (tipo Champions)', 'soccertrack' ),
 					];
 					echo esc_html( $format_labels[ $t['format'] ?? '' ] ?? ( $t['format'] ?? '—' ) );
 					?></td>

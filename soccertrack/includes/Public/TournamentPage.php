@@ -440,6 +440,7 @@ final class TournamentPage {
 				$error = __( 'La fecha de inicio es obligatoria para poder generar el fixture.', 'soccertrack' );
 			} else {
 				$format        = sanitize_text_field( $_POST['format'] ?? 'round_robin' );
+				$swiss_rounds  = 'swiss' === $format ? max( 1, min( 20, (int) ( $_POST['swiss_rounds'] ?? 8 ) ) ) : 8;
 				$group_count   = 'group_stage' === $format ? max( 2, min( 8, (int) ( $_POST['group_count'] ?? 2 ) ) ) : 2;
 				$teams_adv     = 'group_stage' === $format ? max( 1, min( 4, (int) ( $_POST['teams_advancing_per_group'] ?? 2 ) ) ) : 2;
 				$has_3rd       = in_array( $format, [ 'group_stage', 'knockout' ], true )
@@ -454,6 +455,7 @@ final class TournamentPage {
 						'start_date'                => $start_date,
 						'end_date'                  => sanitize_text_field( $_POST['end_date'] ?? '' ) ?: null,
 						'format'                    => $format,
+						'swiss_rounds'              => $swiss_rounds,
 						'status'                    => 'draft',
 						'registration_mode'         => 'realtime',
 						'group_count'               => $group_count,
@@ -461,7 +463,7 @@ final class TournamentPage {
 						'has_third_place'           => $has_3rd,
 						// Días, horario y liberación de jornada se configuran en la ficha del torneo.
 					],
-					[ '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d' ]
+					[ '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%d', '%d' ]
 				);
 				// Banner opcional al crear el torneo.
 				$new_id = (int) $wpdb->insert_id;
