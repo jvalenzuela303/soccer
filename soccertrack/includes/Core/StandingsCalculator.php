@@ -49,7 +49,7 @@ final class StandingsCalculator {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$teams = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT id, name FROM {$wpdb->prefix}ds_teams WHERE tournament_id = %d ORDER BY name ASC",
+				"SELECT id, name FROM {$wpdb->prefix}ds_teams WHERE tournament_id = %d AND is_ghost = 0 ORDER BY name ASC",
 				$tournament_id
 			),
 			ARRAY_A
