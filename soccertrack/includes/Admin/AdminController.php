@@ -25,6 +25,7 @@ final class AdminController {
 		add_action( 'admin_menu',            [ self::class, 'register_menus' ] );
 		add_action( 'admin_init',            [ self::class, 'maybe_redirect_to_panel' ] );
 		add_action( 'admin_enqueue_scripts', [ self::class, 'enqueue_assets' ] );
+		DemoDataPage::init();
 	}
 
 	public static function maybe_redirect_to_panel(): void {
@@ -156,7 +157,7 @@ final class AdminController {
 		$tournament_id = absint( $_GET['tournament_id'] ?? 0 );
 
 		$tournaments = $wpdb->get_results( // phpcs:ignore
-			"SELECT id, name FROM {$wpdb->prefix}ds_tournaments ORDER BY id DESC",
+			"SELECT id, name FROM {$wpdb->prefix}ds_tournaments ORDER BY id DESC LIMIT 200",
 			ARRAY_A
 		);
 
@@ -224,11 +225,11 @@ final class AdminController {
 				$match['tournament_id'] = (int) $match['tournament_id'];
 
 				$home_team = $wpdb->get_row( // phpcs:ignore
-					$wpdb->prepare( "SELECT * FROM {$wpdb->prefix}ds_teams WHERE id = %d", $match['home_team_id'] ),
+					$wpdb->prepare( "SELECT id, name, logo_url FROM {$wpdb->prefix}ds_teams WHERE id = %d", $match['home_team_id'] ),
 					ARRAY_A
 				);
 				$away_team = $wpdb->get_row( // phpcs:ignore
-					$wpdb->prepare( "SELECT * FROM {$wpdb->prefix}ds_teams WHERE id = %d", $match['away_team_id'] ),
+					$wpdb->prepare( "SELECT id, name, logo_url FROM {$wpdb->prefix}ds_teams WHERE id = %d", $match['away_team_id'] ),
 					ARRAY_A
 				);
 
@@ -265,7 +266,7 @@ final class AdminController {
 		$tournament_id = absint( $_GET['tournament_id'] ?? 0 );
 
 		$tournaments = $wpdb->get_results( // phpcs:ignore
-			"SELECT id, name FROM {$wpdb->prefix}ds_tournaments ORDER BY id DESC",
+			"SELECT id, name FROM {$wpdb->prefix}ds_tournaments ORDER BY id DESC LIMIT 200",
 			ARRAY_A
 		);
 
@@ -289,7 +290,7 @@ final class AdminController {
 		$tournament_id = absint( $_GET['tournament_id'] ?? 0 );
 
 		$tournaments = $wpdb->get_results( // phpcs:ignore
-			"SELECT id, name FROM {$wpdb->prefix}ds_tournaments ORDER BY id DESC",
+			"SELECT id, name FROM {$wpdb->prefix}ds_tournaments ORDER BY id DESC LIMIT 200",
 			ARRAY_A
 		);
 

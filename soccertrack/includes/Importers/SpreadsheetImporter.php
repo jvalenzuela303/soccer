@@ -442,6 +442,15 @@ final class SpreadsheetImporter {
 		$imported = 0;
 		$skipped  = 0;
 
+		// Resolver tournament_id una sola vez — es constante para todo el equipo.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$tournament_id = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT tournament_id FROM {$wpdb->prefix}ds_teams WHERE id = %d",
+				$team_id
+			)
+		);
+
 		foreach ( $sheet->getRowIterator( 2 ) as $row ) {
 			$cells = $row->getCellIterator();
 			$cells->setIterateOnlyExistingCells( false );
@@ -514,14 +523,6 @@ final class SpreadsheetImporter {
 			}
 
 			// Bloquear inscripción en otro equipo del mismo torneo.
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
-			$tournament_id = (int) $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT tournament_id FROM {$wpdb->prefix}ds_teams WHERE id = %d",
-					$team_id
-				)
-			);
-
 			if ( $tournament_id ) {
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 				$conflict_team = $wpdb->get_var(

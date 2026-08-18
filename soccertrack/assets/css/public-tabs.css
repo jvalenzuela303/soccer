@@ -51,6 +51,7 @@
 .st-tabs-nav {
 	display: flex;
 	flex-wrap: wrap;
+	justify-content: center;
 	gap: 4px;
 	border-bottom: 2px solid var(--st-border);
 	margin-bottom: 24px;
@@ -196,6 +197,7 @@
 	border-radius: 3px;
 	vertical-align: middle;
 	margin-right: 8px;
+	flex-shrink: 0;
 }
 
 /* =========================================================
@@ -311,17 +313,33 @@
 	display: block;
 }
 
-.st-team-card__logo--placeholder {
-	width: 64px;
-	height: 64px;
-	border-radius: 50%;
-	background: var(--st-light-bg);
-	display: flex;
+/* Avatar generado por iniciales (fallback sin logo) */
+.st-team-avatar {
+	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	border-radius: 50%;
+	font-family: var(--st-font-body, 'Poppins', sans-serif);
+	font-weight: 700;
+	color: #fff;
+	text-transform: uppercase;
+	flex-shrink: 0;
+	/* tamaño por defecto: contexto de tabla/fixture */
+	width: 28px;
+	height: 28px;
+	font-size: 0.6rem;
+	margin-right: 8px;
+	vertical-align: middle;
+}
+
+/* Tamaño grande para tarjetas de equipos */
+.st-team-card .st-team-avatar,
+.st-team-card__logo.st-team-avatar {
+	width: 64px;
+	height: 64px;
+	font-size: 1.4rem;
 	margin: 0 auto 10px;
-	font-size: 1.6rem;
-	color: var(--st-green-primary);
+	display: flex;
 }
 
 .st-team-card__name {
@@ -636,13 +654,22 @@
 }
 
 .st-bracket-matches {
-	display: flex;
-	flex-wrap: wrap;
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
 	gap: 16px;
 }
 
+/* Octavos (8 partidos) → 4 columnas en pantallas anchas */
+.st-bracket-matches--8 {
+	grid-template-columns: repeat(4, 1fr);
+}
+
+/* Final / 3er puesto (1 partido) → ancho completo */
+.st-bracket-matches--1 {
+	grid-template-columns: 1fr;
+}
+
 .st-bracket-matches .st-match-card {
-	flex: 1 1 340px;
 	border: 2px solid var(--st-green-primary, #3CBC20);
 }
 
@@ -650,4 +677,11 @@
 .st-bracket-round:last-child .st-match-card {
 	border-color: #f1c40f;
 	box-shadow: 0 2px 12px rgba(241, 196, 15, .25);
+}
+
+@media (max-width: 700px) {
+	.st-bracket-matches,
+	.st-bracket-matches--8 {
+		grid-template-columns: 1fr;
+	}
 }

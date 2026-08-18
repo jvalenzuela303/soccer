@@ -39,7 +39,7 @@ body.st-panel-body {
 }
 
 .st-panel-header-inner {
-	max-width: 1200px;
+	max-width: 1160px;
 	margin: 0 auto;
 	padding: 0 20px;
 	display: flex;
@@ -114,7 +114,7 @@ body.st-panel-body {
 /* ── Main ────────────────────────────────────────────────────────── */
 .st-panel-main {
 	flex: 1;
-	max-width: 1200px;
+	max-width: 1160px;
 	width: 100%;
 	margin: 0 auto;
 	padding: 28px 20px 48px;
@@ -504,49 +504,43 @@ body.st-panel-body {
 	padding: 6px 8px;
 }
 
-/* Column widths — 10 cols, total ≈ 940px, safe within 1160px card area.
-   Regla: Local/Visitante truncan con ellipsis; selects ocupan todo el espacio
-   disponible descontando el botón ✔ (28px) y gap (4px). */
 /*
- * Columnas Fecha y Fase fusionadas en una sola (col 1).
- * min-width fuerza scroll horizontal en viewports angostos.
- * Suma de columnas ≈ 1095px.
+ * Fixture — 9 columnas: Fecha | Local | Resultado | Visitante | Estado | Horario | Recinto | Cancha | Acciones
+ * Contenedor: max-width 1160px → ~1192px disponibles dentro del card.
+ * Columnas fijas: 507px + 28% (equipos) ≈ 886px. Acciones toma el resto (~466px).
  */
-.st-table--fixture { table-layout: fixed; min-width: 1105px; width: 100%; }
+.st-table--fixture { table-layout: fixed; min-width: 900px; width: 100%; }
 
-/* Todos los encabezados sin salto de línea ni overflow */
+/* Encabezados sin salto de línea */
 .st-table--fixture th { white-space: nowrap; overflow: hidden; }
 
 .st-table--fixture th:nth-child(1),
-.st-table--fixture td:nth-child(1) { width: 86px; }                        /* Fecha/Fase */
+.st-table--fixture td:nth-child(1) { width: 55px; text-align: center; }    /* Fecha / Fase */
 
 .st-table--fixture th:nth-child(2),
-.st-table--fixture td:nth-child(2) { width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } /* Local */
+.st-table--fixture td:nth-child(2) { width: 14%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } /* Local */
 
 .st-table--fixture th:nth-child(3),
-.st-table--fixture td:nth-child(3) { width: 78px; text-align: center; }   /* Resultado */
+.st-table--fixture td:nth-child(3) { width: 70px; text-align: center; }    /* Resultado */
 
 .st-table--fixture th:nth-child(4),
-.st-table--fixture td:nth-child(4) { width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } /* Visitante */
+.st-table--fixture td:nth-child(4) { width: 14%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } /* Visitante */
 
 .st-table--fixture th:nth-child(5),
-.st-table--fixture td:nth-child(5) { width: 88px; white-space: nowrap; }  /* Estado */
+.st-table--fixture td:nth-child(5) { width: 90px; white-space: nowrap; }   /* Estado */
 
 .st-table--fixture th:nth-child(6),
-.st-table--fixture td:nth-child(6) { width: 156px; }                       /* Horario */
+.st-table--fixture td:nth-child(6) { width: 150px; }                        /* Horario */
 
 .st-table--fixture th:nth-child(7),
-.st-table--fixture td:nth-child(7) { width: 96px; }                        /* Cancha */
+.st-table--fixture td:nth-child(7) { width: 70px; text-align: center; }    /* Recinto */
 
 .st-table--fixture th:nth-child(8),
-.st-table--fixture td:nth-child(8) { width: 140px; }                       /* Árbitro */
+.st-table--fixture td:nth-child(8) { width: 125px; }                        /* Cancha */
 
+/* Acciones — toma el espacio restante; botones en línea sin wrap */
 .st-table--fixture th:nth-child(9),
-.st-table--fixture td:nth-child(9) { width: 140px; }                       /* Planillero */
-
-/* Planilla: botones "📋 Planilla" + "▶ Iniciar" en la misma línea */
-.st-table--fixture th:nth-child(10),
-.st-table--fixture td:nth-child(10) { width: 107px; white-space: nowrap; } /* Planilla */
+.st-table--fixture td:nth-child(9) { white-space: nowrap; }
 
 /* Inline forms dentro de celdas del fixture */
 .st-table--fixture td form {
