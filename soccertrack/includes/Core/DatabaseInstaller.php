@@ -652,6 +652,39 @@ final class DatabaseInstaller {
 		if ( ! $has_banner ) {
 			$wpdb->query( "ALTER TABLE {$prefix}ds_tournaments ADD COLUMN banner_url VARCHAR(500) NULL DEFAULT NULL AFTER bases_pdf_url" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		}
+
+		// v2.3.0 — ds_tournaments: columna swiss_rounds para formato Swiss.
+		$has_swiss_rounds = $wpdb->get_var( "SHOW COLUMNS FROM {$prefix}ds_tournaments LIKE 'swiss_rounds'" ); // phpcs:ignore
+		if ( ! $has_swiss_rounds ) {
+			$wpdb->query( // phpcs:ignore
+				"ALTER TABLE {$prefix}ds_tournaments
+				 ADD COLUMN swiss_rounds TINYINT UNSIGNED NOT NULL DEFAULT 8 AFTER format"
+			);
+		}
+
+		// v2.3.0 — ds_teams: columna is_ghost para equipo LIBRE de descanso.
+		$has_is_ghost = $wpdb->get_var( "SHOW COLUMNS FROM {$prefix}ds_teams LIKE 'is_ghost'" ); // phpcs:ignore
+		if ( ! $has_is_ghost ) {
+			$wpdb->query( // phpcs:ignore
+				"ALTER TABLE {$prefix}ds_teams
+				 ADD COLUMN is_ghost TINYINT(1) NOT NULL DEFAULT 0 AFTER logo_url"
+			);
+		}
+
+		// v2.3.0 — ds_tournaments: extender ENUM format con 'swiss'.
+		// dbDelta no puede modificar ENUMs; se hace via ALTER TABLE directo.
+		// Guard: verificar si 'swiss' ya está en el ENUM antes de ejecutar.
+		$col_def = $wpdb->get_var( "SHOW COLUMNS FROM {$prefix}ds_tournaments LIKE 'format'" ); // phpcs:ignore
+		// get_var retorna solo el primer campo (Field name); usar get_row para ver Type.
+		$col_row = $wpdb->get_row( "SHOW COLUMNS FROM {$prefix}ds_tournaments LIKE 'format'", ARRAY_A ); // phpcs:ignore
+		if ( $col_row && false === strpos( $col_row['Type'] ?? '', 'swiss' ) ) {
+			$wpdb->query( // phpcs:ignore
+				"ALTER TABLE {$prefix}ds_tournaments
+				 MODIFY COLUMN format
+				   ENUM('round_robin','round_robin_playoffs','group_stage','knockout','swiss')
+				   NOT NULL DEFAULT 'round_robin'"
+			);
+		}
 	}
 
 	/**

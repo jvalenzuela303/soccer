@@ -3,7 +3,7 @@
  * Plugin Name:       SportManager — Gestión de Torneos
  * Plugin URI:        https://neurolabs.cl/
  * Description:       Motor de gestión multi-torneos: fixture Round-Robin, tribunal disciplinario, planilla digital, portal público con pestañas.
- * Version:           2.1.0
+ * Version:           2.1.3
  * Requires at least: 7.0
  * Requires PHP:      8.2
  * Author:            Neurolabs
@@ -35,8 +35,8 @@ if ( version_compare( PHP_VERSION, '8.2', '<' ) ) {
 }
 
 // ── Constantes ────────────────────────────────────────────────────────────────
-define( 'SOCCERTRACK_VERSION',    '2.1.0' );
-define( 'SOCCERTRACK_DB_VERSION', '2.2.0' );
+define( 'SOCCERTRACK_VERSION',    '2.2.0' );
+define( 'SOCCERTRACK_DB_VERSION', '2.3.0' );
 define( 'SOCCERTRACK_FILE',       __FILE__ );
 define( 'SOCCERTRACK_DIR',        plugin_dir_path( __FILE__ ) );
 define( 'SOCCERTRACK_URL',        plugin_dir_url( __FILE__ ) );
@@ -80,6 +80,12 @@ function soccertrack_boot(): void {
 }
 
 add_action( 'plugins_loaded', 'soccertrack_boot' );
+
+// ── Herramienta de datos demo (solo en WP Admin) ──────────────────────────────
+if ( is_admin() ) {
+	require_once SOCCERTRACK_DIR . 'scripts/demo-admin.php';
+	add_action( 'admin_menu', 'soccertrack_demo_register_page' );
+}
 
 // ── Optimización: eliminar recursos WP innecesarios en páginas del plugin ─────
 add_action(
