@@ -579,6 +579,11 @@
 						panel.innerHTML = `<h3 class="st-round-header">${ i18n.round ?? 'Fecha' } ${ r }</h3>${ renderRound( r ) }`;
 					} );
 				}
+
+				// Para Swiss: inyectar tab de playoffs si hay partidos de copa.
+				if ( playoffMatches.length ) {
+					injectPlayoffsTab( playoffMatches );
+				}
 			}
 
 		} catch ( err ) {

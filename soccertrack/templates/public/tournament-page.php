@@ -17,7 +17,42 @@
 </head>
 <body class="st-public-body">
 
-<?php /* ── Hero del torneo ────────────────────────────────────────────── */ ?>
+<?php /* ── Banner + Header del torneo ─────────────────────────────────── */ ?>
+<?php if ( ! empty( $tournament['banner_url'] ) ) : ?>
+<div class="st-tournament-banner">
+	<img
+		src="<?php echo esc_url( $tournament['banner_url'] ); ?>"
+		alt="<?php echo esc_attr( sprintf(
+			/* translators: %s: tournament name */
+			__( 'Banner de %s', 'soccertrack' ),
+			$tournament['name']
+		) ); ?>"
+		class="st-tournament-banner__img"
+	>
+	<div class="st-banner-header-overlay">
+		<div class="st-banner-brand">
+			<span class="st-banner-logo">⚽</span>
+			<span class="st-banner-brand-name"><?php esc_html_e( 'Torneos Corporativos', 'soccertrack' ); ?></span>
+		</div>
+		<div class="st-banner-tournament">
+			<h1 class="st-banner-tournament-name"><?php echo esc_html( $tournament['name'] ); ?></h1>
+			<?php if ( ! empty( $tournament['start_date'] ) ) : ?>
+			<p class="st-banner-tournament-dates">
+				<?php
+				echo esc_html( date_i18n( 'd M Y', strtotime( $tournament['start_date'] ) ) );
+				if ( ! empty( $tournament['end_date'] ) ) {
+					echo ' — ' . esc_html( date_i18n( 'd M Y', strtotime( $tournament['end_date'] ) ) );
+				}
+				?>
+			</p>
+			<?php endif; ?>
+		</div>
+	</div>
+	<div id="st-results-ticker" class="st-results-ticker" aria-hidden="true">
+		<div class="st-results-ticker__track"></div>
+	</div>
+</div>
+<?php else : ?>
 <header class="st-public-header">
 	<div class="st-public-header-inner">
 		<div class="st-public-brand">
@@ -39,82 +74,67 @@
 		</div>
 	</div>
 </header>
-
-<?php if ( ! empty( $tournament['banner_url'] ) ) : ?>
-<div class="st-tournament-banner">
-	<img
-		src="<?php echo esc_url( $tournament['banner_url'] ); ?>"
-		alt="<?php echo esc_attr( sprintf(
-			/* translators: %s: tournament name */
-			__( 'Banner de %s', 'soccertrack' ),
-			$tournament['name']
-		) ); ?>"
-		class="st-tournament-banner__img"
-	>
-	<div id="st-results-ticker" class="st-results-ticker" aria-hidden="true">
-		<div class="st-results-ticker__track"></div>
-	</div>
-</div>
 <?php endif; ?>
 
 <?php
 // Formatos que incluyen fase de play-offs.
-$has_playoffs_tab = in_array( $tournament['format'] ?? '', [ 'round_robin_playoffs', 'group_stage' ], true );
+$has_playoffs_tab = in_array( $tournament['format'] ?? '', [ 'round_robin_playoffs', 'group_stage', 'swiss' ], true );
 ?>
+
+<?php /* ── Navegación de pestañas (pegada al banner) ─────────────────── */ ?>
+<nav class="st-tabs-nav-wrap" aria-label="<?php esc_attr_e( 'Secciones del torneo', 'soccertrack' ); ?>">
+	<ul class="st-tabs-nav" role="tablist">
+		<li role="presentation">
+			<button class="st-tab-btn" role="tab" data-tab="standings"
+				id="st-tab-standings" aria-selected="false" aria-controls="st-panel-standings" tabindex="-1">
+				📊 <?php esc_html_e( 'Posiciones', 'soccertrack' ); ?>
+			</button>
+		</li>
+		<li role="presentation">
+			<button class="st-tab-btn" role="tab" data-tab="fixture"
+				id="st-tab-fixture" aria-selected="false" aria-controls="st-panel-fixture" tabindex="-1">
+				📅 <?php esc_html_e( 'Fixture', 'soccertrack' ); ?>
+			</button>
+		</li>
+		<?php if ( $has_playoffs_tab ) : ?>
+		<li role="presentation">
+			<button class="st-tab-btn" role="tab" data-tab="playoffs"
+				id="st-tab-playoffs" aria-selected="false" aria-controls="st-panel-playoffs" tabindex="-1">
+				🏆 <?php esc_html_e( 'Playoffs', 'soccertrack' ); ?>
+			</button>
+		</li>
+		<?php endif; ?>
+		<li role="presentation">
+			<button class="st-tab-btn" role="tab" data-tab="teams"
+				id="st-tab-teams" aria-selected="false" aria-controls="st-panel-teams" tabindex="-1">
+				🏟 <?php esc_html_e( 'Equipos', 'soccertrack' ); ?>
+			</button>
+		</li>
+		<li role="presentation">
+			<button class="st-tab-btn" role="tab" data-tab="scorers"
+				id="st-tab-scorers" aria-selected="false" aria-controls="st-panel-scorers" tabindex="-1">
+				🥇 <?php esc_html_e( 'Goleadores', 'soccertrack' ); ?>
+			</button>
+		</li>
+		<li role="presentation">
+			<button class="st-tab-btn" role="tab" data-tab="tribunal"
+				id="st-tab-tribunal" aria-selected="false" aria-controls="st-panel-tribunal" tabindex="-1">
+				🟥 <?php esc_html_e( 'Tribunal', 'soccertrack' ); ?>
+			</button>
+		</li>
+		<?php if ( ! empty( $tournament['bases_pdf_url'] ) ) : ?>
+		<li role="presentation">
+			<button class="st-tab-btn" role="tab" data-tab="bases"
+				id="st-tab-bases" aria-selected="false" aria-controls="st-panel-bases" tabindex="-1">
+				📄 <?php esc_html_e( 'Bases', 'soccertrack' ); ?>
+			</button>
+		</li>
+		<?php endif; ?>
+	</ul>
+</nav>
 
 <?php /* ── Portal de pestañas ────────────────────────────────────────── */ ?>
 <div class="st-portal" id="st-portal-<?php echo esc_attr( (string) $tournament['id'] ); ?>">
-
-	<nav aria-label="<?php esc_attr_e( 'Secciones del torneo', 'soccertrack' ); ?>">
-		<ul class="st-tabs-nav" role="tablist">
-			<li role="presentation">
-				<button class="st-tab-btn" role="tab" data-tab="standings"
-					id="st-tab-standings" aria-selected="false" aria-controls="st-panel-standings" tabindex="-1">
-					📊 <?php esc_html_e( 'Posiciones', 'soccertrack' ); ?>
-				</button>
-			</li>
-			<li role="presentation">
-				<button class="st-tab-btn" role="tab" data-tab="fixture"
-					id="st-tab-fixture" aria-selected="false" aria-controls="st-panel-fixture" tabindex="-1">
-					📅 <?php esc_html_e( 'Fixture', 'soccertrack' ); ?>
-				</button>
-			</li>
-			<?php if ( $has_playoffs_tab ) : ?>
-			<li role="presentation">
-				<button class="st-tab-btn" role="tab" data-tab="playoffs"
-					id="st-tab-playoffs" aria-selected="false" aria-controls="st-panel-playoffs" tabindex="-1">
-					🏆 <?php esc_html_e( 'Playoffs', 'soccertrack' ); ?>
-				</button>
-			</li>
-			<?php endif; ?>
-			<li role="presentation">
-				<button class="st-tab-btn" role="tab" data-tab="teams"
-					id="st-tab-teams" aria-selected="false" aria-controls="st-panel-teams" tabindex="-1">
-					🏟 <?php esc_html_e( 'Equipos', 'soccertrack' ); ?>
-				</button>
-			</li>
-			<li role="presentation">
-				<button class="st-tab-btn" role="tab" data-tab="scorers"
-					id="st-tab-scorers" aria-selected="false" aria-controls="st-panel-scorers" tabindex="-1">
-					🥇 <?php esc_html_e( 'Goleadores', 'soccertrack' ); ?>
-				</button>
-			</li>
-			<li role="presentation">
-				<button class="st-tab-btn" role="tab" data-tab="tribunal"
-					id="st-tab-tribunal" aria-selected="false" aria-controls="st-panel-tribunal" tabindex="-1">
-					🟥 <?php esc_html_e( 'Tribunal', 'soccertrack' ); ?>
-				</button>
-			</li>
-			<?php if ( ! empty( $tournament['bases_pdf_url'] ) ) : ?>
-			<li role="presentation">
-				<button class="st-tab-btn" role="tab" data-tab="bases"
-					id="st-tab-bases" aria-selected="false" aria-controls="st-panel-bases" tabindex="-1">
-					📄 <?php esc_html_e( 'Bases', 'soccertrack' ); ?>
-				</button>
-			</li>
-			<?php endif; ?>
-		</ul>
-	</nav>
 
 	<section id="st-panel-standings" class="st-tab-panel" role="tabpanel" aria-labelledby="st-tab-standings" aria-hidden="true"></section>
 	<section id="st-panel-fixture"   class="st-tab-panel" role="tabpanel" aria-labelledby="st-tab-fixture"   aria-hidden="true"></section>
