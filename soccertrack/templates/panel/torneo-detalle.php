@@ -770,7 +770,27 @@
 		<?php endif; ?>
 
 	<?php elseif ( 0 === $swiss_status['current_round'] ) : ?>
-		<p class="st-muted"><?php esc_html_e( 'Aún no se ha generado ninguna ronda. Usa el botón de fixture para generar la Ronda 1.', 'soccertrack' ); ?></p>
+		<p class="st-muted" style="margin-bottom:12px"><?php esc_html_e( 'No se ha generado ninguna ronda aún.', 'soccertrack' ); ?></p>
+		<?php if ( empty( $is_locked ) ) : ?>
+		<button
+			class="st-btn st-btn--primary js-swiss-next-round"
+			data-tournament-id="<?php echo esc_attr( (string) $tournament['id'] ); ?>"
+			data-next-round="1"
+			data-total-rounds="<?php echo esc_attr( (string) $swiss_status['total_rounds'] ); ?>"
+			data-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>"
+			data-api-base="<?php echo esc_url_raw( get_rest_url() ); ?>"
+		>
+			<?php
+			echo esc_html(
+				sprintf(
+					/* translators: %d: total de rondas */
+					__( 'Generar Ronda 1 de %d', 'soccertrack' ),
+					$swiss_status['total_rounds']
+				)
+			);
+			?>
+		</button>
+		<?php endif; ?>
 
 	<?php else : ?>
 		<div class="st-alert" style="background:#fef9c3;border-color:#f59e0b;color:#92400e">

@@ -1161,32 +1161,38 @@ final class FixtureGenerator {
 				break;
 			}
 
-			if ( ! $found && ! empty( $pairs ) ) {
-				// Backtracking: deshacer el último par e intentar reasignar.
-				$last = array_pop( $pairs );
-				$c    = $last['home'];
-				$d    = $last['away'];
-				unset( $paired[ $c ], $paired[ $d ] );
+			if ( ! $found ) {
+				if ( ! empty( $pairs ) ) {
+					// Backtracking: deshacer el último par e intentar reasignar.
+					$last = array_pop( $pairs );
+					$c    = $last['home'];
+					$d    = $last['away'];
+					unset( $paired[ $c ], $paired[ $d ] );
 
-				$key_ca = min( $c, $a ) . ':' . max( $c, $a );
-				$key_da = min( $d, $a ) . ':' . max( $d, $a );
+					$key_ca = min( $c, $a ) . ':' . max( $c, $a );
+					$key_da = min( $d, $a ) . ':' . max( $d, $a );
 
-				if ( ! isset( $played[ $key_ca ] ) ) {
-					// c juega con a; d queda libre para la siguiente iteración.
-					$pairs[]      = [ 'home' => $c, 'away' => $a ];
-					$paired[ $c ] = true;
-					$paired[ $a ] = true;
-				} elseif ( ! isset( $played[ $key_da ] ) ) {
-					// d juega con a; c queda libre.
-					$pairs[]      = [ 'home' => $d, 'away' => $a ];
-					$paired[ $d ] = true;
-					$paired[ $a ] = true;
-				} else {
-					// No hay solución de backtracking — restaurar par original, a quedará sin pareja (bye).
-					$pairs[]      = [ 'home' => $c, 'away' => $d ];
-					$paired[ $c ] = true;
-					$paired[ $d ] = true;
+					if ( ! isset( $played[ $key_ca ] ) ) {
+						// c juega con a; d queda libre para la siguiente iteración.
+						$pairs[]      = [ 'home' => $c, 'away' => $a ];
+						$paired[ $c ] = true;
+						$paired[ $a ] = true;
+					} elseif ( ! isset( $played[ $key_da ] ) ) {
+						// d juega con a; c queda libre.
+						$pairs[]      = [ 'home' => $d, 'away' => $a ];
+						$paired[ $d ] = true;
+						$paired[ $a ] = true;
+					} else {
+						// No hay solución de backtracking — restaurar par original, a quedará sin pareja (bye).
+						$pairs[]      = [ 'home' => $c, 'away' => $d ];
+						$paired[ $c ] = true;
+						$paired[ $d ] = true;
+						// $a queda explícitamente sin pareja — será recogido por el path de bye.
+					}
 				}
+				// Si $pairs está vacío (primer equipo sin candidato válido), $a queda sin pareja.
+				// El path de bye en generate_swiss_round() lo detectará vía array_diff().
+				// No se necesita acción adicional — $a no está en $paired, así que aparecerá en $unpaired.
 			}
 		}
 

@@ -125,7 +125,7 @@ final class AdminEndpoints {
 			[
 				'methods'             => \WP_REST_Server::CREATABLE,
 				'callback'            => [ self::class, 'post_generate_swiss_round' ],
-				'permission_callback' => static fn() => current_user_can( 'ds_generate_fixture' ),
+				'permission_callback' => static fn() => current_user_can( 'ds_manage_tournaments' ),
 				'args'                => [
 					'id'         => [
 						'validate_callback' => static fn( mixed $v ): bool => is_numeric( $v ) && (int) $v > 0,
