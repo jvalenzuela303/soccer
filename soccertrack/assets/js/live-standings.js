@@ -36,7 +36,7 @@
 
 	/** Retorna el nombre a mostrar para un equipo; 'LIBRE (Descanso)' si es fantasma. */
 	function teamDisplay( name, isGhost ) {
-		return isGhost ? ( i18n.bye_team ?? 'LIBRE (Descanso)' ) : escHtml( name ?? '—' );
+		return parseInt( isGhost, 10 ) === 1 ? ( i18n.bye_team ?? 'LIBRE (Descanso)' ) : escHtml( name ?? '—' );
 	}
 
 	/* ------------------------------------------------------------------ */
