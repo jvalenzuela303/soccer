@@ -1028,7 +1028,7 @@
 					endif;
 				?>
 				<tr>
-					<td colspan="<?php echo $cols; ?>"
+					<td colspan="<?php echo (int) $cols; ?>"
 						style="padding:10px 14px;font-weight:700;font-size:.82rem;letter-spacing:.05em;text-transform:uppercase;
 						       background:<?php echo esc_attr( $sec_colors['bg'] ); ?>;
 						       color:<?php echo esc_attr( $sec_colors['color'] ); ?>;
