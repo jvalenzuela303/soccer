@@ -41,6 +41,7 @@ final class DatabaseInstaller {
 			match_weekday       TINYINT(1)      NOT NULL DEFAULT 6,
 			match_time          TIME            NOT NULL DEFAULT '19:00:00',
 			match_time_weekend  TIME            NOT NULL DEFAULT '10:00:00',
+			schedule_slots      JSON            NULL,
 			registration_mode   ENUM('realtime','deferred') NOT NULL DEFAULT 'deferred',
 			fixture_release_days   TINYINT(1)     NOT NULL DEFAULT 0,
 			yellows_per_suspension TINYINT(1)     NOT NULL DEFAULT 3,
