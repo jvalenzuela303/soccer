@@ -1198,7 +1198,7 @@ final class TournamentPage {
 		$page_title = esc_html( $tournament['name'] );
 
 		// ── Estado play-offs (para mostrar/ocultar botones en template) ─────────
-		$is_playoffs_format = in_array( $tournament['format'] ?? '', [ 'round_robin_playoffs' ], true );
+		$is_playoffs_format = in_array( $tournament['format'] ?? '', [ 'round_robin_playoffs', 'swiss' ], true );
 		$regular_matches    = array_filter( $matches, static fn( $m ) => ( $m['phase'] ?? 'regular' ) === 'regular' );
 		$all_regular_done   = ! empty( $regular_matches ) && count( array_filter( $regular_matches, static fn( $m ) => $m['status'] !== 'finished' ) ) === 0;
 		$sf_matches         = array_filter( $matches, static fn( $m ) => ( $m['phase'] ?? '' ) === 'semifinal' );

@@ -637,7 +637,8 @@
 	</div>
 	<?php endif; ?>
 
-	<?php /* Formulario agregar/editar */ ?>
+	<?php /* Formulario agregar/editar — oculto para Swiss (brackets pre-configurados por seeder) */ ?>
+	<?php if ( ( $tournament['format'] ?? '' ) !== 'swiss' ) : ?>
 	<div id="st-bracket-form-wrap" style="background:#f9f9f9;border:1px solid #e5e7eb;border-radius:8px;padding:16px">
 		<p class="st-label" style="margin:0 0 10px;font-weight:600" id="st-bracket-form-title">
 			➕ <?php esc_html_e( 'Agregar bracket', 'soccertrack' ); ?>
@@ -669,6 +670,7 @@
 			</div>
 		</div>
 	</div>
+	<?php endif; /* !swiss — bracket add/edit form */ ?>
 </div>
 
 <?php endif; /* is_playoffs_format — brackets card */ ?>
