@@ -234,7 +234,7 @@ final class FixtureGenerator {
 			}
 		}
 
-		$this->assign_courts( $ids, $venue_id );
+		$this->assign_courts( $ids, $venue_id, $tournament );
 
 		return [ 'match_ids' => $ids ];
 	}
@@ -332,7 +332,7 @@ final class FixtureGenerator {
 			}
 		}
 
-		$this->assign_courts( $ids, $venue_id );
+		$this->assign_courts( $ids, $venue_id, $tournament );
 
 		return [ 'match_ids' => $ids ];
 	}
@@ -733,7 +733,7 @@ final class FixtureGenerator {
 					$ids[] = (int) $wpdb->insert_id;
 				}
 			}
-			$this->assign_courts( $ids, $venue_id );
+			$this->assign_courts( $ids, $venue_id, $tournament );
 			return [ 'match_ids' => $ids ];
 		}
 
@@ -787,7 +787,7 @@ final class FixtureGenerator {
 					$ids[] = (int) $wpdb->insert_id;
 				}
 			}
-			$this->assign_courts( $ids, $venue_id );
+			$this->assign_courts( $ids, $venue_id, $tournament );
 			return [ 'match_ids' => $ids ];
 		}
 
@@ -844,7 +844,7 @@ final class FixtureGenerator {
 				$ids[] = (int) $wpdb->insert_id;
 			}
 		}
-		$this->assign_courts( $ids, $venue_id );
+		$this->assign_courts( $ids, $venue_id, $tournament );
 		return [ 'match_ids' => $ids ];
 	}
 
@@ -1016,7 +1016,7 @@ final class FixtureGenerator {
 		}
 
 		// 8. Asignar canchas.
-		$this->assign_courts( $all_match_ids, $venue_id );
+		$this->assign_courts( $all_match_ids, $venue_id, $tournament );
 
 		return [ 'match_ids' => $all_match_ids ];
 	}
@@ -1124,7 +1124,7 @@ final class FixtureGenerator {
 			}
 		}
 
-		$this->assign_courts( $ids, $venue_id );
+		$this->assign_courts( $ids, $venue_id, $tournament );
 
 		return [ 'match_ids' => $ids ];
 	}
@@ -1690,7 +1690,7 @@ final class FixtureGenerator {
 		}
 
 		if ( ! empty( $scheduled_ids ) ) {
-			$this->assign_courts( $scheduled_ids, $venue_id );
+			$this->assign_courts( $scheduled_ids, $venue_id, $tournament );
 		}
 
 		return [ 'match_ids' => $all_ids ];
@@ -1889,7 +1889,16 @@ final class FixtureGenerator {
 		}
 
 		if ( ! empty( $all_ids ) ) {
-			$this->assign_courts( $all_ids, $venue_id );
+			// Cargar torneo completo para que SlotPacker pueda activarse si schedule_slots está configurado.
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$tournament = $wpdb->get_row(
+				$wpdb->prepare(
+					"SELECT * FROM {$wpdb->prefix}ds_tournaments WHERE id = %d",
+					$tournament_id
+				),
+				ARRAY_A
+			) ?: [];
+			$this->assign_courts( $all_ids, $venue_id, $tournament );
 		}
 
 		return [ 'match_ids' => $all_ids ];
@@ -2032,7 +2041,7 @@ final class FixtureGenerator {
 				}
 			}
 
-			$this->assign_courts( $ids, $venue_id );
+			$this->assign_courts( $ids, $venue_id, $tournament );
 			return [ 'match_ids' => $ids, 'phase' => 'final' ];
 		}
 
@@ -2080,7 +2089,7 @@ final class FixtureGenerator {
 				}
 			}
 
-			$this->assign_courts( $ids, $venue_id );
+			$this->assign_courts( $ids, $venue_id, $tournament );
 			return [ 'match_ids' => $ids, 'phase' => 'semifinal' ];
 		}
 
@@ -2165,7 +2174,7 @@ final class FixtureGenerator {
 			}
 		}
 
-		$this->assign_courts( $ids, $venue_id );
+		$this->assign_courts( $ids, $venue_id, $tournament );
 		return [ 'match_ids' => $ids, 'phase' => $phase ];
 	}
 
@@ -2190,7 +2199,7 @@ final class FixtureGenerator {
 		);
 
 		if ( $max ) {
-			return date( 'Y-m-d', strtotime( $max . ' +7 days' ) ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
+			return wp_date( 'Y-m-d', strtotime( $max . ' +7 days' ) ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions
 		}
 
 		return $start_date;
