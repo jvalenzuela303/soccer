@@ -684,6 +684,31 @@ final class DatabaseInstaller {
 				   NOT NULL DEFAULT 'round_robin'"
 			);
 		}
+
+		// v2.4.0 — ds_tournaments: schedule_slots para distribución de partidos en bloques horarios.
+		// dbDelta no reconoce JSON como tipo válido — la columna se gestiona vía ALTER TABLE idempotente.
+		$has_slots = $wpdb->get_var( "SHOW COLUMNS FROM {$prefix}ds_tournaments LIKE 'schedule_slots'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( ! $has_slots ) {
+			$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				"ALTER TABLE {$prefix}ds_tournaments
+				 ADD COLUMN schedule_slots LONGTEXT NULL DEFAULT NULL
+				 COMMENT 'Bloques horarios JSON: [{\"time\":\"19:00\",\"max_matches\":8},...]'
+				 AFTER match_time_weekend"
+			);
+		}
+
+		// v2.4.0 — ds_teams: índice (tournament_id, is_ghost) para queries Swiss que excluyen fantasmas.
+		$has_ghost_idx = $wpdb->get_var( "SHOW INDEX FROM {$prefix}ds_teams WHERE Key_name = 'idx_tournament_ghost'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( ! $has_ghost_idx ) {
+			$wpdb->query( "ALTER TABLE {$prefix}ds_teams ADD KEY idx_tournament_ghost (tournament_id, is_ghost)" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		}
+
+		// v2.4.0 — ds_matches: índice (tournament_id, phase, match_datetime) para MAX() en next_slot_start().
+		// Permite resolver SELECT MAX(match_datetime) WHERE tournament_id=N AND phase='regular' desde índice (covering).
+		$has_phase_dt = $wpdb->get_var( "SHOW INDEX FROM {$prefix}ds_matches WHERE Key_name = 'idx_tournament_phase_dt'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( ! $has_phase_dt ) {
+			$wpdb->query( "ALTER TABLE {$prefix}ds_matches ADD KEY idx_tournament_phase_dt (tournament_id, phase, match_datetime)" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		}
 	}
 
 	/**
