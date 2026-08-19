@@ -126,35 +126,42 @@ final class PublicEndpoints {
 		// Calcular jornadas visibles cuando el filtro está activo.
 		$round_filter = '';
 		if ( $release_days > 0 ) {
+			// Pre-computar MAX(match_datetime) por jornada en un solo pass.
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
-			$visible_rounds = $wpdb->get_col(
+			$round_max_dt = $wpdb->get_results(
 				$wpdb->prepare(
-					"SELECT round_number
+					"SELECT round_number, MAX(match_datetime) AS max_dt
 					 FROM {$wpdb->prefix}ds_matches
-					 WHERE tournament_id = %d
-					   AND round_number = 1
-					 UNION
-					 SELECT m.round_number
-					 FROM {$wpdb->prefix}ds_matches m
-					 WHERE m.tournament_id = %d
-					   AND m.round_number > 1
-					   AND EXISTS (
-					       SELECT 1
-					       FROM {$wpdb->prefix}ds_matches prev
-					       WHERE prev.tournament_id = %d
-					         AND prev.round_number = m.round_number - 1
-					       GROUP BY prev.tournament_id
-					       HAVING DATE_ADD( DATE( MAX(prev.match_datetime) ), INTERVAL %d DAY ) <= CURDATE()
-					   )
-					 GROUP BY m.round_number",
-					$tid,
-					$tid,
-					$tid,
-					$release_days
-				)
+					 WHERE tournament_id = %d AND phase = 'regular'
+					 GROUP BY round_number",
+					$tid
+				),
+				ARRAY_A
 			);
 
-			$visible_rounds = array_map( 'intval', $visible_rounds ?: [] );
+			// Construir mapa round_number → max_dt.
+			$max_by_round = [];
+			foreach ( $round_max_dt as $row ) {
+				$max_by_round[ (int) $row['round_number'] ] = $row['max_dt'];
+			}
+
+			// Jornada 1 siempre visible; jornada N visible si la anterior ya venció.
+			$today          = gmdate( 'Y-m-d' );
+			$visible_rounds = [];
+			foreach ( array_keys( $max_by_round ) as $rn ) {
+				if ( 1 === $rn ) {
+					$visible_rounds[] = 1;
+					continue;
+				}
+				$prev_max = $max_by_round[ $rn - 1 ] ?? null;
+				if ( null !== $prev_max ) {
+					$unlock_date = gmdate( 'Y-m-d', strtotime( "+{$release_days} days", strtotime( $prev_max ) ) );
+					if ( $unlock_date <= $today ) {
+						$visible_rounds[] = $rn;
+					}
+				}
+			}
+			$visible_rounds = array_map( 'intval', $visible_rounds );
 
 			if ( empty( $visible_rounds ) ) {
 				// Ninguna jornada visible aún — devolver array vacío.
