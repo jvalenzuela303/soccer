@@ -66,18 +66,17 @@ final class SlotPacker {
     /**
      * @param int[]  $match_ids   IDs de los partidos a programar (en orden)
      * @param array  $slots       [['time'=>'19:00','max_matches'=>8], ...]
-     * @param string $weekday     'monday'|'tuesday'|...'sunday'
+     * @param int    $weekday     Día de juego según wp_date('w'): 0=dom, 1=lun … 6=sáb
      * @param string $start_from  Fecha mínima ISO (YYYY-MM-DD); el packer busca
      *                            el primer $weekday >= $start_from
-     * @param int[]  $court_ids   IDs de canchas del recinto (rotación circular)
-     * @return array  Resumen: [['date'=>'2026-09-02','slots'=>[['19:00'=>8],['20:00'=>5]]],...]
+     * @return array  [['match_id'=>N,'date'=>'YYYY-MM-DD','time'=>'HH:MM:SS','slot_index'=>0], ...]
+     *                La asignación de court_id la realiza FixtureGenerator::assign_courts() en rotación circular.
      */
-    public static function pack(
+    public static function calculate(
         array  $match_ids,
         array  $slots,
-        string $weekday,
+        int    $weekday,
         string $start_from,
-        array  $court_ids,
     ): array;
 }
 ```

@@ -44,7 +44,7 @@ final class SlotPacker {
 			// Si agotamos todos los slots del día → avanzar al próximo día disponible.
 			if ( $slot_index >= count( $slots ) ) {
 				$current_date = self::next_weekday_from(
-					date( 'Y-m-d', strtotime( $current_date . ' +7 days' ) ),
+					wp_date( 'Y-m-d', strtotime( $current_date . ' +7 days' ) ), // phpcs:ignore WordPress.DateTime.RestrictedFunctions
 					$weekday
 				);
 				$slot_index   = 0;
@@ -79,9 +79,9 @@ final class SlotPacker {
 	 */
 	private static function next_weekday_from( string $from, int $weekday ): string {
 		$ts         = strtotime( $from );
-		$current_dw = (int) date( 'w', $ts );
+		$current_dw = (int) wp_date( 'w', $ts ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions
 		$days_ahead = ( $weekday - $current_dw + 7 ) % 7;
-		return date( 'Y-m-d', strtotime( "+{$days_ahead} days", $ts ) );
+		return wp_date( 'Y-m-d', strtotime( "+{$days_ahead} days", $ts ) ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions
 	}
 
 	/**
