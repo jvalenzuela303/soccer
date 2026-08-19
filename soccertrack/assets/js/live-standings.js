@@ -451,6 +451,38 @@
 		</div>`;
 	};
 
+	/** Tarjeta de equipo(s) libre en una fecha — partidos que se juegan otro día de la misma jornada. */
+	const libreCard = ( deferredMatches ) => {
+		return deferredMatches.map( m => {
+			const playDate = m.match_datetime
+				? ( () => {
+					try {
+						const d = new Date( m.match_datetime.replace( ' ', 'T' ) );
+						const days = [ 'Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb' ];
+						return `${ days[ d.getDay() ] } ${ String( d.getDate() ).padStart( 2, '0' ) }/${ String( d.getMonth() + 1 ).padStart( 2, '0' ) }`;
+					} catch { return ''; }
+				} )()
+				: '';
+			return `
+			<div class="st-match-card st-match-card--libre" aria-label="Equipos libres esta fecha">
+				<div class="st-match-team">
+					${ logoOrPlaceholder( m.home_logo, m.home_team ) }
+					<span>${ teamDisplay( m.home_team, m.home_is_ghost ) }</span>
+				</div>
+				<div class="st-match-center">
+					<div class="st-match-score" style="font-size:.85rem;color:#999;letter-spacing:.5px">LIBRE</div>
+					<div class="st-match-meta" style="color:#aaa;font-size:.75rem">
+						${ playDate ? `Juegan el ${ playDate }` : '' }
+					</div>
+				</div>
+				<div class="st-match-team st-match-team--away">
+					${ logoOrPlaceholder( m.away_logo, m.away_team ) }
+					<span>${ teamDisplay( m.away_team, m.away_is_ghost ) }</span>
+				</div>
+			</div>`;
+		} ).join( '' );
+	};
+
 	async function renderFixture( container ) {
 		showLoading( container );
 
@@ -541,7 +573,35 @@
 
 				const renderRound = ( roundNum ) => {
 					const ms = rounds.get( roundNum ) ?? [];
-					return ms.map( matchCard ).join( '' );
+					if ( ! ms.length ) return '';
+
+					// Agrupar por fecha (YYYY-MM-DD). Si la jornada tiene overflow a otra fecha,
+					// se muestran las duplas diferidas como "LIBRE" en la fecha principal.
+					const byDate = new Map();
+					for ( const m of ms ) {
+						const dateKey = m.match_datetime ? m.match_datetime.substring( 0, 10 ) : 'sin-fecha';
+						if ( ! byDate.has( dateKey ) ) byDate.set( dateKey, [] );
+						byDate.get( dateKey ).push( m );
+					}
+
+					const sortedDates = [ ...byDate.keys() ].sort();
+
+					if ( sortedDates.length === 1 ) {
+						// Sin overflow: render directo.
+						return ms.map( matchCard ).join( '' );
+					}
+
+					// Con overflow: para cada fecha mostrar sus partidos + los "libres" de otras fechas.
+					let html = '';
+					for ( const date of sortedDates ) {
+						const dateMatches    = byDate.get( date );
+						const deferredToDate = ms.filter( m => ( m.match_datetime ?? '' ).substring( 0, 10 ) !== date );
+						html += dateMatches.map( matchCard ).join( '' );
+						if ( deferredToDate.length ) {
+							html += libreCard( deferredToDate );
+						}
+					}
+					return html;
 				};
 
 				if ( sortedRounds.length ) {

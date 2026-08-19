@@ -231,6 +231,17 @@
 	box-shadow: var(--st-shadow);
 }
 
+.st-match-card--libre {
+	background: #f9f9f9;
+	border-style: dashed;
+	border-color: #ddd;
+	opacity: .75;
+}
+
+.st-match-card--libre .st-match-team {
+	opacity: .6;
+}
+
 .st-match-team {
 	display: flex;
 	align-items: center;
