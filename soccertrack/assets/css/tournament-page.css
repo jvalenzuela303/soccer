@@ -607,3 +607,186 @@ body.st-public-body {
 .st-results-ticker__score {
 	color: #fff;
 }
+
+/* ── Bracket Tree (cuadro visual de playoffs) ──────────────────────── */
+.st-bracket-tree {
+	--bracket-gap:    32px;
+	--bracket-mw:     210px;
+	--bracket-mh:     76px;
+	--bracket-mg:     8px;
+	--bracket-pg:     24px;
+	--bracket-line:   #d1d5db;
+	display: flex;
+	gap: 0;
+	overflow-x: auto;
+	padding: 16px 4px 28px;
+	align-items: flex-start;
+}
+
+.st-bracket-col {
+	display: flex;
+	flex-direction: column;
+	min-width: var(--bracket-mw);
+	flex-shrink: 0;
+	margin-right: var(--bracket-gap);
+}
+
+.st-bracket-col:last-child {
+	margin-right: 0;
+}
+
+.st-bracket-col-title {
+	font-size: .72rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: .06em;
+	color: var(--st-charcoal, #3C3A47);
+	text-align: center;
+	margin: 0 0 14px;
+	opacity: .7;
+}
+
+.st-bracket-col-matches {
+	display: flex;
+	flex-direction: column;
+}
+
+/* Un par agrupa 2 partidos cuyos ganadores se enfrentan en la siguiente ronda */
+.st-bracket-pair {
+	display: flex;
+	flex-direction: column;
+	gap: var(--bracket-mg);
+	position: relative;
+	margin-bottom: var(--bracket-pg);
+}
+
+.st-bracket-pair:last-child {
+	margin-bottom: 0;
+}
+
+/* Línea vertical derecha del par (conecta los dos partidos hacia la siguiente ronda) */
+.st-bracket-col:not([data-round="final"]) .st-bracket-pair::after {
+	content: '';
+	position: absolute;
+	right: calc(var(--bracket-gap) * -1 + 1px);
+	top: calc(var(--bracket-mh) / 2);
+	height: calc(var(--bracket-mh) + var(--bracket-mg));
+	width: 1px;
+	background: var(--bracket-line);
+}
+
+/* Línea horizontal derecha de cada partido */
+.st-bracket-col:not([data-round="final"]) .st-bracket-match::after {
+	content: '';
+	position: absolute;
+	right: calc(var(--bracket-gap) * -1 + 1px);
+	top: 50%;
+	width: calc(var(--bracket-gap) - 1px);
+	height: 1px;
+	background: var(--bracket-line);
+}
+
+/* Línea horizontal izquierda de entrada (SF y Final) */
+.st-bracket-col[data-round="sf"] .st-bracket-match::before,
+.st-bracket-col[data-round="final"] .st-bracket-match:not(.st-bracket-match--third)::before {
+	content: '';
+	position: absolute;
+	left: calc(var(--bracket-gap) * -1 + 1px);
+	top: 50%;
+	width: calc(var(--bracket-gap) - 1px);
+	height: 1px;
+	background: var(--bracket-line);
+}
+
+.st-bracket-match {
+	position: relative;
+	background: #fff;
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+	overflow: hidden;
+	min-height: var(--bracket-mh);
+	min-width: var(--bracket-mw);
+	display: flex;
+	flex-direction: column;
+}
+
+.st-bracket-match--third {
+	border-style: dashed;
+	margin-top: 12px;
+}
+
+.st-bracket-phase-label {
+	font-size: .62rem;
+	text-transform: uppercase;
+	letter-spacing: .05em;
+	color: #9ca3af;
+	padding: 4px 10px 0;
+}
+
+.st-bracket-team {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 7px 10px;
+	gap: 8px;
+	flex: 1;
+	border-bottom: 1px solid #f3f4f6;
+	transition: background .15s;
+}
+
+.st-bracket-team:last-of-type {
+	border-bottom: none;
+}
+
+.st-bracket-team--winner {
+	background: rgba(60, 188, 32, .08);
+}
+
+.st-bracket-team--winner .st-bracket-team-name {
+	font-weight: 700;
+	color: var(--st-green-primary, #3CBC20);
+}
+
+.st-bracket-team--tbd .st-bracket-team-name,
+.st-bracket-team--tbd .st-bracket-score {
+	opacity: .35;
+	font-style: italic;
+}
+
+.st-bracket-team-name {
+	font-size: .8rem;
+	color: var(--st-charcoal, #3C3A47);
+	font-family: var(--st-font-body, 'Poppins', sans-serif);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 148px;
+}
+
+.st-bracket-score {
+	font-size: .88rem;
+	font-weight: 700;
+	color: var(--st-navy, #0E0C19);
+	min-width: 18px;
+	text-align: center;
+	flex-shrink: 0;
+}
+
+.st-bracket-match-meta {
+	font-size: .66rem;
+	color: #9ca3af;
+	padding: 3px 10px 4px;
+	border-top: 1px solid #f3f4f6;
+	white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+	.st-bracket-tree {
+		--bracket-gap: 20px;
+		--bracket-mw: 162px;
+	}
+
+	.st-bracket-team-name {
+		max-width: 110px;
+	}
+}
