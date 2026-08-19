@@ -245,6 +245,16 @@
 			</p>
 		</div>
 
+		<?php
+		// Leer slots existentes para pre-popular la UI y condicionar visibilidad de "Hora de inicio".
+		$existing_slots = [];
+		if ( ! empty( $tournament['schedule_slots'] ) ) {
+			$decoded = json_decode( $tournament['schedule_slots'], true );
+			if ( is_array( $decoded ) ) {
+				$existing_slots = $decoded;
+			}
+		}
+		?>
 		<?php /* ── Hora y duración ── */ ?>
 		<div style="display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:20px">
 			<div id="st-match-time-wrap"<?php echo empty( $existing_slots ) ? '' : ' style="display:none"'; ?>>
@@ -285,16 +295,6 @@
 			</div>
 		</div>
 
-		<?php
-		// Leer slots existentes para pre-popular la UI.
-		$existing_slots = [];
-		if ( ! empty( $tournament['schedule_slots'] ) ) {
-			$decoded = json_decode( $tournament['schedule_slots'], true );
-			if ( is_array( $decoded ) ) {
-				$existing_slots = $decoded;
-			}
-		}
-		?>
 		<div style="margin-bottom:20px">
 			<label class="st-label" style="display:block;margin-bottom:8px">
 				<?php esc_html_e( 'Bloques horarios', 'soccertrack' ); ?>
