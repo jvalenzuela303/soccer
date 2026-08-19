@@ -324,7 +324,8 @@ final class TournamentPage {
 					 LEFT JOIN {$wpdb->prefix}ds_venues  v ON v.id  = m.venue_id
 					 LEFT JOIN {$wpdb->prefix}ds_courts  c ON c.id  = m.court_id
 					 WHERE m.tournament_id = %d AND m.round_number = %d
-					 ORDER BY m.match_datetime ASC",
+					 ORDER BY m.match_datetime ASC
+					 LIMIT 500",
 					$selected_tournament,
 					$selected_round
 				),
@@ -720,7 +721,8 @@ final class TournamentPage {
 				 FROM {$wpdb->prefix}ds_teams t
 				 LEFT JOIN {$wpdb->prefix}ds_team_players tp ON tp.team_id = t.id
 				 WHERE t.tournament_id = %d
-				 GROUP BY t.id ORDER BY t.name ASC",
+				 GROUP BY t.id ORDER BY t.name ASC
+				 LIMIT 200",
 				$id
 			),
 			ARRAY_A
