@@ -285,6 +285,54 @@
 			</div>
 		</div>
 
+		<?php
+		// Leer slots existentes para pre-popular la UI.
+		$existing_slots = [];
+		if ( ! empty( $tournament['schedule_slots'] ) ) {
+			$decoded = json_decode( $tournament['schedule_slots'], true );
+			if ( is_array( $decoded ) ) {
+				$existing_slots = $decoded;
+			}
+		}
+		?>
+		<div style="margin-bottom:20px">
+			<label class="st-label" style="display:block;margin-bottom:8px">
+				<?php esc_html_e( 'Bloques horarios', 'soccertrack' ); ?>
+				<span style="font-size:.75rem;color:#999;font-weight:400;cursor:default"
+					title="<?php esc_attr_e( 'Define cuántos partidos simultáneos se juegan en cada horario. Si no configuras bloques, se usa la "Hora de inicio" para todos los partidos.', 'soccertrack' ); ?>"> ℹ</span>
+			</label>
+			<div id="st-slots-container">
+				<?php if ( ! empty( $existing_slots ) ) : ?>
+					<?php foreach ( $existing_slots as $slot ) : ?>
+					<div class="st-slot-row" style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+						<input type="time" name="slot_time[]" class="st-input" value="<?php echo esc_attr( $slot['time'] ); ?>" style="max-width:110px" required>
+						<span style="color:#555;font-size:.85rem">×</span>
+						<input type="number" name="slot_count[]" class="st-input" value="<?php echo esc_attr( (string) $slot['max_matches'] ); ?>" min="1" max="50" style="max-width:70px;text-align:center" required>
+						<span style="color:#555;font-size:.85rem"><?php esc_html_e( 'partidos', 'soccertrack' ); ?></span>
+						<button type="button" class="st-btn st-btn--sm" onclick="this.closest('.st-slot-row').remove()"
+								style="color:#d63638;border-color:#d63638;padding:2px 8px">−</button>
+					</div>
+					<?php endforeach; ?>
+				<?php endif; ?>
+			</div>
+			<button type="button" id="st-add-slot-btn" class="st-btn st-btn--sm" style="margin-top:4px">
+				+ <?php esc_html_e( 'Agregar bloque', 'soccertrack' ); ?>
+			</button>
+		</div>
+		<script>
+		document.getElementById('st-add-slot-btn').addEventListener('click', function() {
+			var row = document.createElement('div');
+			row.className = 'st-slot-row';
+			row.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:8px';
+			row.innerHTML = '<input type="time" name="slot_time[]" class="st-input" style="max-width:110px" required>'
+				+ '<span style="color:#555;font-size:.85rem">×</span>'
+				+ '<input type="number" name="slot_count[]" class="st-input" value="1" min="1" max="50" style="max-width:70px;text-align:center" required>'
+				+ '<span style="color:#555;font-size:.85rem"><?php echo esc_js( esc_html__( 'partidos', 'soccertrack' ) ); ?></span>'
+				+ '<button type="button" class="st-btn st-btn--sm" onclick="this.closest(\'.st-slot-row\').remove()" style="color:#d63638;border-color:#d63638;padding:2px 8px">−</button>';
+			document.getElementById('st-slots-container').appendChild(row);
+		});
+		</script>
+
 		<?php /* ── Explicación del sistema ── */ ?>
 		<div style="background:#f8f8f8;border-left:3px solid var(--st-green-primary,#3CBC20);border-radius:0 6px 6px 0;padding:10px 14px;margin-bottom:16px;font-size:.82rem;color:#555;line-height:1.6">
 			<strong style="color:#333;display:block;margin-bottom:4px">

@@ -1003,6 +1003,26 @@ final class TournamentPage {
 			$match_time     = preg_match( '/^\d{1,2}:\d{2}$/', $raw_time ) ? $raw_time . ':00' : '19:00:00';
 			$match_duration = max( 30, min( 120, (int) ( $_POST['match_duration'] ?? 60 ) ) );
 
+			// Bloques horarios (schedule_slots).
+			$schedule_slots  = [];
+			$raw_slot_times  = isset( $_POST['slot_time'] ) && is_array( $_POST['slot_time'] )
+				? $_POST['slot_time']  // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+				: [];
+			$raw_slot_counts = isset( $_POST['slot_count'] ) && is_array( $_POST['slot_count'] )
+				? $_POST['slot_count'] // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+				: [];
+
+			foreach ( $raw_slot_times as $i => $raw_slot_time ) {
+				$t = sanitize_text_field( $raw_slot_time );
+				if ( ! preg_match( '/^\d{2}:\d{2}$/', $t ) ) {
+					continue;
+				}
+				$max              = max( 1, min( 50, (int) ( $raw_slot_counts[ $i ] ?? 1 ) ) );
+				$schedule_slots[] = [ 'time' => $t, 'max_matches' => $max ];
+			}
+			usort( $schedule_slots, static fn( array $a, array $b ) => $a['time'] <=> $b['time'] );
+			$schedule_slots_json = empty( $schedule_slots ) ? null : wp_json_encode( $schedule_slots );
+
 			$wpdb->update( // phpcs:ignore
 				"{$wpdb->prefix}ds_tournaments",
 				[
@@ -1010,9 +1030,10 @@ final class TournamentPage {
 					'match_weekdays' => $match_weekdays_json,
 					'match_time'     => $match_time,
 					'match_duration' => $match_duration,
+					'schedule_slots' => $schedule_slots_json,
 				],
 				[ 'id' => $id ],
-				[ '%d', '%s', '%s', '%d' ],
+				[ '%d', '%s', '%s', '%d', '%s' ],
 				[ '%d' ]
 			);
 			$notice = 'schedule_updated';
