@@ -655,18 +655,15 @@
 		showLoading( container );
 
 		try {
-			// La respuesta ya estará en caché si el fixture tab se cargó primero.
-			const matches = await apiFetch( `soccertrack/v1/public/tournament/${ TID }/fixture` );
-			const playoffPhases  = [ 'quarterfinal', 'semifinal', 'third_place', 'final' ];
+			const matches       = await apiFetch( `soccertrack/v1/public/tournament/${ TID }/fixture` );
+			const playoffPhases = [ 'quarterfinal', 'semifinal', 'third_place', 'final' ];
 			const playoffMatches = matches.filter( m => playoffPhases.includes( m.phase ) );
 
 			if ( ! playoffMatches.length ) {
 				return showEmpty( container, i18n.no_playoffs ?? 'Los play-offs aún no han comenzado.' );
 			}
 
-			const phaseTitle = PHASE_TITLE;
-
-			// Agrupar por bracket_name (null → bracket genérico).
+			// Agrupar por bracket_name (null → bracket genérico '__generic__').
 			const bracketMap = new Map();
 			for ( const m of playoffMatches ) {
 				const key = m.bracket_name ?? '__generic__';
@@ -683,29 +680,12 @@
 					html += `<h3 class="st-subsection-title">${ escHtml( bracket.name ) }</h3>`;
 				}
 
-				const octMatches   = bracket.matches.filter( m => m.phase === 'octavos' );
 				const qfMatches    = bracket.matches.filter( m => m.phase === 'quarterfinal' );
 				const sfMatches    = bracket.matches.filter( m => m.phase === 'semifinal' );
 				const thirdMatches = bracket.matches.filter( m => m.phase === 'third_place' );
 				const finalMatches = bracket.matches.filter( m => m.phase === 'final' );
 
-				for ( const [ phase, group ] of [
-					[ 'octavos',     octMatches   ],
-					[ 'quarterfinal', qfMatches    ],
-					[ 'semifinal',    sfMatches    ],
-					[ 'third_place',  thirdMatches ],
-					[ 'final',        finalMatches ],
-				] ) {
-					if ( ! group.length ) continue;
-					const countClass = `st-bracket-matches--${ group.length }`;
-					html += `
-					<div class="st-bracket-round">
-						<h3 class="st-bracket-round-title">${ escHtml( phaseTitle[ phase ] ) }</h3>
-						<div class="st-bracket-matches ${ countClass }">
-							${ group.map( matchCard ).join( '' ) }
-						</div>
-					</div>`;
-				}
+				html += buildBracketTree( { qfMatches, sfMatches, thirdMatches, finalMatches } );
 			}
 
 			container.innerHTML = html;
@@ -713,6 +693,126 @@
 		} catch ( err ) {
 			showError( container, `${ i18n.error_load ?? 'Error al cargar los play-offs.' } (${ err.message })` );
 		}
+	}
+
+	/**
+	 * Construye el HTML del cuadro bracket para un bracket.
+	 * Adaptativo: 3 columnas (QF+SF+Final) si hay cuartos, 2 columnas (SF+Final) si no.
+	 *
+	 * @param {{ qfMatches: Array, sfMatches: Array, thirdMatches: Array, finalMatches: Array }} opts
+	 * @returns {string} HTML del árbol bracket.
+	 */
+	function buildBracketTree( { qfMatches, sfMatches, thirdMatches, finalMatches } ) {
+		const hasQF      = qfMatches.length >= 4;
+		const treeClass  = hasQF ? 'st-bracket-tree--8' : 'st-bracket-tree--4';
+		let cols = '';
+
+		// Columna Cuartos de Final (solo si existen).
+		if ( hasQF ) {
+			// Par 1: QF[0] + QF[1]  → ganadores van a SF[0]
+			// Par 2: QF[2] + QF[3]  → ganadores van a SF[1]
+			cols += `
+			<div class="st-bracket-col" data-round="qf">
+				<h4 class="st-bracket-col-title">${ escHtml( i18n.phase_quarterfinal ?? 'Cuartos de Final' ) }</h4>
+				<div class="st-bracket-col-matches">
+					<div class="st-bracket-pair">
+						${ bracketMatchCard( qfMatches[ 0 ] ) }
+						${ bracketMatchCard( qfMatches[ 1 ] ) }
+					</div>
+					<div class="st-bracket-pair">
+						${ bracketMatchCard( qfMatches[ 2 ] ) }
+						${ bracketMatchCard( qfMatches[ 3 ] ) }
+					</div>
+				</div>
+			</div>`;
+		}
+
+		// Columna Semifinales.
+		if ( sfMatches.length ) {
+			cols += `
+			<div class="st-bracket-col" data-round="sf">
+				<h4 class="st-bracket-col-title">${ escHtml( i18n.phase_semifinal ?? 'Semifinal' ) }</h4>
+				<div class="st-bracket-col-matches">
+					<div class="st-bracket-pair">
+						${ sfMatches.map( m => bracketMatchCard( m ) ).join( '' ) }
+					</div>
+				</div>
+			</div>`;
+		}
+
+		// Columna Final + 3.er Puesto.
+		if ( finalMatches.length || thirdMatches.length ) {
+			cols += `
+			<div class="st-bracket-col" data-round="final">
+				<h4 class="st-bracket-col-title">${ escHtml( i18n.phase_final ?? 'Final' ) }</h4>
+				<div class="st-bracket-col-matches">
+					<div class="st-bracket-pair">
+						${ finalMatches.map( m => bracketMatchCard( m ) ).join( '' ) }
+						${ thirdMatches.map( m => bracketMatchCard( m, true ) ).join( '' ) }
+					</div>
+				</div>
+			</div>`;
+		}
+
+		return `<div class="st-bracket-tree ${ treeClass }">${ cols }</div>`;
+	}
+
+	/**
+	 * Renderiza la tarjeta de un partido dentro del bracket tree.
+	 *
+	 * @param {Object}  m        Partido del API (puede ser undefined → muestra TBD).
+	 * @param {boolean} isThird  true si es el partido por 3.er puesto.
+	 * @returns {string} HTML de la tarjeta.
+	 */
+	function bracketMatchCard( m, isThird = false ) {
+		if ( ! m ) {
+			return `
+			<div class="st-bracket-match">
+				<div class="st-bracket-team st-bracket-team--tbd">
+					<span class="st-bracket-team-name">?</span>
+					<span class="st-bracket-score">-</span>
+				</div>
+				<div class="st-bracket-team st-bracket-team--tbd">
+					<span class="st-bracket-team-name">?</span>
+					<span class="st-bracket-score">-</span>
+				</div>
+			</div>`;
+		}
+
+		const isDone     = m.status === 'finished';
+		const homeScore  = m.home_score ?? null;
+		const awayScore  = m.away_score ?? null;
+		const homeWins   = isDone && homeScore !== null && awayScore !== null && homeScore > awayScore;
+		const awayWins   = isDone && homeScore !== null && awayScore !== null && awayScore > homeScore;
+		const homeTbd    = ! m.home_team;
+		const awayTbd    = ! m.away_team;
+
+		const dateStr = m.match_datetime
+			? new Date( m.match_datetime ).toLocaleDateString( 'es-CL', { day: 'numeric', month: 'short' } )
+			: '';
+		const statusStr = isDone
+			? ( i18n.status_finished ?? 'Finalizado' )
+			: ( m.status === 'in_progress'
+				? ( i18n.status_live ?? 'En curso' )
+				: ( dateStr || ( i18n.status_scheduled ?? 'Programado' ) ) );
+
+		const thirdLabel = isThird
+			? `<span class="st-bracket-phase-label">${ escHtml( i18n.phase_third_place ?? '3.er Puesto' ) }</span>`
+			: '';
+
+		return `
+		<div class="st-bracket-match${ isThird ? ' st-bracket-match--third' : '' }">
+			${ thirdLabel }
+			<div class="st-bracket-team${ homeTbd ? ' st-bracket-team--tbd' : '' }${ homeWins ? ' st-bracket-team--winner' : '' }">
+				<span class="st-bracket-team-name">${ homeTbd ? '?' : escHtml( m.home_team ) }</span>
+				<span class="st-bracket-score">${ homeScore !== null ? homeScore : '-' }</span>
+			</div>
+			<div class="st-bracket-team${ awayTbd ? ' st-bracket-team--tbd' : '' }${ awayWins ? ' st-bracket-team--winner' : '' }">
+				<span class="st-bracket-team-name">${ awayTbd ? '?' : escHtml( m.away_team ) }</span>
+				<span class="st-bracket-score">${ awayScore !== null ? awayScore : '-' }</span>
+			</div>
+			<div class="st-bracket-match-meta">${ escHtml( statusStr ) }</div>
+		</div>`;
 	}
 
 	/**
