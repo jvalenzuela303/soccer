@@ -649,6 +649,7 @@
 				<tr>
 					<th><?php esc_html_e( 'Nombre', 'soccertrack' ); ?></th>
 					<th style="text-align:center"><?php esc_html_e( 'Posiciones', 'soccertrack' ); ?></th>
+					<th style="text-align:center"><?php esc_html_e( 'Sorteo', 'soccertrack' ); ?></th>
 					<th style="text-align:center"><?php esc_html_e( 'Estado', 'soccertrack' ); ?></th>
 					<th><?php esc_html_e( 'Acciones', 'soccertrack' ); ?></th>
 				</tr>
@@ -661,6 +662,17 @@
 					</td>
 					<td style="text-align:center">
 						<?php echo esc_html( $b['rank_from'] . '° – ' . $b['rank_to'] . '°' ); ?>
+					</td>
+					<td style="text-align:center">
+						<?php if ( ( $b['seeding_mode'] ?? 'seeded' ) === 'random' ) : ?>
+							<span class="st-badge" style="background:#e8f0ff;color:#1a4db5" title="<?php esc_attr_e( 'Los equipos se sortean al azar', 'soccertrack' ); ?>">
+								🎲 <?php esc_html_e( 'Aleatorio', 'soccertrack' ); ?>
+							</span>
+						<?php else : ?>
+							<span class="st-badge" style="background:#f0fae8;color:#2d6a0a" title="<?php esc_attr_e( 'Cuadro tenis: 1° vs último, 2° vs penúltimo…', 'soccertrack' ); ?>">
+								🎾 <?php esc_html_e( 'Sembrado', 'soccertrack' ); ?>
+							</span>
+						<?php endif; ?>
 					</td>
 					<td style="text-align:center">
 						<?php if ( $b['locked'] ) : ?>
@@ -682,6 +694,7 @@
 							data-from="<?php echo esc_attr( (string) $b['rank_from'] ); ?>"
 							data-to="<?php echo esc_attr( (string) $b['rank_to'] ); ?>"
 							data-order="<?php echo esc_attr( (string) $b['sort_order'] ); ?>"
+							data-seeding="<?php echo esc_attr( $b['seeding_mode'] ?? 'seeded' ); ?>"
 							data-tournament="<?php echo esc_attr( (string) $tournament['id'] ); ?>"
 							data-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>"
 						>✏️ <?php esc_html_e( 'Editar', 'soccertrack' ); ?></button>
@@ -723,6 +736,14 @@
 			<div class="st-field">
 				<label class="st-label" style="font-size:.78rem"><?php esc_html_e( 'Pos. hasta', 'soccertrack' ); ?></label>
 				<input type="number" id="st-bracket-to" class="st-input" placeholder="4" min="2" max="50" style="max-width:70px;text-align:center">
+			</div>
+			<div class="st-field">
+				<label class="st-label" style="font-size:.78rem"><?php esc_html_e( 'Tipo de sorteo', 'soccertrack' ); ?></label>
+				<select id="st-bracket-seeding" class="st-input" style="max-width:180px"
+					title="<?php esc_attr_e( 'Sembrado: cuadro tenis (1° vs último). Aleatorio: sorteo libre.', 'soccertrack' ); ?>">
+					<option value="seeded">🎾 <?php esc_html_e( 'Sembrado (cuadro tenis)', 'soccertrack' ); ?></option>
+					<option value="random">🎲 <?php esc_html_e( 'Aleatorio', 'soccertrack' ); ?></option>
+				</select>
 			</div>
 			<div style="display:flex;gap:6px">
 				<button
@@ -1723,6 +1744,7 @@ function stPreviewBanner(input) {
 	const fromIn     = document.getElementById( 'st-bracket-from' );
 	const toIn       = document.getElementById( 'st-bracket-to' );
 	const formTitle  = document.getElementById( 'st-bracket-form-title' );
+	const seedingIn  = document.getElementById( 'st-bracket-seeding' );
 
 	function showNotice( html ) {
 		notice.innerHTML = html;
@@ -1734,6 +1756,7 @@ function stPreviewBanner(input) {
 		nameIn.value    = '';
 		fromIn.value    = '';
 		toIn.value      = '';
+		if ( seedingIn ) seedingIn.value = 'seeded';
 		formTitle.textContent   = '➕ <?php esc_html_e( 'Agregar bracket', 'soccertrack' ); ?>';
 		cancelBtn.style.display = 'none';
 	}
@@ -1741,11 +1764,12 @@ function stPreviewBanner(input) {
 	/* Guardar (crear o editar) */
 	if ( saveBtn ) {
 		saveBtn.addEventListener( 'click', async () => {
-			const name  = nameIn.value.trim();
-			const from  = parseInt( fromIn.value, 10 );
-			const to    = parseInt( toIn.value, 10 );
-			const eid   = editIdIn.value;
-			const nonce = saveBtn.dataset.nonce;
+			const name    = nameIn.value.trim();
+			const from    = parseInt( fromIn.value, 10 );
+			const to      = parseInt( toIn.value, 10 );
+			const eid     = editIdIn.value;
+			const nonce   = saveBtn.dataset.nonce;
+			const seeding = seedingIn ? seedingIn.value : 'seeded';
 
 			if ( ! name || ! from || ! to ) {
 				showNotice( '<div class="st-alert st-alert--error"><?php esc_html_e( 'Completa nombre y posiciones.', 'soccertrack' ); ?></div>' );
@@ -1760,7 +1784,7 @@ function stPreviewBanner(input) {
 					method,
 					credentials: 'include',
 					headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': nonce },
-					body: JSON.stringify( { name, rank_from: from, rank_to: to, sort_order: eid ? undefined : 0 } ),
+					body: JSON.stringify( { name, rank_from: from, rank_to: to, seeding_mode: seeding, sort_order: eid ? undefined : 0 } ),
 				} );
 				const data = await resp.json();
 				if ( ! resp.ok ) {
@@ -1786,6 +1810,7 @@ function stPreviewBanner(input) {
 			nameIn.value   = btn.dataset.name;
 			fromIn.value   = btn.dataset.from;
 			toIn.value     = btn.dataset.to;
+			if ( seedingIn ) seedingIn.value = btn.dataset.seeding || 'seeded';
 			formTitle.textContent   = '✏️ <?php esc_html_e( 'Editar bracket', 'soccertrack' ); ?>';
 			cancelBtn.style.display = '';
 			document.getElementById( 'st-bracket-form-wrap' ).scrollIntoView( { behavior: 'smooth', block: 'nearest' } );
