@@ -608,24 +608,23 @@ body.st-public-body {
 	color: #fff;
 }
 
-/* ── Bracket Tree (cuadro visual de playoffs) ──────────────────────── */
+/* ── Bracket Tree — cuadro visual de play-offs ──────────────────── */
 .st-bracket-tree {
-	--bracket-gap:    32px;
-	--bracket-mw:     210px;
-	--bracket-mh:     76px;
-	--bracket-mg:     8px;
-	--bracket-pg:     24px;
-	--bracket-line:   #d1d5db;
+	--bracket-gap:  28px;   /* espacio horizontal entre columnas */
+	--bracket-mw:   210px;  /* ancho mínimo tarjeta */
+	--bracket-mh:   76px;   /* alto mínimo tarjeta */
+	--bracket-mg:   16px;   /* gap entre partidos dentro de un par */
+	--bracket-pg:   32px;   /* padding entre pares */
+	--bracket-line: #d1d5db;
 	display: flex;
+	justify-content: center;
+	align-items: center;
 	gap: 0;
 	overflow-x: auto;
 	padding: 16px 4px 28px;
-	align-items: flex-start;
 }
 
-.st-bracket-tree--4 { /* 2-column: SF + Final — no QF column */ }
-.st-bracket-tree--8 { /* 3-column: QF + SF + Final */ }
-
+/* Columna genérica */
 .st-bracket-col {
 	display: flex;
 	flex-direction: column;
@@ -633,10 +632,7 @@ body.st-public-body {
 	flex-shrink: 0;
 	margin-right: var(--bracket-gap);
 }
-
-.st-bracket-col:last-child {
-	margin-right: 0;
-}
+.st-bracket-col:last-child { margin-right: 0; }
 
 .st-bracket-col-title {
 	font-size: .72rem;
@@ -654,7 +650,7 @@ body.st-public-body {
 	flex-direction: column;
 }
 
-/* Un par agrupa 2 partidos cuyos ganadores se enfrentan en la siguiente ronda */
+/* Par: un partido (o dos en el layout de 8-bracket lineal — ya no usado) */
 .st-bracket-pair {
 	display: flex;
 	flex-direction: column;
@@ -662,13 +658,23 @@ body.st-public-body {
 	position: relative;
 	margin-bottom: var(--bracket-pg);
 }
+.st-bracket-pair:last-child { margin-bottom: 0; }
 
-.st-bracket-pair:last-child {
-	margin-bottom: 0;
+/* ── Conectores lado izquierdo (QF-L, SF-L) ─────────────────────── */
+/* Línea horizontal derecha de cada partido (hacia el centro) */
+.st-bracket-col[data-round="qf-left"] .st-bracket-match::after,
+.st-bracket-col[data-round="sf-left"] .st-bracket-match::after {
+	content: '';
+	position: absolute;
+	right: calc(var(--bracket-gap) * -1 + 1px);
+	top: 50%;
+	width: calc(var(--bracket-gap) - 1px);
+	height: 1px;
+	background: var(--bracket-line);
 }
 
-/* Línea vertical derecha del par (conecta los dos partidos hacia la siguiente ronda) */
-.st-bracket-col:not([data-round="final"]) .st-bracket-pair::after {
+/* Línea vertical del par QF-L (une los dos QF que van al mismo SF) */
+.st-bracket-col[data-round="qf-left"] .st-bracket-pair::after {
 	content: '';
 	position: absolute;
 	right: calc(var(--bracket-gap) * -1 + 1px);
@@ -678,21 +684,8 @@ body.st-public-body {
 	background: var(--bracket-line);
 }
 
-/* Línea horizontal derecha de cada partido */
-.st-bracket-col:not([data-round="final"]) .st-bracket-match::after {
-	content: '';
-	position: absolute;
-	right: calc(var(--bracket-gap) * -1 + 1px);
-	top: 50%;
-	width: calc(var(--bracket-gap) - 1px);
-	height: 1px;
-	background: var(--bracket-line);
-}
-
-/* Línea horizontal izquierda de entrada (SF y Final) */
-/* Left-incoming connector: SF only when QF column exists (8-team bracket) */
-.st-bracket-tree--8 .st-bracket-col[data-round="sf"] .st-bracket-match::before,
-.st-bracket-col[data-round="final"] .st-bracket-match:not(.st-bracket-match--third)::before {
+/* Línea horizontal de entrada izquierda a SF-L (viene del par QF-L) */
+.st-bracket-tree--sym-8 .st-bracket-col[data-round="sf-left"] .st-bracket-match::before {
 	content: '';
 	position: absolute;
 	left: calc(var(--bracket-gap) * -1 + 1px);
@@ -702,6 +695,62 @@ body.st-public-body {
 	background: var(--bracket-line);
 }
 
+/* ── Conectores lado derecho (SF-R, QF-R) — espejo del izquierdo ── */
+/* Línea horizontal izquierda de cada partido (hacia el centro) */
+.st-bracket-col[data-round="qf-right"] .st-bracket-match::before,
+.st-bracket-col[data-round="sf-right"] .st-bracket-match::before {
+	content: '';
+	position: absolute;
+	left: calc(var(--bracket-gap) * -1 + 1px);
+	top: 50%;
+	width: calc(var(--bracket-gap) - 1px);
+	height: 1px;
+	background: var(--bracket-line);
+}
+
+/* Línea vertical del par QF-R */
+.st-bracket-col[data-round="qf-right"] .st-bracket-pair::after {
+	content: '';
+	position: absolute;
+	left: calc(var(--bracket-gap) * -1 + 1px);
+	top: calc(var(--bracket-mh) / 2);
+	height: calc(var(--bracket-mh) + var(--bracket-mg));
+	width: 1px;
+	background: var(--bracket-line);
+}
+
+/* Línea horizontal de salida derecha de SF-R (hacia la Final) */
+.st-bracket-tree--sym-8 .st-bracket-col[data-round="sf-right"] .st-bracket-match::after {
+	content: '';
+	position: absolute;
+	right: calc(var(--bracket-gap) * -1 + 1px);
+	top: 50%;
+	width: calc(var(--bracket-gap) - 1px);
+	height: 1px;
+	background: var(--bracket-line);
+}
+
+/* Líneas de entrada a la Final (desde SF-L por la izquierda, desde SF-R por la derecha) */
+.st-bracket-col[data-round="final"] .st-bracket-match:not(.st-bracket-match--third)::before {
+	content: '';
+	position: absolute;
+	left: calc(var(--bracket-gap) * -1 + 1px);
+	top: 50%;
+	width: calc(var(--bracket-gap) - 1px);
+	height: 1px;
+	background: var(--bracket-line);
+}
+.st-bracket-col[data-round="final"] .st-bracket-match:not(.st-bracket-match--third)::after {
+	content: '';
+	position: absolute;
+	right: calc(var(--bracket-gap) * -1 + 1px);
+	top: 50%;
+	width: calc(var(--bracket-gap) - 1px);
+	height: 1px;
+	background: var(--bracket-line);
+}
+
+/* ── Tarjeta de partido ──────────────────────────────────────────── */
 .st-bracket-match {
 	position: relative;
 	background: #fff;
@@ -737,15 +786,9 @@ body.st-public-body {
 	border-bottom: 1px solid #f3f4f6;
 	transition: background .15s;
 }
+.st-bracket-team:last-of-type { border-bottom: none; }
 
-.st-bracket-team:last-of-type {
-	border-bottom: none;
-}
-
-.st-bracket-team--winner {
-	background: rgba(60, 188, 32, .08);
-}
-
+.st-bracket-team--winner { background: rgba(60, 188, 32, .08); }
 .st-bracket-team--winner .st-bracket-team-name {
 	font-weight: 700;
 	color: var(--st-green-primary, #3CBC20);
@@ -784,13 +827,11 @@ body.st-public-body {
 	white-space: nowrap;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
 	.st-bracket-tree {
-		--bracket-gap: 20px;
-		--bracket-mw: 162px;
+		--bracket-gap: 18px;
+		--bracket-mw: 150px;
+		justify-content: flex-start;
 	}
-
-	.st-bracket-team-name {
-		max-width: 110px;
-	}
+	.st-bracket-team-name { max-width: 98px; }
 }

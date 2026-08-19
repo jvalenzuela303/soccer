@@ -696,59 +696,84 @@
 	}
 
 	/**
-	 * Construye el HTML del cuadro bracket para un bracket.
-	 * Adaptativo: 3 columnas (QF+SF+Final) si hay cuartos, 2 columnas (SF+Final) si no.
+	 * Construye el HTML del cuadro bracket simétrico doble (tipo cuadro de tenis).
+	 * Layout 8 equipos: QF-L | SF-L | Final | SF-R | QF-R
+	 * Layout 4 equipos: SF-L | Final | SF-R
 	 *
 	 * @param {{ qfMatches: Array, sfMatches: Array, thirdMatches: Array, finalMatches: Array }} opts
 	 * @returns {string} HTML del árbol bracket.
 	 */
 	function buildBracketTree( { qfMatches, sfMatches, thirdMatches, finalMatches } ) {
-		const hasQF      = qfMatches.length >= 4;
-		const treeClass  = hasQF ? 'st-bracket-tree--8' : 'st-bracket-tree--4';
+		const hasQF     = qfMatches.length >= 4;
+		const treeClass = hasQF ? 'st-bracket-tree--sym-8' : 'st-bracket-tree--sym-4';
+
+		// Partir SF en izquierda y derecha.
+		const sfLeft  = sfMatches[ 0 ] ?? null;
+		const sfRight = sfMatches[ 1 ] ?? null;
+
 		let cols = '';
 
-		// Columna Cuartos de Final (solo si existen).
+		// ── Columna QF-Izquierda (solo en bracket de 8) ──────────────────
 		if ( hasQF ) {
-			// Par 1: QF[0] + QF[1]  → ganadores van a SF[0]
-			// Par 2: QF[2] + QF[3]  → ganadores van a SF[1]
 			cols += `
-			<div class="st-bracket-col" data-round="qf">
+			<div class="st-bracket-col" data-round="qf-left">
 				<h4 class="st-bracket-col-title">${ escHtml( i18n.phase_quarterfinal ?? 'Cuartos de Final' ) }</h4>
 				<div class="st-bracket-col-matches">
 					<div class="st-bracket-pair">
 						${ bracketMatchCard( qfMatches[ 0 ] ) }
+					</div>
+					<div class="st-bracket-pair">
 						${ bracketMatchCard( qfMatches[ 1 ] ) }
 					</div>
+				</div>
+			</div>`;
+		}
+
+		// ── Columna SF-Izquierda ─────────────────────────────────────────
+		cols += `
+		<div class="st-bracket-col" data-round="sf-left">
+			<h4 class="st-bracket-col-title">${ escHtml( i18n.phase_semifinal ?? 'Semifinal' ) }</h4>
+			<div class="st-bracket-col-matches">
+				<div class="st-bracket-pair">
+					${ bracketMatchCard( sfLeft ) }
+				</div>
+			</div>
+		</div>`;
+
+		// ── Columna Final (centro) ───────────────────────────────────────
+		cols += `
+		<div class="st-bracket-col" data-round="final">
+			<h4 class="st-bracket-col-title">${ escHtml( i18n.phase_final ?? 'Final' ) }</h4>
+			<div class="st-bracket-col-matches">
+				<div class="st-bracket-pair">
+					${ finalMatches.map( m => bracketMatchCard( m ) ).join( '' ) }
+					${ thirdMatches.map( m => bracketMatchCard( m, true ) ).join( '' ) }
+				</div>
+			</div>
+		</div>`;
+
+		// ── Columna SF-Derecha ───────────────────────────────────────────
+		cols += `
+		<div class="st-bracket-col" data-round="sf-right">
+			<h4 class="st-bracket-col-title">${ escHtml( i18n.phase_semifinal ?? 'Semifinal' ) }</h4>
+			<div class="st-bracket-col-matches">
+				<div class="st-bracket-pair">
+					${ bracketMatchCard( sfRight ) }
+				</div>
+			</div>
+		</div>`;
+
+		// ── Columna QF-Derecha (solo en bracket de 8) ────────────────────
+		if ( hasQF ) {
+			cols += `
+			<div class="st-bracket-col" data-round="qf-right">
+				<h4 class="st-bracket-col-title">${ escHtml( i18n.phase_quarterfinal ?? 'Cuartos de Final' ) }</h4>
+				<div class="st-bracket-col-matches">
 					<div class="st-bracket-pair">
 						${ bracketMatchCard( qfMatches[ 2 ] ) }
+					</div>
+					<div class="st-bracket-pair">
 						${ bracketMatchCard( qfMatches[ 3 ] ) }
-					</div>
-				</div>
-			</div>`;
-		}
-
-		// Columna Semifinales.
-		if ( sfMatches.length ) {
-			cols += `
-			<div class="st-bracket-col" data-round="sf">
-				<h4 class="st-bracket-col-title">${ escHtml( i18n.phase_semifinal ?? 'Semifinal' ) }</h4>
-				<div class="st-bracket-col-matches">
-					<div class="st-bracket-pair">
-						${ sfMatches.map( m => bracketMatchCard( m ) ).join( '' ) }
-					</div>
-				</div>
-			</div>`;
-		}
-
-		// Columna Final + 3.er Puesto.
-		if ( finalMatches.length || thirdMatches.length ) {
-			cols += `
-			<div class="st-bracket-col" data-round="final">
-				<h4 class="st-bracket-col-title">${ escHtml( i18n.phase_final ?? 'Final' ) }</h4>
-				<div class="st-bracket-col-matches">
-					<div class="st-bracket-pair">
-						${ finalMatches.map( m => bracketMatchCard( m ) ).join( '' ) }
-						${ thirdMatches.map( m => bracketMatchCard( m, true ) ).join( '' ) }
 					</div>
 				</div>
 			</div>`;
