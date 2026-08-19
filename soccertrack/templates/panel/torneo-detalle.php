@@ -247,7 +247,7 @@
 
 		<?php /* ── Hora y duración ── */ ?>
 		<div style="display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:20px">
-			<div>
+			<div id="st-match-time-wrap"<?php echo empty( $existing_slots ) ? '' : ' style="display:none"'; ?>>
 				<label class="st-label" style="display:block;margin-bottom:4px">
 					<?php esc_html_e( 'Hora de inicio', 'soccertrack' ); ?>
 				</label>
@@ -320,17 +320,36 @@
 			</button>
 		</div>
 		<script>
-		document.getElementById('st-add-slot-btn').addEventListener('click', function() {
-			var row = document.createElement('div');
-			row.className = 'st-slot-row';
-			row.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:8px';
-			row.innerHTML = '<input type="time" name="slot_time[]" class="st-input" style="max-width:110px" required>'
-				+ '<span style="color:#555;font-size:.85rem">×</span>'
-				+ '<input type="number" name="slot_count[]" class="st-input" value="1" min="1" max="50" style="max-width:70px;text-align:center" required>'
-				+ '<span style="color:#555;font-size:.85rem"><?php echo esc_js( esc_html__( 'partidos', 'soccertrack' ) ); ?></span>'
-				+ '<button type="button" class="st-btn st-btn--sm" onclick="this.closest(\'.st-slot-row\').remove()" style="color:#d63638;border-color:#d63638;padding:2px 8px">−</button>';
-			document.getElementById('st-slots-container').appendChild(row);
-		});
+		(function() {
+			var container = document.getElementById('st-slots-container');
+			var timeWrap  = document.getElementById('st-match-time-wrap');
+
+			function syncTimeWrap() {
+				var hasSlots = container.querySelectorAll('.st-slot-row').length > 0;
+				timeWrap.style.display = hasSlots ? 'none' : '';
+			}
+
+			// Delegated click: captura el − en filas estáticas (PHP) y dinámicas.
+			// Se ejecuta tras el remove() del inline onclick con requestAnimationFrame.
+			container.addEventListener('click', function(e) {
+				if ( e.target.tagName === 'BUTTON' && e.target.textContent.trim() === '−' ) {
+					requestAnimationFrame( syncTimeWrap );
+				}
+			});
+
+			document.getElementById('st-add-slot-btn').addEventListener('click', function() {
+				var row = document.createElement('div');
+				row.className = 'st-slot-row';
+				row.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:8px';
+				row.innerHTML = '<input type="time" name="slot_time[]" class="st-input" style="max-width:110px" required>'
+					+ '<span style="color:#555;font-size:.85rem">×</span>'
+					+ '<input type="number" name="slot_count[]" class="st-input" value="1" min="1" max="50" style="max-width:70px;text-align:center" required>'
+					+ '<span style="color:#555;font-size:.85rem"><?php echo esc_js( esc_html__( 'partidos', 'soccertrack' ) ); ?></span>'
+					+ '<button type="button" class="st-btn st-btn--sm" onclick="this.closest(\'.st-slot-row\').remove()" style="color:#d63638;border-color:#d63638;padding:2px 8px">−</button>';
+				container.appendChild(row);
+				syncTimeWrap();
+			});
+		})();
 		</script>
 
 		<?php /* ── Explicación del sistema ── */ ?>
