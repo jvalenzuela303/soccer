@@ -459,6 +459,12 @@ final class AdminEndpoints {
 							'validate_callback' => static fn( mixed $v ): bool => is_numeric( $v ) && (int) $v >= 0,
 							'sanitize_callback' => 'absint',
 						],
+						'seeding_mode' => [
+							'required'          => false,
+							'default'           => 'seeded',
+							'validate_callback' => static fn( mixed $v ): bool => in_array( $v, [ 'seeded', 'random' ], true ),
+							'sanitize_callback' => 'sanitize_text_field',
+						],
 					],
 				],
 				[
@@ -501,6 +507,11 @@ final class AdminEndpoints {
 							'required'          => false,
 							'validate_callback' => static fn( mixed $v ): bool => is_numeric( $v ) && (int) $v >= 0,
 							'sanitize_callback' => 'absint',
+						],
+						'seeding_mode' => [
+							'required'          => false,
+							'validate_callback' => static fn( mixed $v ): bool => in_array( $v, [ 'seeded', 'random' ], true ),
+							'sanitize_callback' => 'sanitize_text_field',
 						],
 					],
 				],
@@ -1453,9 +1464,19 @@ final class AdminEndpoints {
 		) ) );
 
 		$user_names = [];
-		foreach ( $user_ids as $uid ) {
-			$u = get_user_by( 'id', (int) $uid );
-			$user_names[ (int) $uid ] = $u ? $u->display_name : '';
+		if ( ! empty( $user_ids ) ) {
+			$id_placeholders = implode( ', ', array_fill( 0, count( $user_ids ), '%d' ) );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$users_raw = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT ID, display_name FROM {$wpdb->users} WHERE ID IN ( {$id_placeholders} )", // phpcs:ignore
+					...$user_ids
+				),
+				ARRAY_A
+			);
+			foreach ( $users_raw as $u ) {
+				$user_names[ (int) $u['ID'] ] = $u['display_name'];
+			}
 		}
 
 		$can_edit = current_user_can( 'ds_edit_incidents' );
@@ -1686,11 +1707,12 @@ final class AdminEndpoints {
 	public static function post_bracket( \WP_REST_Request $request ): \WP_REST_Response|\WP_Error {
 		global $wpdb;
 
-		$tid        = (int) $request['id'];
-		$name       = (string) $request['name'];
-		$rank_from  = (int) $request['rank_from'];
-		$rank_to    = (int) $request['rank_to'];
-		$sort_order = (int) ( $request['sort_order'] ?? 0 );
+		$tid          = (int) $request['id'];
+		$name         = (string) $request['name'];
+		$rank_from    = (int) $request['rank_from'];
+		$rank_to      = (int) $request['rank_to'];
+		$sort_order   = (int) ( $request['sort_order'] ?? 0 );
+		$seeding_mode = in_array( $request['seeding_mode'] ?? '', [ 'seeded', 'random' ], true ) ? $request['seeding_mode'] : 'seeded';
 
 		// Verificar que el torneo existe.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
@@ -1730,8 +1752,9 @@ final class AdminEndpoints {
 				'rank_from'     => $rank_from,
 				'rank_to'       => $rank_to,
 				'sort_order'    => $sort_order,
+				'seeding_mode'  => $seeding_mode,
 			],
-			[ '%d', '%s', '%d', '%d', '%d' ]
+			[ '%d', '%s', '%d', '%d', '%d', '%s' ]
 		);
 
 		$bracket_id = (int) $wpdb->insert_id;
@@ -1740,11 +1763,12 @@ final class AdminEndpoints {
 		}
 
 		return rest_ensure_response( [
-			'id'         => $bracket_id,
-			'name'       => $name,
-			'rank_from'  => $rank_from,
-			'rank_to'    => $rank_to,
-			'sort_order' => $sort_order,
+			'id'           => $bracket_id,
+			'name'         => $name,
+			'rank_from'    => $rank_from,
+			'rank_to'      => $rank_to,
+			'sort_order'   => $sort_order,
+			'seeding_mode' => $seeding_mode,
 		] );
 	}
 
@@ -1756,7 +1780,7 @@ final class AdminEndpoints {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT b.id, b.name, b.rank_from, b.rank_to, b.sort_order,
+				"SELECT b.id, b.name, b.rank_from, b.rank_to, b.sort_order, b.seeding_mode,
 				        COUNT(m.id) > 0 AS locked
 				 FROM {$wpdb->prefix}ds_playoff_brackets b
 				 LEFT JOIN {$wpdb->prefix}ds_matches m ON m.bracket_id = b.id
@@ -1770,12 +1794,13 @@ final class AdminEndpoints {
 
 		return rest_ensure_response(
 			array_map( static fn( array $r ): array => [
-				'id'         => (int) $r['id'],
-				'name'       => $r['name'],
-				'rank_from'  => (int) $r['rank_from'],
-				'rank_to'    => (int) $r['rank_to'],
-				'sort_order' => (int) $r['sort_order'],
-				'locked'     => (bool) (int) $r['locked'],
+				'id'           => (int) $r['id'],
+				'name'         => $r['name'],
+				'rank_from'    => (int) $r['rank_from'],
+				'rank_to'      => (int) $r['rank_to'],
+				'sort_order'   => (int) $r['sort_order'],
+				'seeding_mode' => $r['seeding_mode'] ?? 'seeded',
+				'locked'       => (bool) (int) $r['locked'],
 			], $rows )
 		);
 	}
@@ -1789,7 +1814,7 @@ final class AdminEndpoints {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$bracket = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT id, tournament_id, name, rank_from, rank_to, sort_order
+				"SELECT id, tournament_id, name, rank_from, rank_to, sort_order, seeding_mode
 				 FROM {$wpdb->prefix}ds_playoff_brackets
 				 WHERE id = %d AND tournament_id = %d",
 				$bid,
@@ -1806,10 +1831,12 @@ final class AdminEndpoints {
 			return new \WP_Error( 'bracket_locked', __( 'El bracket ya tiene partidos generados y no puede ser editado.', 'soccertrack' ), [ 'status' => 409 ] );
 		}
 
-		$name       = isset( $request['name'] )       ? (string) $request['name']       : $bracket['name'];
-		$rank_from  = isset( $request['rank_from'] )  ? (int) $request['rank_from']     : (int) $bracket['rank_from'];
-		$rank_to    = isset( $request['rank_to'] )    ? (int) $request['rank_to']       : (int) $bracket['rank_to'];
-		$sort_order = isset( $request['sort_order'] ) ? (int) $request['sort_order']    : (int) $bracket['sort_order'];
+		$name         = isset( $request['name'] )         ? (string) $request['name']    : $bracket['name'];
+		$rank_from    = isset( $request['rank_from'] )    ? (int) $request['rank_from']  : (int) $bracket['rank_from'];
+		$rank_to      = isset( $request['rank_to'] )      ? (int) $request['rank_to']    : (int) $bracket['rank_to'];
+		$sort_order   = isset( $request['sort_order'] )   ? (int) $request['sort_order'] : (int) $bracket['sort_order'];
+		$raw_seeding  = isset( $request['seeding_mode'] ) ? $request['seeding_mode']     : ( $bracket['seeding_mode'] ?? 'seeded' );
+		$seeding_mode = in_array( $raw_seeding, [ 'seeded', 'random' ], true ) ? $raw_seeding : 'seeded';
 
 		if ( $rank_from >= $rank_to ) {
 			return new \WP_Error( 'invalid_range', __( 'rank_from debe ser menor que rank_to.', 'soccertrack' ), [ 'status' => 422 ] );
@@ -1831,22 +1858,24 @@ final class AdminEndpoints {
 		$wpdb->update(
 			"{$wpdb->prefix}ds_playoff_brackets",
 			[
-				'name'       => $name,
-				'rank_from'  => $rank_from,
-				'rank_to'    => $rank_to,
-				'sort_order' => $sort_order,
+				'name'         => $name,
+				'rank_from'    => $rank_from,
+				'rank_to'      => $rank_to,
+				'sort_order'   => $sort_order,
+				'seeding_mode' => $seeding_mode,
 			],
 			[ 'id' => $bid ],
-			[ '%s', '%d', '%d', '%d' ],
+			[ '%s', '%d', '%d', '%d', '%s' ],
 			[ '%d' ]
 		);
 
 		return rest_ensure_response( [
-			'id'         => $bid,
-			'name'       => $name,
-			'rank_from'  => $rank_from,
-			'rank_to'    => $rank_to,
-			'sort_order' => $sort_order,
+			'id'           => $bid,
+			'name'         => $name,
+			'rank_from'    => $rank_from,
+			'rank_to'      => $rank_to,
+			'sort_order'   => $sort_order,
+			'seeding_mode' => $seeding_mode,
 		] );
 	}
 
