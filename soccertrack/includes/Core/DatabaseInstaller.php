@@ -190,6 +190,7 @@ final class DatabaseInstaller {
 			rank_from     TINYINT UNSIGNED NOT NULL,
 			rank_to       TINYINT UNSIGNED NOT NULL,
 			sort_order    TINYINT UNSIGNED NOT NULL DEFAULT 0,
+			seeding_mode  VARCHAR(10)      NOT NULL DEFAULT 'seeded',
 			created_at    DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY (id),
 			KEY idx_tournament (tournament_id)
@@ -708,6 +709,25 @@ final class DatabaseInstaller {
 		$has_phase_dt = $wpdb->get_var( "SHOW INDEX FROM {$prefix}ds_matches WHERE Key_name = 'idx_tournament_phase_dt'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		if ( ! $has_phase_dt ) {
 			$wpdb->query( "ALTER TABLE {$prefix}ds_matches ADD KEY idx_tournament_phase_dt (tournament_id, phase, match_datetime)" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		}
+
+		// v2.5.0 — ds_playoff_brackets: modo de siembra/sorteo por bracket.
+		// 'seeded' = cuadro tenis (1vÚltimo, 2vPenúltimo…); 'random' = sorteo aleatorio.
+		$has_seeding_mode = $wpdb->get_var( "SHOW COLUMNS FROM {$prefix}ds_playoff_brackets LIKE 'seeding_mode'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( ! $has_seeding_mode ) {
+			$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				"ALTER TABLE {$prefix}ds_playoff_brackets
+				 ADD COLUMN seeding_mode VARCHAR(10) NOT NULL DEFAULT 'seeded' AFTER sort_order"
+			);
+		}
+
+		// v2.5.0 — ds_matches: agregar idx_match_phase_group para query get_groups (tournament_id, phase, group_label).
+		// Query filtra WHERE tournament_id = %d AND phase = 'regular' AND m.group_label IS NOT NULL.
+		// Índice anterior idx_tournament_phase_status cubre primeros dos predicados pero no incluye group_label.
+		// Este índice permite range scan cubriente con group_label IS NOT NULL.
+		$has_phase_group = $wpdb->get_var( "SHOW INDEX FROM {$prefix}ds_matches WHERE Key_name = 'idx_match_phase_group'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( ! $has_phase_group ) {
+			$wpdb->query( "ALTER TABLE {$prefix}ds_matches ADD KEY idx_match_phase_group (tournament_id, phase, group_label)" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		}
 	}
 
