@@ -198,6 +198,26 @@ final class SpreadsheetImporter {
 			$enrolled_in_team[ (int) $r['player_id'] ] = (int) $r['id'];
 		}
 
+		// ── Pre-cargar inscripciones del torneo para detectar doble inscripción sin N+1 ───
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$tournament_inscriptions_raw = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT tp.player_id, t.name AS team_name
+				 FROM {$wpdb->prefix}ds_team_players tp
+				 JOIN {$wpdb->prefix}ds_teams t ON t.id = tp.team_id
+				 WHERE t.tournament_id = %d AND tp.team_id != %d",
+				$tournament_id,
+				$team_id
+			),
+			ARRAY_A
+		) ?: [];
+		// Construir mapa player_id → nombre del equipo conflictivo.
+		$inscribed_elsewhere = [];
+		foreach ( $tournament_inscriptions_raw as $row ) {
+			$inscribed_elsewhere[ (int) $row['player_id'] ] = $row['team_name'];
+		}
+		unset( $tournament_inscriptions_raw );
+
 		// ── Leer jugadores (fila 11 en adelante) ─────────────────────────────
 		foreach ( $sheet->getRowIterator( 11 ) as $row ) {
 			$cells = $row->getCellIterator();
@@ -302,20 +322,8 @@ final class SpreadsheetImporter {
 				continue;
 			}
 
-			// Verificar doble inscripción en el mismo torneo.
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
-			$conflict_team = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT t.name
-					 FROM {$wpdb->prefix}ds_team_players tp
-					 JOIN {$wpdb->prefix}ds_teams t ON t.id = tp.team_id
-					 WHERE tp.player_id = %d AND t.tournament_id = %d AND tp.team_id != %d
-					 LIMIT 1",
-					$player_id,
-					$tournament_id,
-					$team_id
-				)
-			);
+			// Verificar doble inscripción en el mismo torneo — usar mapa pre-cargado.
+			$conflict_team = $inscribed_elsewhere[ $player_id ] ?? null;
 
 			if ( $conflict_team ) {
 				// Conflicto real: el jugador ya pertenece a otro equipo en este torneo.
