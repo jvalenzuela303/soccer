@@ -1623,6 +1623,7 @@ function stPreviewBanner(input) {
 
 <script>
 ( () => {
+	const escHtml = s => String( s ).replace( /&/g, '&amp;' ).replace( /</g, '&lt;' ).replace( />/g, '&gt;' ).replace( /"/g, '&quot;' );
 	const btn = document.getElementById( 'st-gen-fixture-btn' );
 	if ( ! btn ) return;
 
@@ -1650,7 +1651,7 @@ function stPreviewBanner(input) {
 			const data = await resp.json();
 
 			if ( ! resp.ok ) {
-				notice.innerHTML = `<div class="st-alert st-alert--error">${data.message ?? 'Error'}</div>`;
+				notice.innerHTML = `<div class="st-alert st-alert--error">${ escHtml( data.message ?? 'Error' ) }</div>`;
 				btn.disabled = false;
 				btn.textContent = '⚡ <?php esc_html_e( 'Generar fixture', 'soccertrack' ); ?>';
 			} else {
@@ -1658,13 +1659,14 @@ function stPreviewBanner(input) {
 				setTimeout( () => location.reload(), 1500 );
 			}
 		} catch ( e ) {
-			notice.innerHTML = `<div class="st-alert st-alert--error">${e.message}</div>`;
+			notice.innerHTML = `<div class="st-alert st-alert--error">${ escHtml( e.message ) }</div>`;
 			btn.disabled = false;
 		}
 	} );
 } )();
 
 ( () => {
+	const escHtml = s => String( s ).replace( /&/g, '&amp;' ).replace( /</g, '&lt;' ).replace( />/g, '&gt;' ).replace( /"/g, '&quot;' );
 	const btn = document.getElementById( 'st-gen-playoffs-btn' );
 	if ( ! btn ) return;
 
@@ -1693,7 +1695,7 @@ function stPreviewBanner(input) {
 			const data = await resp.json();
 
 			if ( ! resp.ok ) {
-				notice.innerHTML = `<div class="st-alert st-alert--error">${data.message ?? 'Error'}</div>`;
+				notice.innerHTML = `<div class="st-alert st-alert--error">${ escHtml( data.message ?? 'Error' ) }</div>`;
 				btn.disabled = false;
 				btn.textContent = btn.dataset.endpoint === 'playoffs' ? '⚡ <?php esc_html_e( 'Generar Semi-finales', 'soccertrack' ); ?>' : '🏆 <?php esc_html_e( 'Generar Final y 3.er Puesto', 'soccertrack' ); ?>';
 			} else {
@@ -1701,7 +1703,7 @@ function stPreviewBanner(input) {
 				setTimeout( () => location.reload(), 1500 );
 			}
 		} catch ( e ) {
-			notice.innerHTML = `<div class="st-alert st-alert--error">${e.message}</div>`;
+			notice.innerHTML = `<div class="st-alert st-alert--error">${ escHtml( e.message ) }</div>`;
 			btn.disabled = false;
 		}
 	} );
@@ -1709,6 +1711,7 @@ function stPreviewBanner(input) {
 
 /* ── Brackets CRUD ────────────────────────────────────────────────── */
 ( () => {
+	const escHtml = s => String( s ).replace( /&/g, '&amp;' ).replace( /</g, '&lt;' ).replace( />/g, '&gt;' ).replace( /"/g, '&quot;' );
 	const REST_BASE  = '<?php echo esc_js( get_rest_url() ); ?>soccertrack/v1/admin/tournament/<?php echo esc_js( (string) $tournament['id'] ); ?>/brackets';
 	const notice     = document.getElementById( 'st-brackets-notice' );
 	const saveBtn    = document.getElementById( 'st-bracket-save-btn' );
@@ -1759,13 +1762,13 @@ function stPreviewBanner(input) {
 				} );
 				const data = await resp.json();
 				if ( ! resp.ok ) {
-					showNotice( `<div class="st-alert st-alert--error">${data.message ?? 'Error'}</div>` );
+					showNotice( `<div class="st-alert st-alert--error">${ escHtml( data.message ?? 'Error' ) }</div>` );
 				} else {
 					showNotice( '<div class="st-alert st-alert--success"><?php esc_html_e( 'Bracket guardado. Recargando…', 'soccertrack' ); ?></div>' );
 					setTimeout( () => location.reload(), 900 );
 				}
 			} catch ( e ) {
-				showNotice( `<div class="st-alert st-alert--error">${e.message}</div>` );
+				showNotice( `<div class="st-alert st-alert--error">${ escHtml( e.message ) }</div>` );
 			}
 			saveBtn.disabled = false;
 		} );
@@ -1803,11 +1806,11 @@ function stPreviewBanner(input) {
 					showNotice( '<div class="st-alert st-alert--success"><?php esc_html_e( 'Bracket eliminado.', 'soccertrack' ); ?></div>' );
 				} else {
 					const d = await resp.json();
-					showNotice( `<div class="st-alert st-alert--error">${d.message ?? 'Error'}</div>` );
+					showNotice( `<div class="st-alert st-alert--error">${ escHtml( d.message ?? 'Error' ) }</div>` );
 					btn.disabled = false;
 				}
 			} catch ( e ) {
-				showNotice( `<div class="st-alert st-alert--error">${e.message}</div>` );
+				showNotice( `<div class="st-alert st-alert--error">${ escHtml( e.message ) }</div>` );
 				btn.disabled = false;
 			}
 		} );
@@ -1816,6 +1819,7 @@ function stPreviewBanner(input) {
 
 /* ── Generar playoffs por bracket ─────────────────────────────────── */
 ( () => {
+	const escHtml = s => String( s ).replace( /&/g, '&amp;' ).replace( /</g, '&lt;' ).replace( />/g, '&gt;' ).replace( /"/g, '&quot;' );
 	const notice = document.getElementById( 'st-playoffs-notice' );
 	document.querySelectorAll( '.st-bracket-gen-btn' ).forEach( btn => {
 		btn.addEventListener( 'click', async () => {
@@ -1846,7 +1850,7 @@ function stPreviewBanner(input) {
 				} );
 				const data = await resp.json();
 				if ( ! resp.ok ) {
-					notice.innerHTML = `<div class="st-alert st-alert--error">${data.message ?? 'Error'}</div>`;
+					notice.innerHTML = `<div class="st-alert st-alert--error">${ escHtml( data.message ?? 'Error' ) }</div>`;
 					btn.disabled = false;
 					btn.textContent = orig;
 				} else {
@@ -1854,7 +1858,7 @@ function stPreviewBanner(input) {
 					setTimeout( () => location.reload(), 1500 );
 				}
 			} catch ( e ) {
-				notice.innerHTML = `<div class="st-alert st-alert--error">${e.message}</div>`;
+				notice.innerHTML = `<div class="st-alert st-alert--error">${ escHtml( e.message ) }</div>`;
 				btn.disabled = false;
 				btn.textContent = orig;
 			}

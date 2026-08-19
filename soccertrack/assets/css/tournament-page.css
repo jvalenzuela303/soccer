@@ -623,6 +623,9 @@ body.st-public-body {
 	align-items: flex-start;
 }
 
+.st-bracket-tree--4 { /* 2-column: SF + Final — no QF column */ }
+.st-bracket-tree--8 { /* 3-column: QF + SF + Final */ }
+
 .st-bracket-col {
 	display: flex;
 	flex-direction: column;
@@ -687,7 +690,8 @@ body.st-public-body {
 }
 
 /* Línea horizontal izquierda de entrada (SF y Final) */
-.st-bracket-col[data-round="sf"] .st-bracket-match::before,
+/* Left-incoming connector: SF only when QF column exists (8-team bracket) */
+.st-bracket-tree--8 .st-bracket-col[data-round="sf"] .st-bracket-match::before,
 .st-bracket-col[data-round="final"] .st-bracket-match:not(.st-bracket-match--third)::before {
 	content: '';
 	position: absolute;
