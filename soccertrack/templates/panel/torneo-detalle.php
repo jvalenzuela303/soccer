@@ -554,6 +554,7 @@
 
 <script>
 (function() {
+	var escHtml = function( s ) { return String( s ).replace( /&/g, '&amp;' ).replace( /</g, '&lt;' ).replace( />/g, '&gt;' ).replace( /"/g, '&quot;' ); };
 	var btn   = document.getElementById('st-gen-knockout-btn');
 	if ( ! btn ) return;
 	btn.addEventListener('click', function() {
@@ -582,13 +583,13 @@
 			if (data.matches_created > 0) {
 				notice.innerHTML = '<div class="st-alert st-alert--success">✅ ' + data.matches_created + ' partido(s) generado(s) — ' + data.phase + '. <a href="">Recargar</a></div>';
 			} else {
-				notice.innerHTML = '<div class="st-alert st-alert--error">⚠️ ' + (data.message || data.error || 'Error') + '</div>';
+				notice.innerHTML = '<div class="st-alert st-alert--error">⚠️ ' + escHtml( data.message || data.error || 'Error' ) + '</div>';
 				btn.disabled = false;
 				btn.textContent = '⚡ Reintentar';
 			}
 		})
 		.catch(err => {
-			document.getElementById('st-knockout-notice').innerHTML = '<div class="st-alert st-alert--error">⚠️ ' + err.message + '</div>';
+			document.getElementById('st-knockout-notice').innerHTML = '<div class="st-alert st-alert--error">⚠️ ' + escHtml( err.message ) + '</div>';
 			btn.disabled = false;
 		});
 	});
@@ -1441,6 +1442,7 @@ $has_brackets = ! empty( $brackets );
 
 <script>
 (function() {
+	var escHtml = function( s ) { return String( s ).replace( /&/g, '&amp;' ).replace( /</g, '&lt;' ).replace( />/g, '&gt;' ).replace( /"/g, '&quot;' ); };
 	var resetBtn = document.getElementById('st-reset-playoffs-btn');
 	if ( ! resetBtn ) return;
 	resetBtn.addEventListener('click', function() {
@@ -1462,13 +1464,13 @@ $has_brackets = ! empty( $brackets );
 				notice.innerHTML = '<div class="st-alert st-alert--success">✅ <?php echo esc_js( __( 'Fase eliminatoria reiniciada.', 'soccertrack' ) ); ?> <a href="">Recargar</a></div>';
 				resetBtn.style.display = 'none';
 			} else {
-				notice.innerHTML = '<div class="st-alert st-alert--error">⚠️ ' + ( data.message || data.error || 'Error' ) + '</div>';
+				notice.innerHTML = '<div class="st-alert st-alert--error">⚠️ ' + escHtml( data.message || data.error || 'Error' ) + '</div>';
 				resetBtn.disabled = false;
 				resetBtn.textContent = '🗑 <?php echo esc_js( __( 'Reiniciar Fase Eliminatoria', 'soccertrack' ) ); ?>';
 			}
 		})
 		.catch(function(err) {
-			document.getElementById('st-playoffs-notice').innerHTML = '<div class="st-alert st-alert--error">⚠️ ' + err.message + '</div>';
+			document.getElementById('st-playoffs-notice').innerHTML = '<div class="st-alert st-alert--error">⚠️ ' + escHtml( err.message ) + '</div>';
 			resetBtn.disabled = false;
 		});
 	});
