@@ -46,6 +46,9 @@ define( 'SOCCERTRACK_BASENAME',   plugin_basename( __FILE__ ) );
 require_once SOCCERTRACK_DIR . 'includes/Autoloader.php';
 \SportsLeague\Autoloader::register();
 
+// ── Clases globales (sin namespace) ───────────────────────────────────────────
+require_once SOCCERTRACK_DIR . 'includes/Core/SlotPacker.php';
+
 // ── Boot ──────────────────────────────────────────────────────────────────────
 
 /**

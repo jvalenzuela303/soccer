@@ -17,6 +17,8 @@ declare(strict_types=1);
 
 namespace SportsLeague\Core;
 
+require_once __DIR__ . '/SlotPacker.php';
+
 final class FixtureGenerator {
 
 	/**
@@ -395,7 +397,7 @@ final class FixtureGenerator {
 		}
 
 		// Asignar canchas rotativamente.
-		$this->assign_courts( $match_ids, $venue_id );
+		$this->assign_courts( $match_ids, $venue_id, $tournament );
 
 		return $match_ids;
 	}
@@ -487,14 +489,62 @@ final class FixtureGenerator {
 	/**
 	 * Asigna canchas del recinto a los partidos de forma rotativa.
 	 *
-	 * @param int[] $match_ids
+	 * @param int[]      $match_ids  IDs de partidos.
+	 * @param int        $venue_id   ID del recinto.
+	 * @param array|null $tournament Datos del torneo; si tiene schedule_slots usa SlotPacker.
 	 */
-	public function assign_courts( array $match_ids, int $venue_id ): void {
+	public function assign_courts( array $match_ids, int $venue_id, ?array $tournament = null ): void {
 		if ( empty( $match_ids ) ) {
 			return;
 		}
 
 		global $wpdb;
+
+		// Si el torneo tiene bloques horarios configurados → usar SlotPacker.
+		if ( $tournament !== null && ! empty( $tournament['schedule_slots'] ) ) {
+			$slots = json_decode( $tournament['schedule_slots'], true );
+			if ( is_array( $slots ) && ! empty( $slots ) ) {
+				$weekdays   = json_decode( $tournament['match_weekdays'] ?? '[]', true );
+				$weekday    = is_array( $weekdays ) && ! empty( $weekdays )
+					? (int) $weekdays[0]
+					: (int) ( $tournament['match_weekday'] ?? 6 );
+				$start_from = $this->next_slot_start( (int) $tournament['id'], (string) ( $tournament['start_date'] ?? gmdate( 'Y-m-d' ) ) );
+
+				$schedule = \SlotPacker::calculate( $match_ids, $slots, $weekday, $start_from );
+
+				foreach ( $schedule as $entry ) {
+					$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+						"{$wpdb->prefix}ds_matches",
+						[ 'match_datetime' => $entry['date'] . ' ' . $entry['time'] ],
+						[ 'id' => $entry['match_id'] ],
+						[ '%s' ],
+						[ '%d' ]
+					);
+				}
+
+				// Asignar canchas en rotación circular.
+				$court_ids = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+					$wpdb->prepare(
+						"SELECT id FROM {$wpdb->prefix}ds_courts WHERE venue_id = %d ORDER BY id ASC",
+						$venue_id
+					)
+				);
+				if ( ! empty( $court_ids ) ) {
+					$count = count( $court_ids );
+					foreach ( $match_ids as $i => $match_id ) {
+						$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+							"{$wpdb->prefix}ds_matches",
+							[ 'court_id' => (int) $court_ids[ $i % $count ] ],
+							[ 'id' => (int) $match_id ],
+							[ '%d' ],
+							[ '%d' ]
+						);
+					}
+				}
+
+				return;
+			}
+		}
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$court_ids = $wpdb->get_col(
@@ -1486,7 +1536,7 @@ final class FixtureGenerator {
 		}
 
 		// 9. Asignar canchas a todos los partidos.
-		$this->assign_courts( $match_ids, $venue_id );
+		$this->assign_courts( $match_ids, $venue_id, $tournament );
 
 		return [ 'match_ids' => $match_ids ];
 	}
@@ -2117,5 +2167,32 @@ final class FixtureGenerator {
 
 		$this->assign_courts( $ids, $venue_id );
 		return [ 'match_ids' => $ids, 'phase' => $phase ];
+	}
+
+	/**
+	 * Calcula la fecha mínima desde la que el SlotPacker debe programar partidos.
+	 *
+	 * Si ya hay partidos regulares en el torneo → MAX(match_datetime) + 7 días.
+	 * Si no hay partidos → start_date del torneo.
+	 *
+	 * @param int    $tournament_id ID del torneo.
+	 * @param string $start_date    Fecha de inicio del torneo (YYYY-MM-DD).
+	 * @return string YYYY-MM-DD
+	 */
+	private function next_slot_start( int $tournament_id, string $start_date ): string {
+		global $wpdb;
+
+		$max = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->prepare(
+				"SELECT MAX(match_datetime) FROM {$wpdb->prefix}ds_matches WHERE tournament_id = %d AND phase = 'regular'",
+				$tournament_id
+			)
+		);
+
+		if ( $max ) {
+			return date( 'Y-m-d', strtotime( $max . ' +7 days' ) ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
+		}
+
+		return $start_date;
 	}
 }
