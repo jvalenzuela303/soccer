@@ -72,7 +72,9 @@ final class SpreadsheetImporter {
 	public function import_team_roster( string $file_path, int $tournament_id ): array {
 		global $wpdb;
 
-		$sheet    = IOFactory::load( $file_path )->getActiveSheet();
+		$reader = IOFactory::createReaderForFile( $file_path );
+		$reader->setReadDataOnly( true ); // No evaluar fórmulas → menos memoria, sin Calculation.
+		$sheet    = $reader->load( $file_path )->getActiveSheet();
 		$errors   = [];
 		$imported = 0;
 		$updated  = 0; // Ya inscrito en este equipo — datos personales/área/cargo refrescados.
@@ -153,28 +155,23 @@ final class SpreadsheetImporter {
 		}
 
 		if ( ! $team_id ) {
+			$db_err = $wpdb->last_error ? ' — DB: ' . $wpdb->last_error : '';
 			return [
 				'team_name' => $team_name_clean,
 				'team_id'   => 0,
 				'imported'  => 0,
 				'updated'   => 0,
 				'skipped'   => 0,
-				'errors'    => [ sprintf( __( 'Error al crear/actualizar el equipo "%s".', 'soccertrack' ), $team_name_clean ) ],
+				'errors'    => [ sprintf( __( 'Error al crear/actualizar el equipo "%s".', 'soccertrack' ), $team_name_clean ) . $db_err ],
 			];
 		}
 
-		// ── Pre-cargar RUTs existentes en el torneo ──────────────────────────
-		// Una sola query antes del loop evita N SELECTs por jugador.
+		// ── Pre-cargar RUTs existentes GLOBALMENTE ───────────────────────────
+		// Busca en toda la tabla ds_players (sin filtrar por torneo) para evitar
+		// el error de UNIQUE KEY uniq_rut cuando el jugador ya existe en otro torneo.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$rut_rows = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT p.rut_id, p.id
-				 FROM {$wpdb->prefix}ds_players p
-				 JOIN {$wpdb->prefix}ds_team_players tp ON tp.player_id = p.id
-				 JOIN {$wpdb->prefix}ds_teams t ON t.id = tp.team_id
-				 WHERE t.tournament_id = %d",
-				$tournament_id
-			),
+			"SELECT rut_id, id FROM {$wpdb->prefix}ds_players",
 			ARRAY_A
 		) ?: [];
 		// $existing_ruts[ normalized_rut ] = player_id
@@ -252,6 +249,7 @@ final class SpreadsheetImporter {
 				continue;
 			}
 
+			// Carga masiva: solo se aceptan RUT chilenos válidos.
 			if ( ! $this->validator->is_valid_rut( $rut ) ) {
 				$errors[] = sprintf( __( 'RUT inválido: %s (%s %s)', 'soccertrack' ), $rut, $first_name, $last_name );
 				continue;
@@ -267,12 +265,12 @@ final class SpreadsheetImporter {
 				$wpdb->insert(
 					"{$wpdb->prefix}ds_players",
 					[
-						'rut_id'     => $normalized_rut,
-						'first_name' => sanitize_text_field( $first_name ),
-						'last_name'  => sanitize_text_field( $last_name ),
+						'rut_id'      => $normalized_rut,
+						'first_name'  => sanitize_text_field( $first_name ),
+						'last_name'   => sanitize_text_field( $last_name ),
 						'last_name_m' => sanitize_text_field( $last_name_m ),
-						'email'      => sanitize_email( $email ),
-						'phone'      => sanitize_text_field( $phone ),
+						'email'       => sanitize_email( $email ),
+						'phone'       => sanitize_text_field( $phone ),
 					],
 					[ '%s', '%s', '%s', '%s', '%s', '%s' ]
 				);
@@ -386,7 +384,9 @@ final class SpreadsheetImporter {
 	 * @return array{imported: int, skipped: int, errors: string[], passwords: array<string, string>}
 	 */
 	public function import_referees( string $file_path ): array {
-		$sheet    = IOFactory::load( $file_path )->getActiveSheet();
+		$reader = IOFactory::createReaderForFile( $file_path );
+		$reader->setReadDataOnly( true );
+		$sheet    = $reader->load( $file_path )->getActiveSheet();
 		$errors   = [];
 		$imported = 0;
 		$skipped  = 0;
@@ -445,7 +445,9 @@ final class SpreadsheetImporter {
 	public function import_players( string $file_path, int $team_id ): array {
 		global $wpdb;
 
-		$sheet    = IOFactory::load( $file_path )->getActiveSheet();
+		$reader = IOFactory::createReaderForFile( $file_path );
+		$reader->setReadDataOnly( true );
+		$sheet    = $reader->load( $file_path )->getActiveSheet();
 		$errors   = [];
 		$imported = 0;
 		$skipped  = 0;

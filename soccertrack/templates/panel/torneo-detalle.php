@@ -48,6 +48,9 @@
 <?php if ( ( $notice ?? '' ) === 'datetime_updated' ) : ?>
 	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Horario del partido actualizado.', 'soccertrack' ); ?></div>
 <?php endif; ?>
+<?php if ( ( $notice ?? '' ) === 'team_deleted' ) : ?>
+	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Equipo eliminado del torneo.', 'soccertrack' ); ?></div>
+<?php endif; ?>
 <?php if ( ( $notice ?? '' ) === 'datetime_cascade' ) : ?>
 	<div class="st-alert st-alert--success">✅ <?php
 	/* translators: %d: cantidad de partidos desplazados */
@@ -181,6 +184,17 @@
 						<a href="<?php echo esc_url( home_url( '/panel/importar/?tournament_id=' . $tournament['id'] . '&team_id=' . $team['id'] ) ); ?>" class="st-btn st-btn--sm st-btn--secondary">
 							📥 <?php esc_html_e( 'Importar masivo', 'soccertrack' ); ?>
 						</a>
+						<?php if ( empty( $is_locked ) ) : ?>
+						<form method="post" style="display:inline"
+							  onsubmit="return confirm('<?php echo esc_js( sprintf( __( '¿Eliminar el equipo "%s" del torneo? Esta acción no se puede deshacer.', 'soccertrack' ), $team['name'] ) ); ?>')">
+							<?php wp_nonce_field( 'st_delete_team_' . $team['id'] ); ?>
+							<input type="hidden" name="st_delete_team" value="1">
+							<input type="hidden" name="team_id" value="<?php echo esc_attr( (string) $team['id'] ); ?>">
+							<button type="submit" class="st-btn st-btn--sm" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5">
+								🗑 <?php esc_html_e( 'Eliminar', 'soccertrack' ); ?>
+							</button>
+						</form>
+						<?php endif; ?>
 					</td>
 				</tr>
 			<?php endforeach; ?>

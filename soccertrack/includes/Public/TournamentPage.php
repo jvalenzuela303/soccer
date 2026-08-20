@@ -576,6 +576,63 @@ final class TournamentPage {
 			}
 		}
 
+		// ── Eliminar equipo del torneo ────────────────────────────────────
+		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_delete_team'] ) ) {
+			$team_id_to_delete = absint( $_POST['team_id'] ?? 0 );
+			check_admin_referer( 'st_delete_team_' . $team_id_to_delete );
+
+			// Verificar que el equipo pertenece a este torneo.
+			$team_row = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				$wpdb->prepare(
+					"SELECT id FROM {$wpdb->prefix}ds_teams WHERE id = %d AND tournament_id = %d",
+					$team_id_to_delete, $id
+				),
+				ARRAY_A
+			);
+
+			if ( ! $team_row ) {
+				$error = __( 'Equipo no encontrado en este torneo.', 'soccertrack' );
+			} else {
+				// Bloquear si tiene partidos finalizados o en curso.
+				$active_matches = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+					$wpdb->prepare(
+						"SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches
+						 WHERE tournament_id = %d
+						   AND ( home_team_id = %d OR away_team_id = %d )
+						   AND status IN ('finished', 'in_progress')",
+						$id, $team_id_to_delete, $team_id_to_delete
+					)
+				);
+
+				if ( $active_matches > 0 ) {
+					$error = __( 'No se puede eliminar un equipo que tiene partidos finalizados o en curso.', 'soccertrack' );
+				} else {
+					// Eliminar partidos programados del equipo (si el fixture ya fue generado).
+					$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+						$wpdb->prepare(
+							"DELETE FROM {$wpdb->prefix}ds_matches
+							 WHERE tournament_id = %d
+							   AND ( home_team_id = %d OR away_team_id = %d )",
+							$id, $team_id_to_delete, $team_id_to_delete
+						)
+					);
+					// Eliminar jugadores inscritos en el equipo (ds_team_players, no ds_players).
+					$wpdb->delete( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+						"{$wpdb->prefix}ds_team_players",
+						[ 'team_id' => $team_id_to_delete ],
+						[ '%d' ]
+					);
+					// Eliminar el equipo.
+					$wpdb->delete( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+						"{$wpdb->prefix}ds_teams",
+						[ 'id' => $team_id_to_delete ],
+						[ '%d' ]
+					);
+					$notice = 'team_deleted';
+				}
+			}
+		}
+
 		// ── Reasignar canchas de una ronda ────────────────────────────────
 		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_reassign_round_courts'] ) ) {
 			$round_number = absint( $_POST['round_number'] ?? 0 );
