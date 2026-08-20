@@ -27,6 +27,9 @@
 <?php if ( ( $notice ?? '' ) === 'tournament_config_updated' ) : ?>
 	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Configuración del torneo actualizada.', 'soccertrack' ); ?></div>
 <?php endif; ?>
+<?php if ( ( $notice ?? '' ) === 'tournament_renamed' ) : ?>
+	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Nombre del torneo actualizado.', 'soccertrack' ); ?></div>
+<?php endif; ?>
 <?php if ( ( $notice ?? '' ) === 'venues_updated' ) : ?>
 	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Recintos del torneo actualizados.', 'soccertrack' ); ?></div>
 <?php endif; ?>
@@ -36,16 +39,75 @@
 <?php if ( ( $notice ?? '' ) === 'banner_deleted' ) : ?>
 	<div class="st-alert st-alert--success">🗑️ <?php esc_html_e( 'Banner eliminado.', 'soccertrack' ); ?></div>
 <?php endif; ?>
+<?php if ( ( $notice ?? '' ) === 'courts_reassigned' ) : ?>
+	<div class="st-alert st-alert--success">✅ <?php
+	/* translators: %d: número de fecha/ronda */
+	printf( esc_html__( 'Canchas reasignadas para la fecha %d.', 'soccertrack' ), absint( $_GET['round'] ?? 0 ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	?></div>
+<?php endif; ?>
 <?php if ( ! empty( $error ?? '' ) ) : ?>
 	<div class="st-alert st-alert--error">⚠️ <?php echo esc_html( $error ); ?></div>
 <?php endif; ?>
 
 <div class="st-page-header">
 	<a href="<?php echo esc_url( home_url( '/panel/torneos/' ) ); ?>" class="st-back-link">← <?php esc_html_e( 'Torneos', 'soccertrack' ); ?></a>
-	<h1 class="st-page-title"><?php echo esc_html( $tournament['name'] ); ?></h1>
+
+	<?php /* ── Nombre con edición inline ── */ ?>
+	<div id="st-tournament-name-display" style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
+		<h1 class="st-page-title" style="margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?php echo esc_html( $tournament['name'] ); ?></h1>
+		<?php if ( empty( $is_locked ) ) : ?>
+		<button type="button" id="st-rename-toggle-btn" title="<?php esc_attr_e( 'Editar nombre', 'soccertrack' ); ?>"
+				style="background:none;border:none;cursor:pointer;padding:4px;color:#6b7280;font-size:1rem;line-height:1;flex-shrink:0">✏️</button>
+		<?php endif; ?>
+	</div>
+
+	<?php if ( empty( $is_locked ) ) : ?>
+	<form id="st-rename-form" method="post" style="display:none;flex:1;align-items:center;gap:8px;min-width:0"
+		  onsubmit="return stValidateRename()">
+		<?php wp_nonce_field( 'st_rename_tournament_' . $tournament['id'] ); ?>
+		<input type="hidden" name="st_rename_tournament" value="1">
+		<input type="text" name="tournament_name" id="st-rename-input" class="st-input"
+			   value="<?php echo esc_attr( $tournament['name'] ); ?>"
+			   required maxlength="150"
+			   style="flex:1;min-width:0;font-size:1.1rem;font-weight:600">
+		<button type="submit" class="st-btn st-btn--sm st-btn--primary"><?php esc_html_e( 'Guardar', 'soccertrack' ); ?></button>
+		<button type="button" id="st-rename-cancel-btn" class="st-btn st-btn--sm st-btn--secondary"><?php esc_html_e( 'Cancelar', 'soccertrack' ); ?></button>
+	</form>
+	<script>
+	(function () {
+		var display    = document.getElementById('st-tournament-name-display');
+		var form       = document.getElementById('st-rename-form');
+		var toggleBtn  = document.getElementById('st-rename-toggle-btn');
+		var cancelBtn  = document.getElementById('st-rename-cancel-btn');
+		var input      = document.getElementById('st-rename-input');
+		if ( toggleBtn ) {
+			toggleBtn.addEventListener('click', function () {
+				display.style.display = 'none';
+				form.style.display    = 'flex';
+				input.focus();
+				input.select();
+			});
+		}
+		if ( cancelBtn ) {
+			cancelBtn.addEventListener('click', function () {
+				form.style.display    = 'none';
+				display.style.display = 'flex';
+			});
+		}
+	}());
+	function stValidateRename() {
+		var v = document.getElementById('st-rename-input').value.trim();
+		if ( ! v ) { alert('<?php echo esc_js( __( 'El nombre no puede estar vacío.', 'soccertrack' ) ); ?>'); return false; }
+		return true;
+	}
+	</script>
+	<?php endif; ?>
+
+	<?php if ( ( $tournament['status'] ?? 'draft' ) !== 'draft' ) : ?>
 	<a href="<?php echo esc_url( home_url( '/torneo/' . $tournament['id'] . '/' ) ); ?>" class="st-btn st-btn--secondary" target="_blank">
 		🌐 <?php esc_html_e( 'Ver portal público', 'soccertrack' ); ?>
 	</a>
+	<?php endif; ?>
 </div>
 
 <?php if ( ! empty( $is_locked ) ) : ?>
@@ -411,6 +473,60 @@
 			<tbody>
 				<tr style="border-bottom:1px solid #f0f0f0">
 					<td style="padding:12px;font-weight:600;white-space:nowrap">
+						🏆 <?php esc_html_e( 'Formato', 'soccertrack' ); ?>
+					</td>
+					<td style="padding:12px">
+						<?php
+						global $wpdb; // phpcs:ignore WordPress.WP.GlobalVariablesOverride
+						$has_matches    = (int) $wpdb->get_var( $wpdb->prepare( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+							"SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches WHERE tournament_id = %d",
+							$tournament['id']
+						) );
+						$current_format = $tournament['format'] ?? '';
+						$format_opts    = [
+							'round_robin'          => __( 'Todos contra todos', 'soccertrack' ),
+							'round_robin_playoffs' => __( 'Todos contra todos + Play-offs', 'soccertrack' ),
+							'group_stage'          => __( 'Fase de grupos', 'soccertrack' ),
+							'knockout'             => __( 'Eliminación directa', 'soccertrack' ),
+							'swiss'                => __( 'Liga Swiss + Play-offs (tipo Champions)', 'soccertrack' ),
+						];
+						// Editable si: no hay partidos O el formato está vacío (nunca se configuró).
+						$can_edit = ( $has_matches === 0 ) || ! $current_format;
+						if ( $can_edit ) :
+						?>
+						<select name="format" class="st-input" style="max-width:320px"
+							<?php echo $current_format ? '' : 'required'; ?>>
+							<?php if ( ! $current_format ) : ?>
+								<option value=""><?php esc_html_e( '— Selecciona un formato —', 'soccertrack' ); ?></option>
+							<?php endif; ?>
+							<?php foreach ( $format_opts as $val => $label ) : ?>
+								<option value="<?php echo esc_attr( $val ); ?>"
+									<?php selected( $current_format, $val ); ?>>
+									<?php echo esc_html( $label ); ?>
+								</option>
+							<?php endforeach; ?>
+						</select>
+						<?php if ( $has_matches > 0 && ! $current_format ) : ?>
+							<br><small style="color:#e67e22">
+								⚠️ <?php esc_html_e( 'El torneo tiene partidos generados. Cambia el formato solo si es necesario corregirlo.', 'soccertrack' ); ?>
+							</small>
+						<?php endif; ?>
+						<?php else : ?>
+						<span style="font-weight:600">
+							<?php echo esc_html( $format_opts[ $current_format ] ?? ( $current_format ?: '—' ) ); ?>
+						</span>
+						<input type="hidden" name="format" value="<?php echo esc_attr( $current_format ); ?>">
+						<br><small style="color:#999">
+							<?php esc_html_e( 'No editable: el torneo ya tiene partidos generados.', 'soccertrack' ); ?>
+						</small>
+						<?php endif; ?>
+					</td>
+					<td style="padding:12px;font-size:.82rem;color:#666">
+						<?php esc_html_e( 'Define las reglas del fixture y la tabla de posiciones.', 'soccertrack' ); ?>
+					</td>
+				</tr>
+				<tr style="border-bottom:1px solid #f0f0f0">
+					<td style="padding:12px;font-weight:600;white-space:nowrap">
 						📅 <?php esc_html_e( 'Liberación del fixture', 'soccertrack' ); ?>
 					</td>
 					<td style="padding:12px;text-align:center">
@@ -631,7 +747,7 @@
 <?php endif; /* is_knockout */ ?>
 
 <?php /* ── Brackets de Playoffs (solo formato round_robin_playoffs) ─── */ ?>
-<?php if ( ! empty( $playoffs_status['is_playoffs_format'] ) ) : ?>
+<?php if ( ( $tournament['format'] ?? '' ) === 'round_robin_playoffs' ) : ?>
 <div class="st-card" style="margin-bottom:20px" id="st-brackets-card">
 	<div class="st-card-header">
 		<h2 class="st-card-title">🏅 <?php esc_html_e( 'Brackets de Playoffs', 'soccertrack' ); ?></h2>
@@ -1112,7 +1228,16 @@
 
 			$playoff_phases  = [ 'octavos', 'quarterfinal', 'semifinal', 'third_place', 'final' ];
 			$prev_section    = null;
+			$prev_round      = null; // Para detectar cambio de ronda en fase regular.
 			$cols            = 9; // número de columnas de la tabla
+
+			// Lista plana de canchas del torneo para el panel de reasignación.
+			$all_tournament_courts = [];
+			foreach ( $courts_by_venue as $v_courts ) {
+				foreach ( $v_courts as $c ) {
+					$all_tournament_courts[] = $c;
+				}
+			}
 			?>
 			<?php foreach ( $matches as $m ) : ?>
 				<?php
@@ -1148,6 +1273,80 @@
 				</tr>
 				<?php
 					$prev_section = $section_key;
+				endif;
+				?>
+				<?php
+				// ── Fila cabecera de ronda (solo fase regular, al cambiar round_number) ──
+				if ( $phase_cur === 'regular' && $m['round_number'] !== $prev_round ) :
+					$rn = (int) $m['round_number'];
+				?>
+				<tr id="st-round-row-<?php echo $rn; ?>">
+					<td colspan="<?php echo (int) $cols; ?>"
+						style="padding:6px 14px;background:#f0f4f0;border-top:1px solid #c8d8c8;border-bottom:1px solid #c8d8c8">
+						<div style="display:flex;align-items:center;gap:10px">
+							<span style="font-weight:700;font-size:.82rem;color:#1a5c1a">
+								<?php
+								/* translators: %d: número de jornada */
+								printf( esc_html__( 'Jornada %d', 'soccertrack' ), $rn );
+								?>
+							</span>
+							<?php if ( empty( $is_locked ) && ! empty( $all_tournament_courts ) ) : ?>
+							<button
+								type="button"
+								class="st-btn st-btn--sm st-btn--secondary st-round-courts-toggle"
+								data-round="<?php echo $rn; ?>"
+								style="padding:2px 8px;font-size:.78rem"
+							>⚙ <?php esc_html_e( 'Canchas', 'soccertrack' ); ?></button>
+							<?php endif; ?>
+						</div>
+
+						<?php if ( empty( $is_locked ) && ! empty( $all_tournament_courts ) ) : ?>
+						<div
+							id="st-courts-panel-<?php echo $rn; ?>"
+							style="display:none;margin-top:10px;padding:12px;background:#fff;border:1px solid #c8d8c8;border-radius:6px"
+						>
+							<p style="margin:0 0 8px;font-size:.82rem;font-weight:600;color:#1a5c1a">
+								<?php esc_html_e( 'Canchas disponibles para esta fecha:', 'soccertrack' ); ?>
+							</p>
+							<form method="post" style="display:flex;flex-wrap:wrap;gap:10px 20px;align-items:flex-end">
+								<?php wp_nonce_field( 'st_reassign_round_courts_' . $tournament['id'] . '_' . $rn ); ?>
+								<input type="hidden" name="st_reassign_round_courts" value="1">
+								<input type="hidden" name="tournament_id" value="<?php echo esc_attr( (string) $tournament['id'] ); ?>">
+								<input type="hidden" name="round_number" value="<?php echo esc_attr( (string) $rn ); ?>">
+
+								<div style="display:flex;flex-wrap:wrap;gap:8px 16px;flex:1">
+								<?php foreach ( $all_tournament_courts as $court ) : ?>
+									<label style="display:flex;align-items:center;gap:5px;font-size:.82rem;cursor:pointer">
+										<input
+											type="checkbox"
+											name="court_ids[]"
+											value="<?php echo esc_attr( (string) $court['id'] ); ?>"
+											checked
+										>
+										<?php echo esc_html( $court['court_name'] ); ?>
+									</label>
+								<?php endforeach; ?>
+								</div>
+
+								<div style="display:flex;gap:8px;flex-shrink:0">
+									<button type="submit" class="st-btn st-btn--sm st-btn--primary">
+										<?php esc_html_e( 'Reasignar', 'soccertrack' ); ?>
+									</button>
+									<button
+										type="button"
+										class="st-btn st-btn--sm st-btn--secondary st-round-courts-cancel"
+										data-round="<?php echo $rn; ?>"
+									>
+										<?php esc_html_e( 'Cancelar', 'soccertrack' ); ?>
+									</button>
+								</div>
+							</form>
+						</div>
+						<?php endif; ?>
+					</td>
+				</tr>
+				<?php
+					$prev_round = $m['round_number'];
 				endif;
 				?>
 				<tr<?php if ( $is_playoff ) : ?> style="background:#fffaf2"<?php endif; ?>>
@@ -1892,4 +2091,27 @@ function stPreviewBanner(input) {
 		} );
 	} );
 } )();
+</script>
+
+<script>
+/* ── Reasignación de canchas por ronda ───────────────────────── */
+(function () {
+	document.addEventListener('click', function (e) {
+		var toggleBtn = e.target.closest('.st-round-courts-toggle');
+		if ( toggleBtn ) {
+			var round = toggleBtn.dataset.round;
+			var panel = document.getElementById('st-courts-panel-' + round);
+			if ( panel ) {
+				panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+			}
+			return;
+		}
+		var cancelBtn = e.target.closest('.st-round-courts-cancel');
+		if ( cancelBtn ) {
+			var round = cancelBtn.dataset.round;
+			var panel = document.getElementById('st-courts-panel-' + round);
+			if ( panel ) panel.style.display = 'none';
+		}
+	});
+}());
 </script>

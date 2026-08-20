@@ -549,9 +549,103 @@ final class TournamentPage {
 			);
 		}
 
-		// ── Cambiar estado de un partido ─────────────────────────────────
-		$notice = '';
+		// ── Renombrar torneo ──────────────────────────────────────────────
+		// Leer notice desde redirect GET (ej: courts_reassigned).
+		$notice = sanitize_key( $_GET['notice'] ?? '' ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$error  = '';
+		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_rename_tournament'] ) ) {
+			check_admin_referer( 'st_rename_tournament_' . $id );
+			$new_name = sanitize_text_field( trim( $_POST['tournament_name'] ?? '' ) );
+			if ( '' === $new_name ) {
+				$error = __( 'El nombre del torneo no puede estar vacío.', 'soccertrack' );
+			} else {
+				$wpdb->update( // phpcs:ignore
+					"{$wpdb->prefix}ds_tournaments",
+					[ 'name' => $new_name ],
+					[ 'id'   => $id ],
+					[ '%s' ],
+					[ '%d' ]
+				);
+				$notice = 'tournament_renamed';
+				// Refrescar.
+				$tournament         = $wpdb->get_row( // phpcs:ignore
+					$wpdb->prepare( "SELECT * FROM {$wpdb->prefix}ds_tournaments WHERE id = %d", $id ),
+					ARRAY_A
+				);
+				$tournament['id']   = $id;
+			}
+		}
+
+		// ── Reasignar canchas de una ronda ────────────────────────────────
+		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_reassign_round_courts'] ) ) {
+			$round_number = absint( $_POST['round_number'] ?? 0 );
+			check_admin_referer( 'st_reassign_round_courts_' . $id . '_' . $round_number );
+
+			$raw_court_ids = array_map( 'absint', (array) ( $_POST['court_ids'] ?? [] ) );
+
+			if ( empty( $raw_court_ids ) || ! $round_number ) {
+				$error = __( 'Debes seleccionar al menos una cancha.', 'soccertrack' );
+			} else {
+				// Verificar que las canchas pertenecen al torneo (seguridad).
+				$venue_ids = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+					$wpdb->prepare(
+						"SELECT venue_id FROM {$wpdb->prefix}ds_tournament_venues WHERE tournament_id = %d",
+						$id
+					)
+				);
+				$venue_ids = array_map( 'intval', $venue_ids );
+
+				$valid_court_ids = [];
+				if ( ! empty( $venue_ids ) ) {
+					$placeholders    = implode( ', ', array_fill( 0, count( $venue_ids ), '%d' ) );
+					$valid_court_ids = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+						$wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+							"SELECT id FROM {$wpdb->prefix}ds_courts WHERE venue_id IN ({$placeholders})",
+							...$venue_ids
+						)
+					);
+					$valid_court_ids = array_map( 'intval', $valid_court_ids );
+				}
+
+				$court_ids = array_values( array_intersect( $raw_court_ids, $valid_court_ids ) );
+
+				if ( empty( $court_ids ) ) {
+					$error = __( 'Las canchas seleccionadas no pertenecen a este torneo.', 'soccertrack' );
+				} else {
+					// Traer partidos de la ronda ordenados por ID.
+					$match_ids = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+						$wpdb->prepare(
+							"SELECT id FROM {$wpdb->prefix}ds_matches
+							 WHERE tournament_id = %d AND round_number = %d
+							 ORDER BY id ASC",
+							$id,
+							$round_number
+						)
+					);
+
+					// Rotación circular: match i → court_ids[ i % count(court_ids) ].
+					foreach ( $match_ids as $i => $match_id ) {
+						$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+							"{$wpdb->prefix}ds_matches",
+							[ 'court_id' => $court_ids[ $i % count( $court_ids ) ] ],
+							[ 'id'       => (int) $match_id ],
+							[ '%d' ],
+							[ '%d' ]
+						);
+					}
+
+					wp_safe_redirect(
+						add_query_arg(
+							[ 'notice' => 'courts_reassigned', 'round' => $round_number ],
+							home_url( '/panel/torneo/' . $id . '/' )
+						)
+					);
+					exit;
+				}
+			}
+		}
+
+		// ── Cambiar estado de un partido ─────────────────────────────────
 		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['st_change_match_status'] ) ) {
 			check_admin_referer( 'st_change_match_status_' . $id );
 
@@ -1058,17 +1152,40 @@ final class TournamentPage {
 			$release_days = max( -7, min( 30, (int) ( $_POST['fixture_release_days'] ?? 0 ) ) );
 			$yellows      = max( 2, min( 10, (int) ( $_POST['yellows_per_suspension'] ?? 3 ) ) );
 
-			$wpdb->update( // phpcs:ignore
-				"{$wpdb->prefix}ds_tournaments",
-				[
-					'fixture_release_days'   => $release_days,
-					'yellows_per_suspension' => $yellows,
-				],
-				[ 'id' => $id ],
-				[ '%d', '%d' ],
-				[ '%d' ]
-			);
-			$notice = 'tournament_config_updated';
+			$fields  = [
+				'fixture_release_days'   => $release_days,
+				'yellows_per_suspension' => $yellows,
+			];
+			$formats = [ '%d', '%d' ];
+
+			// Cambio de formato: bloqueado si hay partidos Y el formato actual ya está configurado.
+			// Si el formato está vacío (nunca se configuró), se permite aunque haya partidos.
+			$valid_formats   = [ 'round_robin', 'round_robin_playoffs', 'group_stage', 'knockout', 'swiss' ];
+			$new_format      = sanitize_key( $_POST['format'] ?? '' );
+			$current_format  = sanitize_key( $tournament['format'] ?? '' );
+			if ( $new_format && in_array( $new_format, $valid_formats, true ) ) {
+				$match_count = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+					$wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->prefix}ds_matches WHERE tournament_id = %d", $id )
+				);
+				$format_empty = ! $current_format;
+				if ( $match_count > 0 && ! $format_empty ) {
+					$error = __( 'No se puede cambiar el formato: el torneo ya tiene partidos generados.', 'soccertrack' );
+				} else {
+					$fields['format'] = $new_format;
+					$formats[]        = '%s';
+				}
+			}
+
+			if ( ! $error ) {
+				$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+					"{$wpdb->prefix}ds_tournaments",
+					$fields,
+					[ 'id' => $id ],
+					$formats,
+					[ '%d' ]
+				);
+				$notice = 'tournament_config_updated';
+			}
 
 			$tournament = $wpdb->get_row(
 				$wpdb->prepare( "SELECT * FROM {$wpdb->prefix}ds_tournaments WHERE id = %d", $id ),
@@ -1558,12 +1675,30 @@ final class TournamentPage {
 			$area       = sanitize_text_field( $_POST['area'] ?? '' );
 			$cargo      = sanitize_text_field( $_POST['cargo'] ?? '' );
 			$dorsal     = absint( $_POST['dorsal'] ?? 0 );
+			$is_foreign = ! empty( $_POST['is_foreign'] );
 
 			$dorsal_val = $dorsal > 0 ? $dorsal : null;
 
-			if ( ! $rut || ! $nombre || ! $apellido ) {
-				$error = __( 'RUT, nombre y apellido son obligatorios.', 'soccertrack' );
-			} elseif ( $dorsal > 0 && ( $dorsal < 1 || $dorsal > 99 ) ) {
+			// Normalizar el documento según tipo.
+			$validator = new \SportsLeague\Importers\ImportValidator();
+			if ( $rut ) {
+				if ( $is_foreign ) {
+					// Extranjero: solo sanitizar, no validar formato chileno.
+					$rut = $validator->normalize_foreign_id( $rut );
+					if ( ! $validator->is_plausible_foreign_id( $rut ) ) {
+						$error = __( 'El documento ingresado es demasiado corto o inválido.', 'soccertrack' );
+					}
+				} elseif ( $validator->is_valid_rut( $rut ) ) {
+					// RUT chileno válido: normalizar al formato estándar.
+					$rut = $validator->normalize_rut( $rut );
+				} else {
+					$error = __( 'El RUT ingresado no es válido. Verifica el dígito verificador. Si es documento extranjero, marca la casilla "Documento extranjero".', 'soccertrack' );
+				}
+			}
+
+			if ( ! $error && ( ! $rut || ! $nombre || ! $apellido ) ) {
+				$error = __( 'RUT/documento, nombre y apellido son obligatorios.', 'soccertrack' );
+			} elseif ( ! $error && $dorsal > 0 && ( $dorsal < 1 || $dorsal > 99 ) ) {
 				$error = __( 'El dorsal debe estar entre 1 y 99.', 'soccertrack' );
 			} else {
 				// Verificar dorsal no tomado en este equipo (solo si se ingresó uno).
@@ -1586,7 +1721,7 @@ final class TournamentPage {
 					);
 
 					if ( ! $player_id ) {
-						$wpdb->insert( // phpcs:ignore
+						$wpdb->insert( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 							"{$wpdb->prefix}ds_players",
 							[
 								'rut_id'      => $rut,
@@ -1595,13 +1730,14 @@ final class TournamentPage {
 								'last_name_m' => $apellido_m,
 								'email'       => $email,
 								'phone'       => $phone,
+								'is_foreign'  => $is_foreign ? 1 : 0,
 							],
-							[ '%s', '%s', '%s', '%s', '%s', '%s' ]
+							[ '%s', '%s', '%s', '%s', '%s', '%s', '%d' ]
 						);
 						$player_id = (int) $wpdb->insert_id;
 					} else {
-						// Actualizar datos que pudieron cambiar.
-						$wpdb->update( // phpcs:ignore
+						// Actualizar datos que pudieron cambiar (incluye is_foreign si se cambió el estado).
+						$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 							"{$wpdb->prefix}ds_players",
 							[
 								'first_name'  => $nombre,
@@ -1609,9 +1745,10 @@ final class TournamentPage {
 								'last_name_m' => $apellido_m,
 								'email'       => $email,
 								'phone'       => $phone,
+								'is_foreign'  => $is_foreign ? 1 : 0,
 							],
 							[ 'id' => $player_id ],
-							[ '%s', '%s', '%s', '%s', '%s' ],
+							[ '%s', '%s', '%s', '%s', '%s', '%d' ],
 							[ '%d' ]
 						);
 					}
@@ -1783,15 +1920,15 @@ final class TournamentPage {
 			}
 		}
 
-		$roster = $wpdb->get_results( // phpcs:ignore
+		$roster = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$wpdb->prepare(
 				"SELECT tp.id AS tp_id, tp.dorsal, tp.area, tp.cargo, tp.is_suspended,
 				        p.id AS player_id, p.rut_id, p.first_name, p.last_name,
-				        p.last_name_m, p.email, p.phone
+				        p.last_name_m, p.email, p.phone, p.is_foreign
 				 FROM {$wpdb->prefix}ds_team_players tp
 				 JOIN {$wpdb->prefix}ds_players p ON p.id = tp.player_id
 				 WHERE tp.team_id = %d
-				 ORDER BY tp.dorsal ASC",
+				 ORDER BY tp.dorsal IS NULL ASC, tp.dorsal ASC, p.last_name ASC, p.first_name ASC",
 				$id
 			),
 			ARRAY_A
@@ -2845,7 +2982,7 @@ final class TournamentPage {
 				"SELECT p.id, p.first_name, p.last_name, tp.dorsal, tp.is_suspended
 				 FROM {$wpdb->prefix}ds_team_players tp
 				 JOIN {$wpdb->prefix}ds_players p ON p.id = tp.player_id
-				 WHERE tp.team_id = %d ORDER BY tp.dorsal ASC",
+				 WHERE tp.team_id = %d ORDER BY tp.dorsal IS NULL ASC, tp.dorsal ASC, p.last_name ASC, p.first_name ASC",
 				$team_id
 			),
 			ARRAY_A
