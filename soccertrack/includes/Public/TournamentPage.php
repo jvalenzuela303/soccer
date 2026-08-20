@@ -1009,9 +1009,9 @@ final class TournamentPage {
 			} else {
 				$new_datetime = $dt_obj->format( 'Y-m-d H:i:s' );
 
-				$existing_match = $wpdb->get_row( // phpcs:ignore
+				$existing_match = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 					$wpdb->prepare(
-						"SELECT id, court_id, status FROM {$wpdb->prefix}ds_matches WHERE id = %d AND tournament_id = %d",
+						"SELECT id, court_id, status, match_datetime FROM {$wpdb->prefix}ds_matches WHERE id = %d AND tournament_id = %d",
 						$match_id, $id
 					),
 					ARRAY_A
@@ -1046,13 +1046,61 @@ final class TournamentPage {
 					}
 
 					if ( ! $error ) {
-						$wpdb->update( // phpcs:ignore
+						// Guardar datetime original antes de actualizar (necesario para cascada).
+						$old_datetime = $existing_match['match_datetime'] ?? null;
+
+						$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 							"{$wpdb->prefix}ds_matches",
 							[ 'match_datetime' => $new_datetime ],
 							[ 'id' => $match_id ],
 							[ '%s' ],
 							[ '%d' ]
 						);
+
+						// ── Cascada de desplazamiento ──────────────────────────────
+						$cascade       = ( '1' === ( $_POST['cascade'] ?? '' ) );
+						$delta_minutes = (int) ( $_POST['cascade_delta_minutes'] ?? 0 );
+
+						if ( $cascade && $delta_minutes !== 0 && abs( $delta_minutes ) <= 525600 && $old_datetime ) {
+							$future_matches = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+								$wpdb->prepare(
+									"SELECT id, match_datetime FROM {$wpdb->prefix}ds_matches
+									 WHERE tournament_id = %d AND match_datetime > %s
+									 ORDER BY match_datetime ASC",
+									$id,
+									$old_datetime
+								),
+								ARRAY_A
+							);
+
+							$cascade_count = 0;
+							foreach ( $future_matches as $fm ) {
+								$fm_dt    = new \DateTime( $fm['match_datetime'] );
+								$interval = new \DateInterval( 'PT' . abs( $delta_minutes ) . 'M' );
+								if ( $delta_minutes > 0 ) {
+									$fm_dt->add( $interval );
+								} else {
+									$fm_dt->sub( $interval );
+								}
+								$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+									"{$wpdb->prefix}ds_matches",
+									[ 'match_datetime' => $fm_dt->format( 'Y-m-d H:i:s' ) ],
+									[ 'id'             => (int) $fm['id'] ],
+									[ '%s' ],
+									[ '%d' ]
+								);
+								$cascade_count++;
+							}
+
+							wp_safe_redirect(
+								add_query_arg(
+									[ 'notice' => 'datetime_cascade', 'cascade_count' => $cascade_count ],
+									home_url( '/panel/torneo/' . $id . '/' )
+								)
+							);
+							exit;
+						}
+
 						$notice = 'datetime_updated';
 					}
 				}

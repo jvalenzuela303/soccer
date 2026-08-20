@@ -45,6 +45,15 @@
 	printf( esc_html__( 'Canchas reasignadas para la fecha %d.', 'soccertrack' ), absint( $_GET['round'] ?? 0 ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	?></div>
 <?php endif; ?>
+<?php if ( ( $notice ?? '' ) === 'datetime_updated' ) : ?>
+	<div class="st-alert st-alert--success">✅ <?php esc_html_e( 'Horario del partido actualizado.', 'soccertrack' ); ?></div>
+<?php endif; ?>
+<?php if ( ( $notice ?? '' ) === 'datetime_cascade' ) : ?>
+	<div class="st-alert st-alert--success">✅ <?php
+	/* translators: %d: cantidad de partidos desplazados */
+	printf( esc_html__( 'Horario actualizado. Se desplazaron también %d partidos siguientes.', 'soccertrack' ), absint( $_GET['cascade_count'] ?? 0 ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	?></div>
+<?php endif; ?>
 <?php if ( ! empty( $error ?? '' ) ) : ?>
 	<div class="st-alert st-alert--error">⚠️ <?php echo esc_html( $error ); ?></div>
 <?php endif; ?>
@@ -1394,6 +1403,7 @@
 								name="match_datetime"
 								class="st-input st-fixture-dt-input"
 								value="<?php echo esc_attr( $dt ? substr( str_replace( ' ', 'T', $dt ), 0, 16 ) : '' ); ?>"
+								data-original="<?php echo esc_attr( $dt ? substr( str_replace( ' ', 'T', $dt ), 0, 16 ) : '' ); ?>"
 								style="max-width:148px;font-size:.78rem;padding:3px 5px"
 							>
 							<button type="submit" class="st-btn st-btn--sm st-btn--secondary" title="<?php esc_attr_e( 'Guardar horario', 'soccertrack' ); ?>">✔</button>
@@ -2091,6 +2101,104 @@ function stPreviewBanner(input) {
 		} );
 	} );
 } )();
+</script>
+
+<?php /* ── Modal cascada de fechas ──────────────────────────────── */ ?>
+<dialog id="st-cascade-modal" style="border:none;border-radius:12px;padding:0;box-shadow:0 8px 32px rgba(0,0,0,.18);max-width:420px;width:90%">
+	<form method="dialog" style="padding:24px 28px">
+		<p style="margin:0 0 6px;font-size:1rem;font-weight:700;color:#0E0C19">
+			<?php esc_html_e( '¿Desplazar los partidos siguientes?', 'soccertrack' ); ?>
+		</p>
+		<p id="st-cascade-modal-desc" style="margin:0 0 20px;font-size:.88rem;color:#3C3A47;line-height:1.5"></p>
+		<div style="display:flex;gap:10px;justify-content:flex-end">
+			<button type="button" id="st-cascade-no" class="st-btn st-btn--secondary">
+				<?php esc_html_e( 'No, solo este partido', 'soccertrack' ); ?>
+			</button>
+			<button type="button" id="st-cascade-yes" class="st-btn st-btn--primary">
+				<?php esc_html_e( 'Sí, desplazar todos', 'soccertrack' ); ?>
+			</button>
+		</div>
+	</form>
+</dialog>
+
+<script>
+/* ── Cascada de fechas al editar horario de un partido ─────────── */
+(function () {
+	var modal       = document.getElementById('st-cascade-modal');
+	var modalDesc   = document.getElementById('st-cascade-modal-desc');
+	var btnYes      = document.getElementById('st-cascade-yes');
+	var btnNo       = document.getElementById('st-cascade-no');
+	var pendingForm = null;
+	var pendingDelta = 0;
+
+	if ( ! modal ) return;
+
+	function deltaLabel( minutes ) {
+		var days = Math.round( minutes / 1440 );
+		var sign = days >= 0 ? '+' : '';
+		if ( Math.abs( days ) === 7 ) return sign + days + ' <?php echo esc_js( __( 'días (siguiente semana)', 'soccertrack' ) ); ?>';
+		if ( Math.abs( days ) === 1 ) return sign + days + ' <?php echo esc_js( __( 'día', 'soccertrack' ) ); ?>';
+		return sign + days + ' <?php echo esc_js( __( 'días', 'soccertrack' ) ); ?>';
+	}
+
+	function countFutureMatches( originalIso ) {
+		var origMs = new Date( originalIso ).getTime();
+		var inputs = document.querySelectorAll('.st-fixture-dt-input[data-original]');
+		var count  = 0;
+		inputs.forEach( function ( inp ) {
+			if ( inp.dataset.original && new Date( inp.dataset.original ).getTime() > origMs ) count++;
+		} );
+		return count;
+	}
+
+	document.addEventListener('submit', function ( e ) {
+		var form = e.target;
+		if ( ! form.querySelector('[name="st_update_datetime"]') ) return;
+		var dtInput = form.querySelector('[name="match_datetime"]');
+		if ( ! dtInput || ! dtInput.dataset.original ) return;
+		var original = dtInput.dataset.original;
+		var newVal   = dtInput.value;
+		if ( ! original || ! newVal ) return;
+		var origMs       = new Date( original ).getTime();
+		var newMs        = new Date( newVal ).getTime();
+		var deltaMs      = newMs - origMs;
+		if ( deltaMs === 0 ) return;
+		var deltaMinutes = Math.round( deltaMs / 60000 );
+		if ( Math.abs( deltaMinutes ) > 525600 ) return;
+		var futureCount = countFutureMatches( original );
+		if ( futureCount === 0 ) return;
+		e.preventDefault();
+		pendingForm  = form;
+		pendingDelta = deltaMinutes;
+		modalDesc.textContent = '<?php echo esc_js( __( 'El partido se moverá', 'soccertrack' ) ); ?> '
+			+ deltaLabel( deltaMinutes ) + '. '
+			+ '<?php echo esc_js( __( '¿Aplicar el mismo desplazamiento a los', 'soccertrack' ) ); ?> '
+			+ futureCount + ' '
+			+ '<?php echo esc_js( __( 'partidos programados después de esta fecha?', 'soccertrack' ) ); ?>';
+		modal.showModal();
+	} );
+
+	btnYes.addEventListener('click', function () {
+		modal.close();
+		if ( ! pendingForm ) return;
+		var c1 = document.createElement('input');
+		c1.type = 'hidden'; c1.name = 'cascade'; c1.value = '1';
+		var c2 = document.createElement('input');
+		c2.type = 'hidden'; c2.name = 'cascade_delta_minutes'; c2.value = String( pendingDelta );
+		pendingForm.appendChild( c1 );
+		pendingForm.appendChild( c2 );
+		pendingForm.submit();
+	} );
+
+	btnNo.addEventListener('click', function () {
+		modal.close();
+		if ( pendingForm ) pendingForm.submit();
+	} );
+
+	modal.addEventListener('cancel', function () {
+		if ( pendingForm ) pendingForm.submit();
+	} );
+}());
 </script>
 
 <script>
