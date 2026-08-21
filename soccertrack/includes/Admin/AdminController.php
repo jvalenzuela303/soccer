@@ -25,7 +25,6 @@ final class AdminController {
 		add_action( 'admin_menu',            [ self::class, 'register_menus' ] );
 		add_action( 'admin_init',            [ self::class, 'maybe_redirect_to_panel' ] );
 		add_action( 'admin_enqueue_scripts', [ self::class, 'enqueue_assets' ] );
-		DemoDataPage::init();
 	}
 
 	public static function maybe_redirect_to_panel(): void {
@@ -274,7 +273,7 @@ final class AdminController {
 		if ( $tournament_id ) {
 			$teams = $wpdb->get_results( // phpcs:ignore
 				$wpdb->prepare(
-					"SELECT id, name, logo_url FROM {$wpdb->prefix}ds_teams WHERE tournament_id = %d ORDER BY name ASC",
+					"SELECT id, name, logo_url FROM {$wpdb->prefix}ds_teams WHERE tournament_id = %d AND is_ghost = 0 ORDER BY name ASC",
 					$tournament_id
 				),
 				ARRAY_A
